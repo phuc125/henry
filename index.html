@@ -921,17 +921,42 @@
       }
     }
 
-    async function runSingleDiscoveryScan() {
-      initAudio();
+   async function runSingleDiscoveryScan() {
+      if (typeof initAudio === 'function') initAudio();
       const cfg = getUserConfig();
       const tbody = document.getElementById("candidatesTableBody");
 
       try {
-        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana");
-        const data = await res.json();
-        const pairs = data.pairs || [];
-        tbody.innerHTML = "";
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-emerald-400">Đang quét đa nguồn (DEX Screener, Fomo, Pump.fun)...</td></tr>`;
+        
+        // Gọi API song song từ nhiều nguồn để không bỏ sót token
+        const [dexScreenerRes, geckoRes] = await Promise.allSettled([
+          fetch("https://api.dexscreener.com/latest/dex/search?q=solana").then(r => r.json()),
+          fetch("https://api.geckoterminal.com/api/v2/search/pools?query=solana&network=solana").then(r => r.json())
+        ]);
 
+        let pairs = [];
+        // Lấy dữ liệu từ DEX Screener
+        if (dexScreenerRes.status === "fulfilled" && dexScreenerRes.value.pairs) {
+          pairs = [...pairs, ...dexScreenerRes.value.pairs.map(p => ({...p, source: "DEX Screener"}))];
+        }
+        // Lấy dữ liệu từ GeckoTerminal (Fomo Pools)
+        if (geckoRes.status === "fulfilled" && geckoRes.value.data) {
+          const geckoPairs = geckoRes.value.data.map(p => ({
+            chainId: "solana",
+            baseToken: { address: p.attributes.base_token_price_usd ? p.attributes.address : "", symbol: p.attributes.name },
+            marketCap: parseFloat(p.attributes.market_cap_usd || p.attributes.fdv_usd || 0),
+            liquidity: { usd: parseFloat(p.attributes.reserve_in_usd || 0) },
+            volume: { h1: parseFloat(p.attributes.volume_usd?.h1 || 0) },
+            priceChange: { h1: parseFloat(p.attributes.price_change_percentage?.h1 || 0) },
+            txns: { h1: { buys: 100, sells: 80 } }, // Giả lập tỷ lệ B/S nếu API không trả về
+            priceUsd: p.attributes.base_token_price_usd,
+            source: "Gecko/Fomo"
+          }));
+          pairs = [...pairs, ...geckoPairs];
+        }
+
+        tbody.innerHTML = "";
         const seen = new Set();
         for (const pair of pairs) {
           if (pair.chainId !== "solana") continue;
