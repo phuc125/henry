@@ -972,7 +972,66 @@
       document.getElementById("btnStopBot").disabled = true;
       document.getElementById("btnStopBot").className = "px-5 py-2.5 bg-red-600/40 text-red-300 font-semibold text-sm rounded-lg transition cursor-not-allowed";
     }
+// =========================================================================
+// LƯU & KHÔI PHỤC CẤU HÌNH TỰ ĐỘNG BẰNG LOCALSTORAGE
+// =========================================================================
+const CONFIG_STORAGE_KEY = "solana_bot_user_config_v1";
 
+function saveConfigToBrowser() {
+  const cfg = {
+    rpcUrl: document.getElementById("cfg_rpcUrl").value,
+    walletMode: document.getElementById("cfg_walletMode").value,
+    privateKey: document.getElementById("cfg_privateKey").value,
+    jupUrl: document.getElementById("cfg_jupUrl").value,
+    apiKey: document.getElementById("cfg_apiKey").value,
+    dryRun: document.getElementById("cfg_dryRun").checked,
+
+    minMcap: document.getElementById("cfg_minMcap").value,
+    maxMcap: document.getElementById("cfg_maxMcap").value,
+    minLiq: document.getElementById("cfg_minLiq").value,
+    minVol1h: document.getElementById("cfg_minVol1h").value,
+    minBSRatio: document.getElementById("cfg_minBSRatio").value,
+    minChg1h: document.getElementById("cfg_minChg1h").value,
+    maxChg1h: document.getElementById("cfg_maxChg1h").value,
+
+    maxRugScore: document.getElementById("cfg_maxRugScore").value,
+    maxTop10Pct: document.getElementById("cfg_maxTop10Pct").value,
+    requireMintRevoked: document.getElementById("cfg_requireMintRevoked").checked,
+    requireFreezeRevoked: document.getElementById("cfg_requireFreezeRevoked").checked,
+
+    buySol: document.getElementById("cfg_buySol").value,
+    slippageBps: document.getElementById("cfg_slippageBps").value,
+    tpPct: document.getElementById("cfg_tpPct").value,
+    slPct: document.getElementById("cfg_slPct").value,
+    trailArmPct: document.getElementById("cfg_trailArmPct").value,
+    trailOffsetPct: document.getElementById("cfg_trailOffsetPct").value,
+
+    jitoEngine: document.getElementById("cfg_jitoEngine").value,
+    jitoTipLamports: document.getElementById("cfg_jitoTipLamports").value,
+    jitoTipAccount: document.getElementById("cfg_jitoTipAccount").value
+  };
+  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(cfg));
+}
+
+function loadConfigFromBrowser() {
+  const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
+  if (!saved) return;
+  try {
+    const cfg = JSON.parse(saved);
+    for (const [key, val] of Object.entries(cfg)) {
+      const el = document.getElementById(`cfg_${key}`);
+      if (!el) continue;
+      if (el.type === "checkbox") {
+        el.checked = val;
+      } else {
+        el.value = val;
+      }
+    }
+    console.log("Đã khôi phục cài đặt cũ từ trình duyệt thành công!");
+  } catch (e) {
+    console.error("Lỗi khi tải cấu hình đã lưu:", e);
+  }
+}
     // -------------------------------------------------------------------------
     // CHƯƠNG TRÌNH BACKTEST CHIẾN LƯỢC (BACKTESTING ENGINE)
     // -------------------------------------------------------------------------
@@ -1302,6 +1361,9 @@
       a.download = `solana_backtest_results_${Date.now()}.csv`;
       a.click();
     }
+    window.addEventListener("DOMContentLoaded", () => {
+  loadConfigFromBrowser();
+});
   </script>
 </body>
 </html>
