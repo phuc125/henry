@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solana MevBot Ultimate | PumpPortal, Bitget & Pro Logic</title>
+  <title>Solana MevBot Pro Max | PumpPortal WS, Jito, RugCheck & Backtest</title>
 
   <!-- Web Fonts & Tailwind -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -34,9 +34,9 @@
     <div>
       <div class="flex flex-wrap gap-2 mb-2">
         <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">PumpPortal WS</span>
-        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full">Bitget/Phantom</span>
+        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full">RugCheck API</span>
         <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full">Jito MEV</span>
-        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/30 rounded-full">Auto-Retry & Partial TP</span>
+        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/30 rounded-full">Partial TP & Auto-Retry</span>
       </div>
       <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">SOLANA ULTIMATE MEVBOT</h1>
     </div>
@@ -48,7 +48,7 @@
     </div>
   </header>
 
-  <!-- TABS -->
+  <!-- TABS NAV -->
   <div class="max-w-7xl mx-auto mb-6 flex justify-between items-center">
     <div class="flex gap-1 bg-gray-900 p-1.5 rounded-xl border border-gray-800">
       <button onclick="switchTab('tab-cfg')" id="btn-tab-cfg" class="px-5 py-2 text-sm font-semibold rounded-lg bg-gray-800 text-white shadow">⚙️ Cấu Hình</button>
@@ -64,21 +64,20 @@
     <!-- ========================================================= -->
     <section id="tab-cfg" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
-      <!-- Cột 1: System -->
+      <!-- Cột 1: Hệ Thống -->
       <div class="glass-card p-6 space-y-4">
         <h2 class="font-bold text-white border-b border-gray-800 pb-2">📡 Hệ Thống & Chế Độ Ký</h2>
         <div><label class="text-xs text-gray-400">RPC URL</label><input id="c_rpc" type="text" class="input-pro" value="https://api.mainnet-beta.solana.com" oninput="saveCfg()"/></div>
         <div><label class="text-xs text-gray-400">Chế độ Ký</label><select id="c_mode" class="input-pro text-white" onchange="saveCfg()"><option value="browser">Duyệt tay (Ví Trình Duyệt)</option><option value="auto">Auto 100% (Private Key)</option></select></div>
         <div><label class="text-xs text-purple-400">Private Key (Base58)</label><input id="c_pk" type="password" class="input-pro border-purple-500/40" placeholder="Khóa bí mật cho Auto Bot..." oninput="saveCfg()"/></div>
         
-        <!-- Tính năng mới -->
         <h3 class="font-bold text-white border-b border-gray-800 pb-1 mt-4 text-sm">🛠 Tính năng Pro</h3>
-        <label class="flex items-center gap-2 text-xs text-emerald-400"><input id="c_dry" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> Dry Run (Mô phỏng)</label>
+        <label class="flex items-center gap-2 text-xs text-emerald-400"><input id="c_dry" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> Dry Run (Mô phỏng lệnh)</label>
         <label class="flex items-center gap-2 text-xs text-emerald-400"><input id="c_retry" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> Auto-Retry Lệnh (Tối đa 3 lần)</label>
         <label class="flex items-center gap-2 text-xs text-emerald-400"><input id="c_dynSlip" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> Dynamic Slippage (+1% nếu tạch lệnh)</label>
       </div>
 
-      <!-- Cột 2: Filter -->
+      <!-- Cột 2: Điều Kiện Lọc -->
       <div class="glass-card p-6 space-y-4">
         <h2 class="font-bold text-white border-b border-gray-800 pb-2">🎯 Điều Kiện Quét & Lọc</h2>
         <div class="grid grid-cols-2 gap-3">
@@ -92,16 +91,14 @@
         <label class="flex items-center gap-2 text-xs text-gray-300"><input id="c_mintRev" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> Bắt buộc Mint Auth khóa (Chống lạm phát)</label>
       </div>
 
-      <!-- Cột 3: Execution -->
+      <!-- Cột 3: Quản Lý Vốn -->
       <div class="glass-card p-6 space-y-4">
         <h2 class="font-bold text-white border-b border-gray-800 pb-2">⚡ Quản Lý Lệnh & Chốt Lời</h2>
         <div class="grid grid-cols-2 gap-3">
           <div><label class="text-xs text-gray-400">Vào Lệnh (SOL)</label><input id="c_sol" type="number" step="0.05" class="input-pro text-white font-bold" value="0.25" oninput="saveCfg()"/></div>
-          <div><label class="text-xs text-gray-400">Slippage Gốc (bps)</label><input id="c_slip" type="number" class="input-pro" value="250" oninput="saveCfg()"/></div>
-          
+          <div><label class="text-xs text-gray-400">Slippage (bps)</label><input id="c_slip" type="number" class="input-pro" value="250" oninput="saveCfg()"/></div>
           <div><label class="text-xs text-gray-400">Take Profit (%)</label><input id="c_tp" type="number" class="input-pro text-emerald-400" value="45" oninput="saveCfg()"/></div>
           <div><label class="text-xs text-gray-400">Stop Loss (%)</label><input id="c_sl" type="number" class="input-pro text-red-400" value="-18" oninput="saveCfg()"/></div>
-          
           <div><label class="text-xs text-gray-400">Trailing Kích Hoạt</label><input id="c_tArm" type="number" class="input-pro" value="20" oninput="saveCfg()"/></div>
           <div><label class="text-xs text-gray-400">Trailing Độ Lùi</label><input id="c_tOff" type="number" class="input-pro" value="10" oninput="saveCfg()"/></div>
         </div>
@@ -109,7 +106,6 @@
           <label class="text-xs text-purple-400 font-semibold mb-1">Jito Tip (Lamports)</label>
           <input id="c_tip" type="number" class="input-pro text-purple-400" value="150000" oninput="saveCfg()"/>
         </div>
-        <!-- Tính năng Partial TP -->
         <label class="flex items-center gap-2 text-xs text-cyan-400 mt-2"><input id="c_partialTp" type="checkbox" checked class="accent-cyan-500" onchange="saveCfg()"/> Chốt lời từng phần (Bán 50% tại điểm TP)</label>
       </div>
     </section>
@@ -133,11 +129,11 @@
         </div>
       </div>
 
-      <!-- Bảng Data -->
+      <!-- Live Feed & Positions -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="glass-card p-5">
           <h3 class="font-bold text-white mb-3">Live Feed ($150k – $500k)</h3>
-          <div class="overflow-x-auto h-72"><table class="w-full text-left text-xs font-mono"><thead class="text-gray-400 sticky top-0 bg-gray-900 z-10"><tr><th class="p-2">Token</th><th class="p-2">Nguồn</th><th class="p-2">MCap</th><th class="p-2">Lọc / B:S</th><th class="p-2 text-right">Lệnh</th></tr></thead><tbody id="tb_scan" class="divide-y divide-gray-800/50"></tbody></table></div>
+          <div class="overflow-x-auto h-72"><table class="w-full text-left text-xs font-mono"><thead class="text-gray-400 sticky top-0 bg-gray-900 z-10"><tr><th class="p-2">Token</th><th class="p-2">Nguồn</th><th class="p-2">MCap</th><th class="p-2">Analytics / RugCheck</th><th class="p-2 text-right">Lệnh</th></tr></thead><tbody id="tb_scan" class="divide-y divide-gray-800/50"></tbody></table></div>
         </div>
         
         <div class="glass-card p-5">
@@ -147,7 +143,7 @@
       </div>
       
       <!-- Logs -->
-      <div class="glass-card p-4"><h3 class="text-sm font-bold text-white mb-2">Audit Log (Trạng thái lệnh & Jito Bundle)</h3><div id="logConsole" class="font-mono text-[11px] bg-black/80 p-3 rounded h-40 overflow-y-auto space-y-1 border border-gray-800"></div></div>
+      <div class="glass-card p-4"><h3 class="text-sm font-bold text-white mb-2">Audit Log (Trạng thái lệnh & Hệ thống)</h3><div id="logConsole" class="font-mono text-[11px] bg-black/80 p-3 rounded h-40 overflow-y-auto space-y-1 border border-gray-800"></div></div>
     </section>
 
     <!-- ========================================================= -->
@@ -155,35 +151,40 @@
     <!-- ========================================================= -->
     <section id="tab-test" class="hidden space-y-6">
       <div class="glass-card p-5 flex flex-wrap gap-4 border-l-4 border-cyan-500 items-end">
-        <div><label class="text-xs text-gray-400">Vốn (SOL)</label><input id="b_sol" type="number" class="input-pro w-24" value="10" /></div>
-        <div><label class="text-xs text-gray-400">Tốc độ (ms)</label><input id="b_spd" type="number" class="input-pro w-24" value="100" /></div>
-        <button onclick="runBacktest()" id="btnBtStart" class="btn-grad px-6 py-2.5 rounded-lg text-white font-bold text-sm">▶ CHẠY BACKTEST MÔ PHỎNG</button>
+        <div><label class="text-xs text-gray-400">Vốn Ban Đầu (SOL)</label><input id="b_sol" type="number" class="input-pro w-32" value="10" /></div>
+        <div><label class="text-xs text-gray-400">Tốc độ (ms)</label><input id="b_spd" type="number" class="input-pro w-24" value="80" /></div>
+        <button onclick="runBacktest()" id="btnBtStart" class="btn-grad px-6 py-2.5 rounded-lg text-white font-bold text-sm">▶ CHẠY BACKTEST KỊCH BẢN</button>
       </div>
-      <div class="glass-card p-5 h-[350px]"><canvas id="btChart"></canvas></div>
+      
+      <!-- KPIs -->
+      <div class="grid grid-cols-4 gap-4">
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">Tổng Vốn Hiện Tại</div><div id="bt_bal" class="text-xl font-bold font-mono text-white mt-1">10.00 SOL</div></div>
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">PnL Ròng</div><div id="bt_pnl" class="text-xl font-bold font-mono text-emerald-400 mt-1">+0.00</div></div>
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">Tỷ Lệ Thắng (Win Rate)</div><div id="bt_win" class="text-xl font-bold font-mono text-blue-400 mt-1">0%</div></div>
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">Max Drawdown</div><div id="bt_mdd" class="text-xl font-bold font-mono text-red-400 mt-1">0.00%</div></div>
+      </div>
+      
+      <div class="glass-card p-5 h-[280px]"><canvas id="btChart"></canvas></div>
+
+      <!-- Lịch sử lệnh Backtest -->
+      <div class="glass-card p-5">
+        <h3 class="font-bold text-white mb-3">Lịch Sử Lệnh & Phân Tích Điểm Chốt Lời</h3>
+        <div class="overflow-x-auto h-64"><table class="w-full text-left text-xs font-mono"><thead class="text-gray-400 sticky top-0 bg-gray-900 z-10"><tr><th class="p-2">#</th><th class="p-2">Token</th><th class="p-2">Giá Vào</th><th class="p-2">Đỉnh Chạm</th><th class="p-2">Lý Do Thoát Lệnh</th><th class="p-2 text-right">PnL Ròng (SOL)</th></tr></thead><tbody id="tb_backtest" class="divide-y divide-gray-800/50"><tr><td colspan="6" class="p-6 text-center text-gray-500">Nhấn chạy Backtest để xem kết quả mô phỏng (40 Lệnh).</td></tr></tbody></table></div>
+      </div>
     </section>
   </main>
 
   <script>
+    // Constants
     const WSOL = "So11111111111111111111111111111111111111112";
     const LAMPORTS = 1e9;
     const JITO = "https://mainnet.block-engine.jito.wtf/api/v1/bundles";
 
-    // --- 1. LOCAL STORAGE & UTILS ---
-    function saveCfg() {
-      const d = {}; document.querySelectorAll('input[id^="c_"], select[id^="c_"]').forEach(e => d[e.id] = e.type==="checkbox"?e.checked:e.value);
-      localStorage.setItem("BotUltimatePro", JSON.stringify(d));
-      const b = document.getElementById("saveBadge"); b.classList.remove("hidden"); setTimeout(()=>b.classList.add("hidden"),1000);
-    }
-    function loadCfg() {
-      const d = JSON.parse(localStorage.getItem("BotUltimatePro")||"{}");
-      for(let [k,v] of Object.entries(d)){ const e = document.getElementById(k); if(e) e.type==="checkbox"?e.checked=v:e.value=v; }
-    }
-
+    // --- 1. UTILITIES & CONFIG STORAGE ---
     const sleep = ms => new Promise(r => setTimeout(r, ms));
-    function log(type, sym, txt, color="text-gray-300") {
-      const c = document.getElementById("logConsole");
-      c.innerHTML = `<div><span class="text-gray-500">${new Date().toLocaleTimeString()}</span> <span class="${color} font-bold">[${type}] ${sym}</span>: ${txt}</div>` + c.innerHTML;
-    }
+    function saveCfg() { const d={}; document.querySelectorAll('input[id^="c_"], select[id^="c_"]').forEach(e => d[e.id]=e.type==="checkbox"?e.checked:e.value); localStorage.setItem("BotUltimatePro", JSON.stringify(d)); const b = document.getElementById("saveBadge"); b.classList.remove("hidden"); setTimeout(()=>b.classList.add("hidden"),1000); }
+    function loadCfg() { const d = JSON.parse(localStorage.getItem("BotUltimatePro")||"{}"); for(let [k,v] of Object.entries(d)){ const e = document.getElementById(k); if(e) e.type==="checkbox"?e.checked=v:e.value=v; } }
+    function log(type, sym, txt, color="text-gray-300") { const c = document.getElementById("logConsole"); c.innerHTML = `<div><span class="text-gray-500">${new Date().toLocaleTimeString()}</span> <span class="${color} font-bold">[${type}] ${sym}</span>: ${txt}</div>` + c.innerHTML; }
 
     // --- 2. AUDIO SYNTH ---
     let actx=null; function initAudio(){if(!actx && window.AudioContext) actx=new AudioContext(); if(actx?.state==='suspended') actx.resume();}
@@ -207,7 +208,7 @@
     async function connectWallet() {
       try {
         const p = window.bitkeep?.solana || window.phantom?.solana || window.solana || window.solflare;
-        if(!p) return alert("Không tìm thấy ví Bitget/Phantom/Solflare. Hãy cài extension hoặc chạy localhost.");
+        if(!p) return alert("Không tìm thấy ví mở rộng (Phantom/Bitget)!");
         const r = await p.connect(); const pk = r?.publicKey || p.publicKey;
         if(!pk) throw new Error("Lỗi đọc publicKey");
         wProv = p; pubK = pk.toString();
@@ -230,35 +231,53 @@
       b.innerHTML = o;
     }
 
-    // --- 4. EXECUTION CORE (AUTO-RETRY & DYNAMIC SLIPPAGE) ---
+    // --- 4. RUGCHECK API ---
+    async function verifyTokenSafety(mint, sym) {
+      const maxRugScore = parseInt(document.getElementById("c_rug").value) || 400;
+      const requireMintRevoked = document.getElementById("c_mintRev").checked;
+      try {
+        const resp = await fetch(`https://api.rugcheck.xyz/v1/tokens/${mint}/report/summary`);
+        if (!resp.ok) { log("RUG_WARN", sym, `API HTTP ${resp.status}`, "text-amber-400"); return { ok: false, score: "ERR", reason: `HTTP ${resp.status}` }; }
+        const report = await resp.json();
+        const score = parseInt(report.score ?? 9999);
+        const risks = report.risks || []; const reasons = [];
+
+        if (score > maxRugScore) reasons.push(`Score ${score} > ${maxRugScore}`);
+        for (const r of risks) {
+          const name = (r.name||"").toLowerCase(), lvl = (r.level||"").toLowerCase();
+          if (requireMintRevoked && name.includes("mint authority")) reasons.push("Mint chưa khóa");
+          if (name.includes("freeze authority")) reasons.push("Freeze chưa khóa");
+          if (lvl === "danger" || lvl === "critical") reasons.push(r.name);
+        }
+        if (reasons.length > 0) {
+          log("RUG_BLOCKED", sym, `Chặn: ${reasons.join(", ")}`, "text-red-400");
+          return { ok: false, score, reason: reasons[0] };
+        }
+        log("RUG_PASSED", sym, `An toàn (Score: ${score}/${maxRugScore})`, "text-emerald-400");
+        return { ok: true, score, reason: "SAFE" };
+      } catch (err) { return { ok: false, score: "ERR", reason: "Lỗi mạng" }; }
+    }
+
+    // --- 5. EXECUTION CORE (AUTO-RETRY & DYNAMIC SLIPPAGE) ---
     async function executeBuySell(mint, sym, amtLamports, side) {
       const dry = document.getElementById("c_dry").checked;
-      const isRetryEnabled = document.getElementById("c_retry").checked;
+      const isRetry = document.getElementById("c_retry").checked;
       const isDynSlip = document.getElementById("c_dynSlip").checked;
-      
-      let maxTries = isRetryEnabled ? 3 : 1;
+      let maxTries = isRetry ? 3 : 1;
       let curSlip = parseInt(document.getElementById("c_slip").value) || 250;
 
       for (let attempt = 1; attempt <= maxTries; attempt++) {
-        log(side, sym, `Đang xử lý lệnh Jito (Thử ${attempt}/${maxTries}) - Slip: ${curSlip/100}%...`, side==="BUY"?"text-emerald-400":"text-cyan-400");
-        
-        if (dry) { 
-          await sleep(600); playSnd("ting"); 
-          log("DRY-RUN", sym, `Khớp lệnh ${side} thành công!`, "text-emerald-500"); 
-          return { ok: true, out: amtLamports * 2000 }; 
-        }
+        log(side, sym, `Đang gọi Jito (Thử ${attempt}/${maxTries}) - Slip: ${curSlip/100}%...`, side==="BUY"?"text-emerald-400":"text-cyan-400");
+        if (dry) { await sleep(600); playSnd("ting"); log("DRY-RUN", sym, `Khớp lệnh ${side} thành công!`, "text-emerald-500"); return { ok: true, out: amtLamports * (side==="BUY"?2000:0) }; }
 
         try {
           const inM = side==="BUY"?WSOL:mint, outM = side==="BUY"?mint:WSOL;
           const q = await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${inM}&outputMint=${outM}&amount=${Math.floor(amtLamports)}&slippageBps=${curSlip}`).then(r=>r.json());
-          if(!q.outAmount) throw new Error("Không lấy được Quote Jupiter");
+          if(!q.outAmount) throw new Error("Lỗi báo giá Jupiter");
           
           let kp, signerObj = pubK;
-          if(document.getElementById("c_mode").value==="auto"){ 
-            kp = solanaWeb3.Keypair.fromSecretKey(dec58(document.getElementById("c_pk").value)); 
-            signerObj = kp.publicKey.toString(); 
-          }
-          if(!signerObj) throw new Error("Chưa có ví để ký lệnh.");
+          if(document.getElementById("c_mode").value==="auto"){ kp = solanaWeb3.Keypair.fromSecretKey(dec58(document.getElementById("c_pk").value)); signerObj = kp.publicKey.toString(); }
+          if(!signerObj) throw new Error("Chưa kết nối ví ký lệnh");
 
           const swp = await fetch(`https://quote-api.jup.ag/v6/swap`,{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({quoteResponse:q, userPublicKey:signerObj, wrapAndUnwrapSol:true, prioritizationFeeLamports:{jitoTipLamports: parseInt(document.getElementById("c_tip").value)}}) }).then(r=>r.json());
           if(swp.error) throw new Error(swp.error);
@@ -268,64 +287,62 @@
           
           const b64 = btoa(String.fromCharCode(...vTx.serialize()));
           const jt = await fetch(JITO, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({jsonrpc:"2.0", id:1, method:"sendBundle", params:[[b64], {encoding:"base64"}]})}).then(r=>r.json());
-          
           if(jt.error) throw new Error(JSON.stringify(jt.error));
           
-          playSnd("ting"); log("SUCCESS", sym, `Khớp lệnh thật! BundleID: ${jt.result}`, "text-emerald-500");
+          playSnd("ting"); log("SUCCESS", sym, `Khớp lệnh! BundleID: ${jt.result}`, "text-emerald-500");
           return { ok: true, out: q.outAmount };
         } catch(e) { 
           log("ERROR", sym, `${e.message}`, "text-red-500"); 
-          if(attempt < maxTries) {
-            if(isDynSlip) curSlip += 100; // Tăng +1% slippage nếu tạch
-            await sleep(1000); // Đợi 1s trước khi thử lại
-          }
+          if(attempt < maxTries) { if(isDynSlip) curSlip += 100; await sleep(1000); }
         }
       }
       return null;
     }
 
-    // --- 5. LIVE TRADING: PUMPPORTAL WS & HTTP ---
-    let openPos = {}, blacklistedMints = new Set();
-    let solPrice = 150.0;
-    
-    async function updateSolPrice() {
-      try { const r = await fetch("https://api.jup.ag/price/v2?ids="+WSOL).then(r=>r.json()); if(r.data[WSOL].price) { solPrice=parseFloat(r.data[WSOL].price); document.getElementById("l_solPrice").textContent = `$${solPrice.toFixed(2)}`; } } catch(e){}
-    }
+    // --- 6. LIVE TRADING: PUMPPORTAL WS & HTTP ---
+    let openPos = {}, blacklistedMints = new Set(), solPrice = 150.0;
+    async function updateSolPrice() { try { const r = await fetch("https://api.jup.ag/price/v2?ids="+WSOL).then(r=>r.json()); if(r.data[WSOL].price) { solPrice=parseFloat(r.data[WSOL].price); document.getElementById("l_solPrice").textContent = `$${solPrice.toFixed(2)}`; } } catch(e){} }
 
     // A. Quét HTTP (DEXScreener)
     async function scanHttp() {
       initAudio(); updateSolPrice(); const tb = document.getElementById("tb_scan");
-      tb.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-emerald-400">Đang quét DEX Screener...</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-emerald-400">⏳ Đang quét DEXScreener & gọi RugCheck API...</td></tr>`;
       try {
         const dx = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana").then(r=>r.json());
-        tb.innerHTML = "";
-        const p = dx.pairs || [];
-        const v = { minM: parseFloat(document.getElementById("c_mMin").value), maxM: parseFloat(document.getElementById("c_mMax").value), liq: parseFloat(document.getElementById("c_liq").value), bs: parseFloat(document.getElementById("c_bs").value), lamps: Math.round(parseFloat(document.getElementById("c_sol").value)*LAMPORTS) };
+        tb.innerHTML = ""; const p = dx.pairs || [], seen = new Set();
+        const v = { minM: parseFloat(document.getElementById("c_mMin").value)||150000, maxM: parseFloat(document.getElementById("c_mMax").value)||500000, liq: parseFloat(document.getElementById("c_liq").value)||35000, vol: parseFloat(document.getElementById("c_vol").value)||25000, bs: parseFloat(document.getElementById("c_bs").value)||1.25, lamps: Math.round((parseFloat(document.getElementById("c_sol").value)||0.25)*LAMPORTS) };
         
         for(let x of p) {
           if(x.chainId!=="solana" || !x.baseToken?.address || blacklistedMints.has(x.baseToken.address)) continue;
-          let m = x.baseToken.address, mc = parseFloat(x.marketCap||0), lq = parseFloat(x.liquidity?.usd||0), bs = (x.txns?.h1?.buys||1)/Math.max(x.txns?.h1?.sells||1,1);
-          if(mc < v.minM || mc > v.maxM) continue;
+          let m = x.baseToken.address, mc = parseFloat(x.marketCap||0), lq = parseFloat(x.liquidity?.usd||0), vol = parseFloat(x.volume?.h1||0), bs = (x.txns?.h1?.buys||1)/Math.max(x.txns?.h1?.sells||1,1);
+          if(mc < v.minM || mc > v.maxM) continue; seen.add(m);
           
-          let pass = lq >= v.liq && bs >= v.bs;
-          let btn = `<button onclick="forceBuy('${m}','${x.baseToken.symbol}',${x.priceUsd},${v.lamps})" class="px-2 py-1 bg-emerald-600 rounded text-white font-bold">MUA</button>`;
+          let passAnalytic = lq>=v.liq && vol>=v.vol && bs>=v.bs;
+          let statHtml = passAnalytic ? `<span class="text-amber-400">Đang check...</span>` : `<span class="text-gray-500">Liq/Vol kém</span>`;
+          let btnHtml = `<span class="text-gray-500 text-[10px]">Loại</span>`;
           
-          tb.innerHTML += `<tr><td class="p-2 font-bold">${x.baseToken.symbol}</td><td class="p-2"><span class="bg-emerald-900/40 text-emerald-400 px-1 rounded text-[10px]">DEX</span></td><td class="p-2 text-emerald-400">$${Math.round(mc/1000)}k</td><td class="p-2">${pass?'<span class="text-emerald-400">PASS</span>':'FAIL'}</td><td class="p-2 text-right">${btn}</td></tr>`;
+          if(passAnalytic) {
+            const r = await verifyTokenSafety(m, x.baseToken.symbol);
+            if(r.ok) { statHtml=`<span class="text-emerald-400 font-bold">PASS (${r.score})</span>`; btnHtml=`<button onclick="forceBuy('${m}','${x.baseToken.symbol}',${x.priceUsd},${v.lamps})" class="px-2 py-1 bg-emerald-600 rounded text-white text-[10px]">MUA</button>`; }
+            else { blacklistedMints.add(m); statHtml=`<span class="text-red-400 font-semibold">RUG (${r.reason})</span>`; btnHtml=`<span class="text-red-500/70 text-[10px]">Blacklist</span>`; }
+          }
+          tb.innerHTML += `<tr><td class="p-2 font-bold">${x.baseToken.symbol}</td><td class="p-2"><span class="bg-emerald-900/40 text-emerald-400 px-1 rounded text-[10px]">HTTP</span></td><td class="p-2 text-emerald-400">$${Math.round(mc/1000)}k</td><td class="p-2">${statHtml}</td><td class="p-2 text-right">${btnHtml}</td></tr>`;
         }
+        if(!seen.size) tb.innerHTML=`<tr><td colspan="5" class="p-4 text-center text-gray-500">Không có token thỏa mãn.</td></tr>`;
       } catch(e){}
     }
 
-    // B. Quét WebSocket PumpPortal
+    // B. WebSocket PumpPortal
     let ws = null, tkStats = {}, monTimer = null;
     function startPumpWs() {
       if(ws && ws.readyState === WebSocket.OPEN) return;
       initAudio(); updateSolPrice();
-      document.getElementById("l_stat").textContent = "ĐANG KẾT NỐI..."; document.getElementById("l_stat").className = "font-bold text-amber-400";
+      document.getElementById("l_stat").textContent = "ĐANG KẾT NỐI WS..."; document.getElementById("l_stat").className = "font-bold text-amber-400";
       
       ws = new WebSocket("wss://pumpportal.fun/api/data");
       ws.onopen = () => {
         document.getElementById("l_stat").textContent = "LIVE STREAMING"; document.getElementById("l_stat").className = "font-bold text-emerald-400";
-        document.getElementById("btnWsStart").disabled = true; document.getElementById("btnWsStop").disabled = false; document.getElementById("btnWsStop").className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-xs md:text-sm";
+        document.getElementById("btnWsStart").disabled = true; document.getElementById("btnWsStop").disabled = false; document.getElementById("btnWsStop").className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-sm";
         ws.send(JSON.stringify({method:"subscribeNewToken"})); ws.send(JSON.stringify({method:"subscribeMigration"}));
         log("WS_OPEN", "SYSTEM", "Đã kết nối PumpPortal wss://", "text-emerald-400");
         if(!monTimer) monTimer = setInterval(monPos, 3000);
@@ -345,73 +362,60 @@
         const vSol = parseFloat(msg.vSolInBondingCurve||0), vTk = parseFloat(msg.vTokensInBondingCurve||0);
         let mcUsd = parseFloat(msg.marketCapSol||0)*solPrice;
         if(!mcUsd && vSol>0 && vTk>0) { st.px = (vSol/vTk)*solPrice; mcUsd = st.px * 1e9; }
-        
-        // Update price for open pos
         if(openPos[m] && st.px>0) { openPos[m].curPx = st.px; if(st.px > openPos[m].high) openPos[m].high = st.px; }
         
-        // Filter logic
         const v = { minM: parseFloat(document.getElementById("c_mMin").value), maxM: parseFloat(document.getElementById("c_mMax").value), liq: parseFloat(document.getElementById("c_liq").value), bs: parseFloat(document.getElementById("c_bs").value), lamps: Math.round(parseFloat(document.getElementById("c_sol").value)*LAMPORTS) };
         if(mcUsd >= v.minM && mcUsd <= v.maxM) {
-          const bsRat = st.buys/Math.max(st.sells, 1);
-          const pass = (vSol*2*solPrice) >= v.liq && bsRat >= v.bs;
+          const bsRat = st.buys/Math.max(st.sells, 1), pass = (vSol*2*solPrice) >= v.liq && bsRat >= v.bs;
           updateWsRow(m, st.sym, mcUsd, pass, bsRat, st.px, v.lamps, msg.pool==="raydium"?"Raydium":"Pump.fun");
           
           if(pass && !st.ev && !openPos[m]) {
             st.ev = true; 
-            // Giả lập check Rug, nếu rớt -> blacklist
-            const rugOk = Math.random()>0.1; 
-            if(rugOk) { log("SIGNAL", st.sym, `Đạt chuẩn WS! MCap: $${Math.round(mcUsd/1000)}k`, "text-cyan-400"); await forceBuy(m, st.sym, st.px, v.lamps); }
-            else { blacklistedMints.add(m); }
+            log("SIGNAL", st.sym, `Đạt Analytics WS! -> Gọi RugCheck...`, "text-cyan-400"); 
+            const rugObj = await verifyTokenSafety(m, st.sym);
+            if(rugObj.ok) { await forceBuy(m, st.sym, st.px, v.lamps); }
+            else { blacklistedMints.add(m); if(ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({method:"unsubscribeTokenTrade", keys:[m]})); }
           }
         }
       };
       
       ws.onclose = () => {
         document.getElementById("l_stat").textContent = "ĐÃ NGẮT"; document.getElementById("l_stat").className = "font-bold text-gray-400";
-        document.getElementById("btnWsStart").disabled = false; document.getElementById("btnWsStop").disabled = true; document.getElementById("btnWsStop").className="px-4 py-2 bg-red-600/30 text-red-300 font-bold rounded-lg text-xs md:text-sm cursor-not-allowed";
+        document.getElementById("btnWsStart").disabled = false; document.getElementById("btnWsStop").disabled = true; document.getElementById("btnWsStop").className="px-4 py-2 bg-red-600/30 text-red-300 font-bold rounded-lg text-sm cursor-not-allowed";
         if(monTimer){ clearInterval(monTimer); monTimer=null; }
       }
     }
-    
-    function stopPumpWs() { if(ws) { ws.close(); ws=null; } }
+    function stopPumpWs() { if(ws) ws.close(); ws=null; }
 
     function updateWsRow(m, sym, mc, pass, bs, px, lamps, src) {
       const tb = document.getElementById("tb_scan"); let tr = document.getElementById("r_"+m);
-      if(!tr) { tr = document.createElement("tr"); tr.id="r_"+m; tb.prepend(tr); if(tb.children.length>30) tb.lastElementChild.remove(); }
+      if(!tr) { tr = document.createElement("tr"); tr.id="r_"+m; tb.prepend(tr); if(tb.children.length>25) tb.lastElementChild.remove(); }
       const bg = src==="Raydium"?"bg-purple-900/40 text-purple-300":"bg-cyan-900/40 text-cyan-300";
-      tr.innerHTML = `<td class="p-2 font-bold">${sym}</td><td class="p-2"><span class="px-1 py-0.5 rounded text-[10px] ${bg}">${src}</span></td><td class="p-2 text-emerald-400">$${Math.round(mc).toLocaleString()}</td><td class="p-2">${pass?`<span class="text-emerald-400 font-bold">PASS (${bs.toFixed(1)})</span>`:`<span class="text-gray-400">B/S ${bs.toFixed(1)}</span>`}</td><td class="p-2 text-right"><button onclick="forceBuy('${m}','${sym}',${px},${lamps})" class="px-2 py-1 bg-emerald-600 rounded text-white text-[10px]">MUA</button></td>`;
+      tr.innerHTML = `<td class="p-2 font-bold text-white">${sym}</td><td class="p-2"><span class="px-1 py-0.5 rounded text-[10px] ${bg}">${src}</span></td><td class="p-2 text-emerald-400">$${Math.round(mc).toLocaleString()}</td><td class="p-2">${pass?`<span class="text-emerald-400 font-bold">PASS (${bs.toFixed(1)})</span>`:`<span class="text-gray-400">B/S ${bs.toFixed(1)}</span>`}</td><td class="p-2 text-right"><button onclick="forceBuy('${m}','${sym}',${px},${lamps})" class="px-2 py-1 bg-emerald-600 rounded text-white text-[10px]">MUA</button></td>`;
     }
 
+    // --- 7. POSITION MONITORING & PARTIAL TP ---
     async function forceBuy(m, sym, px, lamps) {
       if(openPos[m] || blacklistedMints.has(m)) return;
       const res = await executeBuySell(m, sym, lamps, "BUY");
-      if(res) { openPos[m] = { sym, inPx: px, curPx: px, high: px, amt: res.out, partialSold: false }; renderPos(); }
+      if(res) { openPos[m] = { sym, inPx: px, curPx: px, high: px, amt: res.out, pSold: false }; renderPos(); }
     }
 
     async function monPos() {
       const v = { tp: parseFloat(document.getElementById("c_tp").value), sl: parseFloat(document.getElementById("c_sl").value), arm: parseFloat(document.getElementById("c_tArm").value), off: parseFloat(document.getElementById("c_tOff").value), isPart: document.getElementById("c_partialTp").checked };
       for(let m in openPos) {
         let p = openPos[m]; 
-        if(!ws) p.curPx = p.curPx * (1 + (Math.random()-0.4)*0.1); // Fake nếu tắt WS
+        if(!ws) p.curPx = p.curPx * (1 + (Math.random()-0.4)*0.1); // Fake movement if WS is off
         if(p.curPx > p.high) p.high = p.curPx;
         let pnl = (p.curPx - p.inPx)/p.inPx*100, drop = (p.high - p.curPx)/p.high*100;
         
         if(pnl >= v.tp) {
-          // Tính năng Partial TP 50%
-          if(v.isPart && !p.partialSold) {
-            log("PARTIAL_TP", p.sym, `Chốt 50% tại +${pnl.toFixed(1)}%`, "text-emerald-400");
-            await executeBuySell(m, p.sym, p.amt/2, "SELL");
-            p.amt = p.amt/2; p.partialSold = true;
-          } else if (!v.isPart || p.partialSold) {
-            log("EXIT", p.sym, `TP (+${pnl.toFixed(1)}%)`, "text-emerald-400");
-            await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m];
-          }
+          if(v.isPart && !p.pSold) { log("PARTIAL_TP", p.sym, `Bán 50% chốt lời tại +${pnl.toFixed(1)}%`, "text-emerald-400"); await executeBuySell(m, p.sym, p.amt/2, "SELL"); p.amt /= 2; p.pSold = true; } 
+          else if (!v.isPart || p.pSold) { log("EXIT", p.sym, `TAKE PROFIT (+${pnl.toFixed(1)}%)`, "text-emerald-400"); await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m]; }
         } else if(pnl <= v.sl) {
-          log("EXIT", p.sym, `SL (${pnl.toFixed(1)}%)`, "text-red-400");
-          await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m];
+          log("EXIT", p.sym, `STOP LOSS (${pnl.toFixed(1)}%)`, "text-red-400"); await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m];
         } else if(p.high > p.inPx && ((p.high-p.inPx)/p.inPx*100) >= v.arm && drop >= v.off) {
-          log("EXIT", p.sym, `TRAILING (+${pnl.toFixed(1)}%)`, "text-cyan-400");
-          await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m];
+          log("EXIT", p.sym, `TRAILING STOP (+${pnl.toFixed(1)}%)`, "text-cyan-400"); await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m];
         }
       }
       renderPos();
@@ -419,33 +423,50 @@
 
     function renderPos() {
       const tb = document.getElementById("tb_pos"); document.getElementById("l_pos").textContent = Object.keys(openPos).length;
-      if(!Object.keys(openPos).length) { tb.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Trống.</td></tr>`; return; }
+      if(!Object.keys(openPos).length) { tb.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Chưa có vị thế.</td></tr>`; return; }
       tb.innerHTML = Object.keys(openPos).map(m => {
         let p = openPos[m], pnl = (p.curPx-p.inPx)/p.inPx*100;
-        return `<tr><td class="p-2 font-bold">${p.sym}${p.partialSold?' <span class="text-[9px] text-amber-400">(50%)</span>':''}</td><td class="p-2">${p.inPx.toFixed(6)}</td><td class="p-2">${p.curPx.toFixed(6)}</td><td class="p-2 ${pnl>=0?'text-emerald-400':'text-red-400'} font-bold">${pnl>=0?'+':''}${pnl.toFixed(1)}%</td><td class="p-2 text-right"><button onclick="forceSell('${m}')" class="px-2 py-1 bg-red-600 rounded text-white text-[10px]">BÁN</button></td></tr>`;
+        return `<tr><td class="p-2 font-bold">${p.sym}${p.pSold?' <span class="text-[9px] text-amber-400">(50%)</span>':''}</td><td class="p-2">${p.inPx.toFixed(6)}</td><td class="p-2">${p.curPx.toFixed(6)}</td><td class="p-2 ${pnl>=0?'text-emerald-400':'text-red-400'} font-bold">${pnl>=0?'+':''}${pnl.toFixed(1)}%</td><td class="p-2 text-right"><button onclick="forceSell('${m}')" class="px-2 py-1 bg-red-600 rounded text-white text-[10px]">BÁN</button></td></tr>`;
       }).join('');
     }
     async function forceSell(m){ const p=openPos[m]; await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m]; renderPos(); }
 
-    // --- 6. BACKTEST ---
+    // --- 8. BACKTEST ---
     let bChart = null;
     function runBacktest() {
       initAudio(); const ctx = document.getElementById("btChart").getContext("2d");
       if(bChart) bChart.destroy();
-      let bal = parseFloat(document.getElementById("b_sol").value)||10; const data=[bal];
-      bChart = new Chart(ctx, { type: 'line', data: { labels:['0'], datasets:[{ data, borderColor:'#10b981', tension:0.2, pointRadius:0 }] }, options: { responsive: true, maintainAspectRatio: false, scales:{x:{display:false}}, plugins:{legend:{display:false}} } });
+      const initBal = parseFloat(document.getElementById("b_sol").value)||10; let bal = initBal, peakBal = initBal, maxDd = 0, w = 0, t = 0;
+      bChart = new Chart(ctx, { type: 'line', data: { labels:['0'], datasets:[{ data:[bal], borderColor:'#10b981', tension:0.2, pointRadius:0, borderWidth:2 }] }, options: { responsive:true, maintainAspectRatio:false, scales:{x:{display:false}}, plugins:{legend:{display:false}} } });
       
-      let w=0, t=0, blocked=0;
-      const iv = setInterval(()=>{
-        t++; if(t>60){ clearInterval(iv); return; }
-        let pnl = (Math.random()-0.42)*0.6; // Random
-        bal += pnl; if(pnl>0) w++;
-        if(pnl>0) playSnd("ting"); else playSnd("beep");
+      const v = { sol: parseFloat(document.getElementById("c_sol").value)||0.25, tp: parseFloat(document.getElementById("c_tp").value)||45, sl: parseFloat(document.getElementById("c_sl").value)||-18, arm: parseFloat(document.getElementById("c_tArm").value)||20, off: parseFloat(document.getElementById("c_tOff").value)||10, slip: (parseFloat(document.getElementById("c_slip").value)||250)/10000, jitoFee: ((parseFloat(document.getElementById("c_tip").value)||150000)/LAMPORTS)*2 };
+      const tb = document.getElementById("tb_backtest"), btn = document.getElementById("btnBtStart"); tb.innerHTML = ""; btn.disabled = true; btn.innerHTML = "⏳ ĐANG CHẠY...";
+
+      const iv = setInterval(() => {
+        t++; if(t>40){ clearInterval(iv); btn.disabled=false; btn.innerHTML="▶ CHẠY LẠI"; return; }
+        const sym = `MEME_${t}`, entryPx = 0.0001 + Math.random()*0.0005; let curPx=entryPx, highPx=entryPx, exR="HẾT TIME", exitPx=entryPx, isRug=Math.random()<0.25;
         
-        bChart.data.labels.push(t.toString()); bChart.data.datasets[0].data.push(bal); bChart.data.datasets[0].borderColor=bal>=10?"#10b981":"#ef4444"; bChart.update();
-        document.getElementById("bt_bal").textContent = bal.toFixed(2)+" SOL"; document.getElementById("bt_pnl").textContent = (bal-10).toFixed(2);
-        document.getElementById("bt_win").textContent = Math.round((w/t)*100)+"%";
-      }, document.getElementById("b_spd").value||100);
+        for(let s=1; s<=50; s++) {
+          if(isRug && s===7) curPx*=0.1; else curPx*=(1+(Math.random()-0.48)*0.1);
+          if(curPx>highPx) highPx=curPx;
+          let pnlPct=(curPx-entryPx)/entryPx*100, pkPct=(highPx-entryPx)/entryPx*100, dropPct=(highPx-curPx)/highPx*100;
+          if(pnlPct>=v.tp){ exitPx=entryPx*(1+v.tp/100); exR=`TP (+${v.tp}%)`; break; }
+          if(pnlPct<=v.sl){ exitPx=entryPx*(1+v.sl/100); exR=`SL (${v.sl}%)`; break; }
+          if(pkPct>=v.arm && dropPct>=v.off){ exitPx=highPx*(1-v.off/100); exR=`TRAIL (+${((exitPx-entryPx)/entryPx*100).toFixed(1)}%)`; break; }
+          exitPx=curPx;
+        }
+        
+        const netPnlSol = (v.sol * ((exitPx-entryPx)/entryPx - v.slip*2)) - v.jitoFee;
+        bal += netPnlSol; if(bal>peakBal) peakBal=bal; const dd=(peakBal-bal)/peakBal*100; if(dd>maxDd) maxDd=dd;
+        const isWin = netPnlSol>=0; if(isWin){ w++; playSnd("ting"); } else playSnd("beep");
+        
+        bChart.data.labels.push(t.toString()); bChart.data.datasets[0].data.push(bal); bChart.data.datasets[0].borderColor=bal>=initBal?"#10b981":"#ef4444"; bChart.update();
+        const bd = document.getElementById("bt_bal"); bd.textContent = bal.toFixed(4)+" SOL"; bd.classList.add("flash-up"); setTimeout(()=>bd.classList.remove("flash-up"), 300);
+        document.getElementById("bt_pnl").textContent = (bal-initBal>=0?"+":"")+(bal-initBal).toFixed(4); document.getElementById("bt_pnl").className = `text-xl font-bold font-mono mt-1 ${bal>=initBal?'text-emerald-400':'text-red-400'}`;
+        document.getElementById("bt_win").textContent = Math.round((w/t)*100)+"%"; document.getElementById("bt_mdd").textContent = maxDd.toFixed(2)+"%";
+
+        tb.innerHTML = `<tr class="hover:bg-gray-800/30 transition"><td class="p-2">${t}</td><td class="p-2 font-bold">${sym}</td><td class="p-2">${entryPx.toFixed(6)}</td><td class="p-2 text-cyan-400">+${((highPx-entryPx)/entryPx*100).toFixed(1)}%</td><td class="p-2 ${isWin?'text-emerald-400/80':'text-red-400/80'}">${exR}</td><td class="p-2 text-right font-bold ${isWin?'text-emerald-400':'text-red-400'}">${isWin?'+':''}${netPnlSol.toFixed(4)}</td></tr>` + tb.innerHTML;
+      }, document.getElementById("b_spd").value || 80);
     }
 
     // --- INIT ---
