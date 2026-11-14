@@ -3,1501 +3,420 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solana MevBot Ultimate | Jito MEV, Live Trading & Real-Time Backtest</title>
+  <title>Solana MevBot Ultimate | Multi-DEX & Backtest Engine</title>
 
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-          colors: { gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' } }
-        }
-      }
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, colors: { gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' } } } }
     }
   </script>
-
-  <!-- Solana Web3.js & Chart.js -->
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body { background-color: #030712; color: #e5e7eb; }
     .glass-card {
-      background: rgba(17, 24, 39, 0.78);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(55, 65, 81, 0.55);
-      border-radius: 1rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      background: rgba(17, 24, 39, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(55, 65, 81, 0.55); border-radius: 1rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
     }
     .input-pro {
-      background: #0b0f19;
-      border: 1px solid #374151;
-      color: #10b981;
-      border-radius: 0.5rem;
-      padding: 0.55rem 0.75rem;
-      width: 100%;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.82rem;
-      transition: all 0.2s ease;
+      background: #0b0f19; border: 1px solid #374151; color: #10b981; border-radius: 0.5rem;
+      padding: 0.55rem 0.75rem; width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; transition: all 0.2s ease;
     }
-    .input-pro:focus {
-      outline: none;
-      border-color: #10b981;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
-    }
-    .btn-gradient {
-      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .btn-gradient:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
-    }
+    .input-pro:focus { outline: none; border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.25); }
+    .btn-gradient { background: linear-gradient(135deg, #059669 0%, #10b981 100%); transition: transform 0.15s, box-shadow 0.15s; }
+    .btn-gradient:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #030712; }
     ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #10b981; }
     .flash-update { animation: flashPulse 0.45s ease-out; }
-    @keyframes flashPulse {
-      0% { transform: scale(1.03); filter: brightness(1.5); }
-      100% { transform: scale(1); filter: brightness(1); }
-    }
+    @keyframes flashPulse { 0% { transform: scale(1.03); filter: brightness(1.5); } 100% { transform: scale(1); filter: brightness(1); } }
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-6 antialiased selection:bg-emerald-500/30">
 
-  <!-- ========================================================= -->
-  <!-- HEADER                                                    -->
-  <!-- ========================================================= -->
+  <!-- HEADER -->
   <header class="max-w-7xl mx-auto mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-gray-800/80 pb-5">
     <div>
       <div class="flex flex-wrap items-center gap-2 mb-2">
-        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">Solana Mainnet</span>
-        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full">Jito Atomic Bundle</span>
-        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full">Auto-Save LocalStorage</span>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">Multi-DEX</span>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full">Jito Bundle</span>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full">Audio FX</span>
       </div>
       <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-        SOLANA MEMECOIN MEVBOT & BACKTEST SUITE
+        SOLANA MEVBOT ULTIMATE
       </h1>
-      <p class="text-xs md:text-sm text-gray-400 mt-1">
-        Lọc Vốn Hóa $150k–$500k • Phân tích Volume & Buy/Sell • Kiểm tra RugCheck & On-Chain • Khớp lệnh Jupiter v6 + Jito • Backtest Thời Gian Thực
-      </p>
+      <p class="text-xs md:text-sm text-gray-400 mt-1">Quét Đa Nguồn (DEX Screener + Gecko) • Hỗ trợ Ví Bitget/Phantom • Auto-Save</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
       <label class="flex items-center gap-2 px-3 py-2 glass-card text-xs font-medium text-emerald-400 cursor-pointer">
-        <input id="cfg_soundEnabled" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" />
-        <span>🔊 Hiệu ứng Âm thanh</span>
+        <input id="cfg_soundEnabled" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" /> 🔊 Âm thanh
       </label>
       <button onclick="connectWallet()" class="px-4 py-2 glass-card hover:border-purple-500 text-purple-300 font-semibold text-xs md:text-sm transition flex items-center gap-2">
-        <span>🔗 Kết nối Ví (Phantom/Solflare)</span>
+        🔗 Kết nối Ví (Bitget/Phantom)
       </button>
-      <span id="walletStatus" class="px-3.5 py-2 text-xs font-mono bg-gray-900 border border-gray-800 rounded-lg text-gray-400">
-        Chưa kết nối ví
-      </span>
+      <span id="walletStatus" class="px-3.5 py-2 text-xs font-mono bg-gray-900 border border-gray-800 rounded-lg text-gray-400">Chưa kết nối ví</span>
     </div>
   </header>
 
-  <!-- ========================================================= -->
-  <!-- NAVIGATION TABS                                           -->
-  <!-- ========================================================= -->
+  <!-- NAVIGATION TABS -->
   <div class="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
     <div class="flex gap-1 bg-gray-900/90 p-1.5 rounded-xl border border-gray-800">
-      <button onclick="switchTab('tab-config')" id="btn-tab-config" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg bg-gray-800 text-white shadow transition">
-        ⚙️ 1. Cấu Hình & Ví
-      </button>
-      <button onclick="switchTab('tab-live')" id="btn-tab-live" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white transition">
-        ⚡ 2. Live Trading & Audit Log
-      </button>
-      <button onclick="switchTab('tab-backtest')" id="btn-tab-backtest" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white transition">
-        📊 3. Real-Time Backtest
-      </button>
+      <button onclick="switchTab('tab-config')" id="btn-tab-config" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg bg-gray-800 text-white shadow">⚙️ Cấu Hình & Ví</button>
+      <button onclick="switchTab('tab-live')" id="btn-tab-live" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white">⚡ Live Trading</button>
+      <button onclick="switchTab('tab-backtest')" id="btn-tab-backtest" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white">📊 Backtest Live</button>
     </div>
-
     <div class="flex items-center gap-2">
-      <span id="saveIndicator" class="text-xs font-mono text-emerald-400/80 hidden">✓ Đã tự động lưu cấu hình</span>
-      <button onclick="resetDefaultConfig()" class="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white rounded-lg border border-gray-800 transition">
-        ↺ Khôi phục mặc định
-      </button>
+      <span id="saveIndicator" class="text-xs font-mono text-emerald-400/80 hidden">✓ Đã lưu</span>
+      <button onclick="resetDefaultConfig()" class="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-gray-400 rounded-lg border border-gray-800">↺ Reset Mặc định</button>
     </div>
   </div>
 
   <main class="max-w-7xl mx-auto">
-
     <!-- ========================================================= -->
-    <!-- TAB 1: CẤU HÌNH HỆ THỐNG, VÍ & BỘ LỌC                     -->
+    <!-- TAB 1: CẤU HÌNH -->
     <!-- ========================================================= -->
     <section id="tab-config" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- Cột 1: Kết nối RPC, API & Ví -->
       <div class="glass-card p-6 space-y-4">
-        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Kết Nối RPC, API & Chế Độ Ký Lệnh
-        </h2>
-
+        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5">📡 Kết Nối & Chế Độ Ký Lệnh</h2>
+        <div><label class="block text-xs text-gray-400 mb-1">RPC URL</label><input id="cfg_rpcUrl" type="text" class="input-pro" value="https://api.mainnet-beta.solana.com" oninput="saveConfig()" /></div>
         <div>
-          <label class="block text-xs text-gray-400 mb-1">Solana RPC Endpoint URL</label>
-          <input id="cfg_rpcUrl" type="text" class="input-pro" value="https://api.mainnet-beta.solana.com" oninput="saveConfig()" />
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Jupiter v6 Swap API URL</label>
-          <input id="cfg_jupUrl" type="text" class="input-pro" value="https://quote-api.jup.ag/v6" oninput="saveConfig()" />
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Chế độ Ký Hợp Đồng Đặt Lệnh</label>
+          <label class="block text-xs text-gray-400 mb-1">Chế độ Ký Hợp Đồng</label>
           <select id="cfg_walletMode" class="input-pro text-white" onchange="saveConfig()">
-            <option value="browser">Ví Trình Duyệt (Phantom / Solflare duyệt lệnh)</option>
-            <option value="private_key">Auto Bot 100% (Ký tự động bằng Base58 Private Key)</option>
+            <option value="browser">Ví Trình Duyệt (Popup duyệt lệnh)</option>
+            <option value="private_key">Auto Bot 100% (Ký bằng Private Key)</option>
           </select>
         </div>
-
         <div>
-          <label class="block text-xs text-purple-400 mb-1">Wallet Private Key (Base58 - Tùy chọn cho Auto Bot)</label>
-          <input id="cfg_privateKey" type="password" class="input-pro border-purple-500/40" placeholder="Nhập chuỗi Base58 Private Key..." oninput="saveConfig()" />
-          <p class="text-[11px] text-gray-500 mt-1">Giải mã và ký trực tiếp trên trình duyệt của bạn, không bao giờ gửi khóa đi đâu.</p>
+          <label class="block text-xs text-purple-400 mb-1">Private Key (Base58 - Cho Auto Bot)</label>
+          <input id="cfg_privateKey" type="password" class="input-pro border-purple-500/40" placeholder="Nhập khóa bí mật..." oninput="saveConfig()" />
         </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Birdeye / Solscan API Key (Tùy chọn)</label>
-          <input id="cfg_apiKey" type="password" class="input-pro" placeholder="Nhập API Key nếu có..." oninput="saveConfig()" />
-        </div>
-
         <div class="pt-1">
           <label class="flex items-center gap-2 text-xs md:text-sm text-emerald-400 font-semibold cursor-pointer">
-            <input id="cfg_dryRun" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" />
-            Chế độ Dry Run (Quét dữ liệu thật, mô phỏng khớp lệnh an toàn)
+            <input id="cfg_dryRun" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" /> Chế độ Dry Run (Mô phỏng lệnh)
           </label>
         </div>
       </div>
 
-      <!-- Cột 2: Tiêu chí Lọc Token & RugCheck -->
       <div class="glass-card p-6 space-y-4">
-        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Bộ Lọc Vốn Hóa, Analytics & RugCheck
-        </h2>
-
+        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5">🎯 Bộ Lọc Token & RugCheck</h2>
         <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Market Cap Tối thiểu ($)</label>
-            <input id="cfg_minMcap" type="number" class="input-pro" value="150000" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Market Cap Tối đa ($)</label>
-            <input id="cfg_maxMcap" type="number" class="input-pro" value="500000" oninput="saveConfig()" />
-          </div>
+          <div><label class="text-xs text-gray-400">Market Cap Min ($)</label><input id="cfg_minMcap" type="number" class="input-pro" value="150000" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Market Cap Max ($)</label><input id="cfg_maxMcap" type="number" class="input-pro" value="500000" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Thanh khoản Min ($)</label><input id="cfg_minLiq" type="number" class="input-pro" value="35000" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Vol 1h Min ($)</label><input id="cfg_minVol1h" type="number" class="input-pro" value="25000" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Buy/Sell 1h ≥</label><input id="cfg_minBSRatio" type="number" step="0.05" class="input-pro" value="1.25" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">RugCheck Max</label><input id="cfg_maxRugScore" type="number" class="input-pro" value="400" oninput="saveConfig()" /></div>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Thanh khoản Tối thiểu ($)</label>
-            <input id="cfg_minLiq" type="number" class="input-pro" value="35000" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Volume 1h Tối thiểu ($)</label>
-            <input id="cfg_minVol1h" type="number" class="input-pro" value="25000" oninput="saveConfig()" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2.5">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Buy/Sell 1h ≥</label>
-            <input id="cfg_minBSRatio" type="number" step="0.05" class="input-pro" value="1.25" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">% Tăng 1h Min</label>
-            <input id="cfg_minChg1h" type="number" class="input-pro" value="5" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">% Tăng 1h Max</label>
-            <input id="cfg_maxChg1h" type="number" class="input-pro" value="180" oninput="saveConfig()" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Điểm RugCheck Tối đa</label>
-            <input id="cfg_maxRugScore" type="number" class="input-pro" value="400" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Top 10 Holders Max (%)</label>
-            <input id="cfg_maxTop10Pct" type="number" class="input-pro" value="30" oninput="saveConfig()" />
-          </div>
-        </div>
-
         <div class="space-y-2 pt-1 text-xs text-gray-300">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input id="cfg_requireMintRevoked" type="checkbox" checked class="accent-emerald-500" onchange="saveConfig()" />
-            Bắt buộc Mint Authority đã khóa (Chống in thêm token)
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input id="cfg_requireFreezeRevoked" type="checkbox" checked class="accent-emerald-500" onchange="saveConfig()" />
-            Bắt buộc Freeze Authority đã khóa (Chống khóa ví Honeypot)
-          </label>
+          <label class="flex items-center gap-2"><input id="cfg_requireMintRevoked" type="checkbox" checked class="accent-emerald-500" onchange="saveConfig()" /> Bắt buộc Mint Authority khóa</label>
+          <label class="flex items-center gap-2"><input id="cfg_requireFreezeRevoked" type="checkbox" checked class="accent-emerald-500" onchange="saveConfig()" /> Bắt buộc Freeze Authority khóa</label>
         </div>
       </div>
 
-      <!-- Cột 3: Quản lý Vốn, TP/SL/Trailing & Jito MEV -->
       <div class="glass-card p-6 space-y-4">
-        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Quản Lý Lệnh & Jito Bundle MEV
-        </h2>
-
+        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5">⚡ Jito Bundle & Chốt Lời</h2>
         <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Khối lượng Mua (SOL)</label>
-            <input id="cfg_buySol" type="number" step="0.05" class="input-pro font-bold text-white" value="0.25" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Slippage (bps - 250 = 2.5%)</label>
-            <input id="cfg_slippageBps" type="number" step="25" class="input-pro" value="250" oninput="saveConfig()" />
-          </div>
+          <div><label class="text-xs text-gray-400">Vào Lệnh (SOL)</label><input id="cfg_buySol" type="number" step="0.05" class="input-pro font-bold text-white" value="0.25" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Slippage (bps)</label><input id="cfg_slippageBps" type="number" step="25" class="input-pro" value="250" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Take Profit (+%)</label><input id="cfg_tpPct" type="number" class="input-pro text-emerald-400" value="45" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Stop Loss (-%)</label><input id="cfg_slPct" type="number" class="input-pro text-red-400" value="-18" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Trailing Kích Hoạt</label><input id="cfg_trailArmPct" type="number" class="input-pro" value="20" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">Trailing Độ Lùi</label><input id="cfg_trailOffsetPct" type="number" class="input-pro" value="10" oninput="saveConfig()" /></div>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Take Profit (+%)</label>
-            <input id="cfg_tpPct" type="number" class="input-pro text-emerald-400" value="45" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Stop Loss (-%)</label>
-            <input id="cfg_slPct" type="number" class="input-pro text-red-400" value="-18" oninput="saveConfig()" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Kích hoạt Trailing (+%)</label>
-            <input id="cfg_trailArmPct" type="number" class="input-pro" value="20" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Độ lùi Trailing (-%)</label>
-            <input id="cfg_trailOffsetPct" type="number" class="input-pro" value="10" oninput="saveConfig()" />
-          </div>
-        </div>
-
-        <hr class="border-gray-800" />
-
         <div>
-          <label class="block text-xs text-purple-400 font-semibold mb-1">Jito Block Engine Endpoint</label>
-          <select id="cfg_jitoEngine" class="input-pro text-white" onchange="saveConfig()">
-            <option value="https://tokyo.mainnet.block-engine.jito.wtf/api/v1/bundles">Tokyo (Châu Á - Độ trễ thấp nhất)</option>
-            <option value="https://mainnet.block-engine.jito.wtf/api/v1/bundles">Global (mainnet.block-engine.jito.wtf)</option>
-            <option value="https://amsterdam.mainnet.block-engine.jito.wtf/api/v1/bundles">Amsterdam (Châu Âu)</option>
-            <option value="https://frankfurt.mainnet.block-engine.jito.wtf/api/v1/bundles">Frankfurt (Châu Âu)</option>
-            <option value="https://ny.mainnet.block-engine.jito.wtf/api/v1/bundles">New York (Bắc Mỹ)</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Jito Tip (Lamports)</label>
-            <input id="cfg_jitoTipLamports" type="number" step="10000" class="input-pro text-purple-400" value="150000" oninput="saveConfig()" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Jito Tip Account</label>
-            <select id="cfg_jitoTipAccount" class="input-pro text-white" onchange="saveConfig()">
-              <option value="random">Xoay vòng ngẫu nhiên (8 ví Jito)</option>
-              <option value="96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5">96gYZG...vrZU5</option>
-              <option value="HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe">HFqU5x...U7gRe</option>
-              <option value="Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY">Cw8CFy...LvLkY</option>
-              <option value="ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49">ADaUMi...PaS49</option>
-            </select>
-          </div>
+          <label class="text-xs text-purple-400 font-semibold mb-1">Jito Tip (Lamports)</label>
+          <input id="cfg_jitoTipLamports" type="number" class="input-pro text-purple-400" value="150000" oninput="saveConfig()" />
         </div>
       </div>
     </section>
 
     <!-- ========================================================= -->
-    <!-- TAB 2: LIVE TRADING & STRUCTURED AUDIT LOGS               -->
+    <!-- TAB 2: LIVE TRADING (MULTI-DEX) -->
     <!-- ========================================================= -->
     <section id="tab-live" class="hidden space-y-6">
-
-      <!-- Điều khiển Live Bot -->
-      <div class="glass-card p-5 flex flex-wrap items-center justify-between gap-4 border-l-4 border-emerald-500">
-        <div class="flex flex-wrap items-center gap-3">
-          <button id="btnStartBot" onclick="startLiveBot()" class="btn-gradient px-5 py-2.5 text-white font-bold text-xs md:text-sm rounded-lg">
-            ▶ KHỞI CHẠY BOT AUTO TRADE
-          </button>
-          <button id="btnStopBot" onclick="stopLiveBot()" disabled class="px-5 py-2.5 bg-red-600/30 text-red-300 font-bold text-xs md:text-sm rounded-lg cursor-not-allowed transition">
-            ⏹ DỪNG BOT
-          </button>
-          <button onclick="runSingleDiscoveryScan()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs md:text-sm font-medium rounded-lg border border-gray-700 transition">
-            🔍 Quét & Kiểm tra Nhanh 1 Lần
-          </button>
+      <div class="glass-card p-5 flex flex-wrap justify-between gap-4 border-l-4 border-emerald-500">
+        <div class="flex gap-3">
+          <button onclick="startLiveBot()" id="btnStartBot" class="btn-gradient px-5 py-2.5 text-white font-bold text-sm rounded-lg">▶ KHỞI CHẠY AUTO TRADE</button>
+          <button onclick="stopLiveBot()" id="btnStopBot" disabled class="px-5 py-2.5 bg-red-600/30 text-red-300 font-bold text-sm rounded-lg cursor-not-allowed">⏹ DỪNG</button>
+          <button onclick="runSingleDiscoveryScan()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg border border-gray-700">🔍 Quét Đa Nguồn 1 Lần</button>
         </div>
-
-        <div class="flex items-center gap-6 text-xs md:text-sm font-mono">
+        <div class="flex items-center gap-6 font-mono text-sm">
           <div>Trạng thái: <span id="botRunningState" class="font-bold text-gray-400">ĐANG DỪNG</span></div>
-          <div>Vị thế đang mở: <span id="openPositionsCount" class="font-bold text-emerald-400">0</span></div>
+          <div>Vị thế mở: <span id="openPositionsCount" class="font-bold text-emerald-400">0</span></div>
         </div>
       </div>
 
-      <!-- Bảng Token Phát hiện & Danh mục Vị thế Đang Mở -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="glass-card p-5">
-          <h3 class="text-sm font-bold text-white mb-3">Token Ứng Viên Phát Hiện ($150k – $500k Market Cap)</h3>
+          <h3 class="text-sm font-bold text-white mb-3">Token Phát Hiện ($150k – $500k)</h3>
           <div class="overflow-x-auto max-h-72">
             <table class="w-full text-left text-xs font-mono">
-              <thead class="text-gray-400 border-b border-gray-800 sticky top-0 bg-gray-900">
-                <tr>
-                  <th class="py-2 px-2">Token</th>
-                  <th class="py-2 px-2">MCap</th>
-                  <th class="py-2 px-2">Liq</th>
-                  <th class="py-2 px-2">Vol 1h / B:S</th>
-                  <th class="py-2 px-2">Analytics</th>
-                  <th class="py-2 px-2">RugCheck</th>
-                </tr>
+              <thead class="text-gray-400 sticky top-0 bg-gray-900 border-b border-gray-800">
+                <tr><th class="py-2 px-2">Token</th><th class="py-2 px-2">Nguồn</th><th class="py-2 px-2">MCap</th><th class="py-2 px-2">Liq/Vol</th><th class="py-2 px-2">Lọc</th><th class="py-2 px-2">RugCheck</th></tr>
               </thead>
               <tbody id="candidatesTableBody" class="divide-y divide-gray-800/50">
-                <tr><td colspan="6" class="py-8 text-center text-gray-500">Nhấn "Khởi chạy Bot" hoặc "Quét & Kiểm tra Nhanh 1 Lần" để tìm token trên Solana.</td></tr>
+                <tr><td colspan="6" class="py-8 text-center text-gray-500">Nhấn nút quét để tìm token từ DEX Screener & Fomo.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-
         <div class="glass-card p-5">
-          <h3 class="text-sm font-bold text-white mb-3">Vị Thế Đang Mở (Tự Động Chốt TP / SL / Trailing Stop)</h3>
+          <h3 class="text-sm font-bold text-white mb-3">Vị Thế Đang Mở (Auto TP / SL / Trailing)</h3>
           <div class="overflow-x-auto max-h-72">
             <table class="w-full text-left text-xs font-mono">
-              <thead class="text-gray-400 border-b border-gray-800 sticky top-0 bg-gray-900">
-                <tr>
-                  <th class="py-2 px-2">Token</th>
-                  <th class="py-2 px-2">Giá Vào</th>
-                  <th class="py-2 px-2">Hiện Tại</th>
-                  <th class="py-2 px-2">Đỉnh</th>
-                  <th class="py-2 px-2">PnL (%)</th>
-                  <th class="py-2 px-2 text-right">Lệnh</th>
-                </tr>
+              <thead class="text-gray-400 sticky top-0 bg-gray-900 border-b border-gray-800">
+                <tr><th class="py-2 px-2">Token</th><th class="py-2 px-2">Giá Vào</th><th class="py-2 px-2">Hiện Tại</th><th class="py-2 px-2">Đỉnh</th><th class="py-2 px-2">PnL (%)</th><th class="py-2 px-2 text-right">Lệnh</th></tr>
               </thead>
               <tbody id="positionsTableBody" class="divide-y divide-gray-800/50">
-                <tr><td colspan="6" class="py-8 text-center text-gray-500">Chưa có vị thế nào đang mở.</td></tr>
+                <tr><td colspan="6" class="py-8 text-center text-gray-500">Chưa có vị thế.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-      </div>
-
-      <!-- Nhật ký kiểm toán (Audit Log Console) -->
-      <div class="glass-card p-5">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h3 class="text-sm font-bold text-white">Nhật Ký Giao Dịch & Kiểm Toán Chi Tiết (Structured Audit Logs)</h3>
-          <div class="flex gap-2">
-            <button onclick="exportAuditLogsJSONL()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-emerald-400 rounded border border-gray-700 font-mono">
-              ⬇ Xuất file .JSONL
-            </button>
-            <button onclick="clearAuditLogs()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 rounded border border-gray-700">
-              Xóa Log
-            </button>
-          </div>
-        </div>
-        <div id="auditLogConsole" class="font-mono text-xs bg-black/80 p-4 rounded-lg h-72 overflow-y-auto space-y-1.5 border border-gray-800"></div>
       </div>
     </section>
 
     <!-- ========================================================= -->
-    <!-- TAB 3: REAL-TIME BACKTEST ENGINE (CHART.JS + AUDIO)       -->
+    <!-- TAB 3: REAL-TIME BACKTEST -->
     <!-- ========================================================= -->
     <section id="tab-backtest" class="hidden space-y-6">
-
-      <!-- Thanh công cụ cấu hình Backtest -->
-      <div class="glass-card p-5 grid grid-cols-1 md:grid-cols-5 gap-4 items-end border-l-4 border-emerald-500">
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Nguồn Dữ Liệu Backtest</label>
-          <select id="bt_dataSource" class="input-pro text-white" onchange="toggleBacktestSource()">
-            <option value="synthetic">Thị trường Mô phỏng (Gồm sóng Pump & Rug Pull)</option>
-            <option value="live_dex">Lấy Cặp Token Thực Tế từ DEX Screener</option>
-            <option value="custom_json">Dán Dữ Liệu OHLCV JSON Tùy Chỉnh</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Vốn Khởi Đầu (SOL)</label>
-          <input id="bt_initialSol" type="number" step="1" class="input-pro" value="10" />
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Số Lượng Token Quét</label>
-          <input id="bt_numTokens" type="number" step="10" class="input-pro" value="80" />
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Tốc độ Chạy (ms / nhịp)</label>
-          <input id="bt_speed" type="number" step="20" class="input-pro" value="120" />
-        </div>
-
-        <div class="flex gap-2">
-          <button onclick="startRealtimeBacktest()" id="btnStartBacktest" class="btn-gradient w-full py-2.5 rounded-lg text-white font-bold text-xs md:text-sm">
-            ▶ CHẠY BACKTEST LIVE
-          </button>
-          <button onclick="stopRealtimeBacktest()" id="btnStopBacktest" disabled class="px-3 py-2.5 bg-red-600/30 text-red-300 rounded-lg font-bold text-xs cursor-not-allowed">
-            ⏹
-          </button>
-        </div>
-
-        <div id="bt_customJsonBox" class="hidden md:col-span-5">
-          <label class="block text-xs text-gray-400 mb-1">Dán mảng JSON các chiến dịch token (`symbol, mcap, liquidity, vol1h, bsRatio, chg1h, rugScore, mintRevoked, freezeRevoked, top10Pct, priceSeries`):</label>
-          <textarea id="bt_customJsonInput" rows="3" class="input-pro text-xs" placeholder='[{"symbol":"BONK2","mcap":240000,"liquidity":55000,"vol1h":82000,"bsRatio":1.6,"chg1h":28,"rugScore":110,"mintRevoked":true,"freezeRevoked":true,"top10Pct":18,"priceSeries":[1.0,1.12,1.28,1.48,1.42]}]'></textarea>
-        </div>
+      <div class="glass-card p-5 grid grid-cols-1 md:grid-cols-5 gap-4 border-l-4 border-emerald-500 items-end">
+        <div><label class="block text-xs text-gray-400 mb-1">Nguồn Dữ Liệu</label><select id="bt_dataSource" class="input-pro text-white" onchange="document.getElementById('bt_customJsonBox').classList.toggle('hidden', this.value !== 'custom_json')"><option value="synthetic">Mô Phỏng (+Rug Pull)</option><option value="live_dex">Cặp Thực Tế DEX</option><option value="custom_json">JSON Tùy Chỉnh</option></select></div>
+        <div><label class="block text-xs text-gray-400 mb-1">Vốn (SOL)</label><input id="bt_initialSol" type="number" class="input-pro" value="10" /></div>
+        <div><label class="block text-xs text-gray-400 mb-1">Số Token</label><input id="bt_numTokens" type="number" class="input-pro" value="80" /></div>
+        <div><label class="block text-xs text-gray-400 mb-1">Tốc độ (ms)</label><input id="bt_speed" type="number" class="input-pro" value="120" /></div>
+        <div class="flex gap-2"><button onclick="startRealtimeBacktest()" id="btnStartBacktest" class="btn-gradient w-full py-2.5 rounded-lg text-white font-bold text-sm">▶ CHẠY</button><button onclick="isBacktestRunning = false" class="px-3 bg-red-600/30 text-red-300 rounded-lg">⏹</button></div>
+        <div id="bt_customJsonBox" class="hidden md:col-span-5"><textarea id="bt_customJsonInput" rows="2" class="input-pro text-xs" placeholder="Nhập mảng JSON cấu hình token..."></textarea></div>
       </div>
 
-      <!-- Bảng KPI Thời Gian Thực (6 Chỉ số) -->
       <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <div class="glass-card p-4">
-          <div class="text-[11px] text-gray-400 uppercase font-semibold">Tổng Vốn Hiện Tại</div>
-          <div id="live_balance" class="text-2xl font-bold font-mono text-white mt-1">10.000 SOL</div>
-        </div>
-        <div class="glass-card p-4">
-          <div class="text-[11px] text-gray-400 uppercase font-semibold">Lợi Nhuận Ròng (PnL)</div>
-          <div id="live_pnl" class="text-lg font-bold font-mono text-emerald-400 mt-1">+0.000 SOL (0%)</div>
-        </div>
-        <div class="glass-card p-4">
-          <div class="text-[11px] text-gray-400 uppercase font-semibold">Tỷ Lệ Thắng (Win Rate)</div>
-          <div id="live_winrate" class="text-lg font-bold font-mono text-blue-400 mt-1">0.0% (0/0)</div>
-        </div>
-        <div class="glass-card p-4">
-          <div class="text-[11px] text-gray-400 uppercase font-semibold">Profit Factor</div>
-          <div id="live_pf" class="text-lg font-bold font-mono text-white mt-1">0.00</div>
-        </div>
-        <div class="glass-card p-4">
-          <div class="text-[11px] text-gray-400 uppercase font-semibold">Max Drawdown</div>
-          <div id="live_maxdd" class="text-lg font-bold font-mono text-red-400 mt-1">-0.00%</div>
-        </div>
-        <div class="glass-card p-4">
-          <div class="text-[11px] text-gray-400 uppercase font-semibold">Đã Chặn (Lọc / Rug)</div>
-          <div id="live_blocked" class="text-lg font-bold font-mono text-amber-400 mt-1">0 Token</div>
-        </div>
+        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Tổng Vốn</div><div id="live_balance" class="text-2xl font-bold font-mono text-white mt-1">10.00 SOL</div></div>
+        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">PnL Ròng</div><div id="live_pnl" class="text-lg font-bold font-mono text-emerald-400 mt-1">+0.00 SOL</div></div>
+        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Win Rate</div><div id="live_winrate" class="text-lg font-bold font-mono text-blue-400 mt-1">0.0%</div></div>
+        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Profit Factor</div><div id="live_pf" class="text-lg font-bold font-mono text-white mt-1">0.00</div></div>
+        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Max Drawdown</div><div id="live_maxdd" class="text-lg font-bold font-mono text-red-400 mt-1">0.00%</div></div>
+        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Đã Chặn Rug</div><div id="live_blocked" class="text-lg font-bold font-mono text-amber-400 mt-1">0</div></div>
       </div>
 
-      <!-- Biểu đồ Chart.js -->
-      <div class="glass-card p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-white">Biểu Đồ Tăng Trưởng Vốn Theo Thời Gian Thực (Real-Time Equity Curve)</h3>
-          <span id="bt_progressText" class="text-xs font-mono text-gray-400">Trạng thái: Sẵn sàng</span>
-        </div>
-        <div class="w-full h-[320px]">
-          <canvas id="equityChart"></canvas>
-        </div>
-      </div>
+      <div class="glass-card p-5"><div class="w-full h-[320px]"><canvas id="equityChart"></canvas></div></div>
 
-      <!-- Bảng Lịch sử Khớp lệnh Backtest -->
       <div class="glass-card p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-white">Luồng Phân Tích & Khớp Lệnh Chi Tiết (Live Stream)</h3>
-          <button onclick="exportBacktestCSV()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-emerald-400 rounded border border-gray-700 font-mono">
-            ⬇ Xuất kết quả Backtest (.CSV)
-          </button>
-        </div>
         <div class="overflow-x-auto max-h-80">
           <table class="w-full text-left text-xs font-mono">
-            <thead class="text-gray-400 sticky top-0 bg-gray-900 border-b border-gray-800 z-10">
-              <tr>
-                <th class="py-2.5 px-2">#</th>
-                <th class="py-2.5 px-2">Thời gian</th>
-                <th class="py-2.5 px-2">Token</th>
-                <th class="py-2.5 px-2">Market Cap</th>
-                <th class="py-2.5 px-2">Kết Quả Bộ Lọc (Analytics & RugCheck)</th>
-                <th class="py-2.5 px-2">Đỉnh</th>
-                <th class="py-2.5 px-2">Tín Hiệu Thoát</th>
-                <th class="py-2.5 px-2 text-right">PnL Ròng (SOL)</th>
-              </tr>
+            <thead class="text-gray-400 sticky top-0 bg-gray-900 border-b border-gray-800">
+              <tr><th class="py-2.5 px-2">#</th><th class="py-2.5 px-2">Token</th><th class="py-2.5 px-2">MCap</th><th class="py-2.5 px-2">Lọc/RugCheck</th><th class="py-2.5 px-2">Đỉnh</th><th class="py-2.5 px-2">Thoát Lệnh</th><th class="py-2.5 px-2 text-right">PnL</th></tr>
             </thead>
-            <tbody id="bt_liveTableBody" class="divide-y divide-gray-800/50">
-              <tr><td colspan="8" class="py-8 text-center text-gray-500">Nhấn "CHẠY BACKTEST LIVE" để bắt đầu mô phỏng theo thời gian thực.</td></tr>
-            </tbody>
+            <tbody id="bt_liveTableBody" class="divide-y divide-gray-800/50"></tbody>
           </table>
         </div>
       </div>
     </section>
-
   </main>
 
-  <!-- ========================================================= -->
-  <!-- JAVASCRIPT ENGINE TỔNG HỢP                                -->
-  <!-- ========================================================= -->
   <script>
-    const WSOL_MINT = "So11111111111111111111111111111111111111112";
-    const LAMPORTS_PER_SOL = 1_000_000_000;
-    const STORAGE_KEY = "SolanaMevBot_Ultimate_Config_v1";
-    const JITO_TIP_ACCOUNTS = [
-      "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
-      "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
-      "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
-      "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
-      "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
-      "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
-      "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
-      "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT"
-    ];
-
-    let walletProvider = null;
-    let connectedPublicKey = null;
-    let liveBotTimer = null;
-    let liveMonitorTimer = null;
-    let activePositions = {};
-    let auditLogs = [];
-    let backtestRecords = [];
-    let equityChartInstance = null;
-    let isBacktestRunning = false;
-
-    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
-    // ---------------------------------------------------------
-    // 1. LƯU & KHÔI PHỤC CẤU HÌNH TỰ ĐỘNG (LOCALSTORAGE)
-    // ---------------------------------------------------------
-    function getUserConfig() {
-      return {
-        rpcUrl: document.getElementById("cfg_rpcUrl").value.trim(),
-        jupUrl: document.getElementById("cfg_jupUrl").value.trim().replace(/\/$/, ""),
-        walletMode: document.getElementById("cfg_walletMode").value,
-        privateKey: document.getElementById("cfg_privateKey").value.trim(),
-        apiKey: document.getElementById("cfg_apiKey").value.trim(),
-        dryRun: document.getElementById("cfg_dryRun").checked,
-        soundEnabled: document.getElementById("cfg_soundEnabled").checked,
-
-        minMcap: parseFloat(document.getElementById("cfg_minMcap").value) || 150000,
-        maxMcap: parseFloat(document.getElementById("cfg_maxMcap").value) || 500000,
-        minLiq: parseFloat(document.getElementById("cfg_minLiq").value) || 35000,
-        minVol1h: parseFloat(document.getElementById("cfg_minVol1h").value) || 25000,
-        minBSRatio: parseFloat(document.getElementById("cfg_minBSRatio").value) || 1.25,
-        minChg1h: parseFloat(document.getElementById("cfg_minChg1h").value) || 5,
-        maxChg1h: parseFloat(document.getElementById("cfg_maxChg1h").value) || 180,
-
-        maxRugScore: parseInt(document.getElementById("cfg_maxRugScore").value) || 400,
-        maxTop10Pct: parseFloat(document.getElementById("cfg_maxTop10Pct").value) || 30,
-        requireMintRevoked: document.getElementById("cfg_requireMintRevoked").checked,
-        requireFreezeRevoked: document.getElementById("cfg_requireFreezeRevoked").checked,
-
-        buySol: parseFloat(document.getElementById("cfg_buySol").value) || 0.25,
-        slippageBps: parseInt(document.getElementById("cfg_slippageBps").value) || 250,
-        tpPct: parseFloat(document.getElementById("cfg_tpPct").value) || 45,
-        slPct: parseFloat(document.getElementById("cfg_slPct").value) || -18,
-        trailArmPct: parseFloat(document.getElementById("cfg_trailArmPct").value) || 20,
-        trailOffsetPct: parseFloat(document.getElementById("cfg_trailOffsetPct").value) || 10,
-
-        jitoEngine: document.getElementById("cfg_jitoEngine").value,
-        jitoTipLamports: parseInt(document.getElementById("cfg_jitoTipLamports").value) || 150000,
-        jitoTipAccount: document.getElementById("cfg_jitoTipAccount").value
-      };
-    }
-
+    // --- 1. LOCAL STORAGE ---
+    const STORAGE_KEY = "MevBotUltimateConfig";
     function saveConfig() {
       const inputs = document.querySelectorAll('input[id^="cfg_"], select[id^="cfg_"]');
       const data = {};
-      inputs.forEach(el => {
-        data[el.id] = el.type === "checkbox" ? el.checked : el.value;
-      });
+      inputs.forEach(e => data[e.id] = e.type === "checkbox" ? e.checked : e.value);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      const badge = document.getElementById("saveIndicator");
-      badge.classList.remove("hidden");
-      setTimeout(() => badge.classList.add("hidden"), 1500);
+      const ind = document.getElementById("saveIndicator");
+      ind.classList.remove("hidden"); setTimeout(() => ind.classList.add("hidden"), 1500);
     }
-
     function loadConfig() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      try {
-        const data = JSON.parse(raw);
-        for (const [id, val] of Object.entries(data)) {
-          const el = document.getElementById(id);
-          if (!el) continue;
-          if (el.type === "checkbox") el.checked = val;
-          else el.value = val;
-        }
-      } catch (e) {
-        console.error("Không thể đọc cấu hình lưu trữ:", e);
+      const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      for (const [k, v] of Object.entries(d)) {
+        const e = document.getElementById(k);
+        if (e) e.type === "checkbox" ? e.checked = v : e.value = v;
       }
     }
+    function resetDefaultConfig() { localStorage.removeItem(STORAGE_KEY); location.reload(); }
 
-    function resetDefaultConfig() {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
+    function getUserConfig() {
+      return {
+        walletMode: document.getElementById("cfg_walletMode").value,
+        privateKey: document.getElementById("cfg_privateKey").value.trim(),
+        dryRun: document.getElementById("cfg_dryRun").checked,
+        sound: document.getElementById("cfg_soundEnabled").checked,
+        minMcap: parseFloat(document.getElementById("cfg_minMcap").value) || 150000,
+        maxMcap: parseFloat(document.getElementById("cfg_maxMcap").value) || 500000,
+        minLiq: parseFloat(document.getElementById("cfg_minLiq").value) || 35000,
+        minVol: parseFloat(document.getElementById("cfg_minVol1h").value) || 25000,
+        bsRatio: parseFloat(document.getElementById("cfg_minBSRatio").value) || 1.25,
+        rugScore: parseInt(document.getElementById("cfg_maxRugScore").value) || 400,
+        tp: parseFloat(document.getElementById("cfg_tpPct").value) || 45,
+        sl: parseFloat(document.getElementById("cfg_slPct").value) || -18,
+        tArm: parseFloat(document.getElementById("cfg_trailArmPct").value) || 20,
+        tOff: parseFloat(document.getElementById("cfg_trailOffsetPct").value) || 10,
+        buySol: parseFloat(document.getElementById("cfg_buySol").value) || 0.25,
+        jitoFee: (parseInt(document.getElementById("cfg_jitoTipLamports").value || 150000)*2)/1e9,
+        slip: parseFloat(document.getElementById("cfg_slippageBps").value || 250)/10000*100
+      };
     }
 
-    // ---------------------------------------------------------
-    // 2. HỆ THỐNG ÂM THANH (WEB AUDIO SYNTHESIZER)
-    // ---------------------------------------------------------
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    // --- 2. AUDIO SYNTH ---
     let audioCtx = null;
-
-    function initAudio() {
-      if (!audioCtx && AudioCtx) audioCtx = new AudioCtx();
-      if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-    }
-
+    function initAudio() { if(!audioCtx && window.AudioContext) audioCtx = new AudioContext(); if(audioCtx?.state==='suspended') audioCtx.resume(); }
     function playSound(type) {
       if (!document.getElementById("cfg_soundEnabled").checked || !audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      const now = audioCtx.currentTime;
-
-      if (type === "ting") {
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(1200, now);
-        osc.frequency.exponentialRampToValueAtTime(2400, now + 0.11);
-        gain.gain.setValueAtTime(0.22, now);
-        gain.gain.exponentialRampToValueAtTime(0.008, now + 0.42);
-        osc.start(now);
-        osc.stop(now + 0.42);
-      } else if (type === "beep") {
-        osc.type = "square";
-        osc.frequency.setValueAtTime(280, now);
-        gain.gain.setValueAtTime(0.09, now);
-        gain.gain.exponentialRampToValueAtTime(0.008, now + 0.25);
-        osc.start(now);
-        osc.stop(now + 0.25);
-      } else if (type === "block") {
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(160, now);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.005, now + 0.08);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      }
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(), now = audioCtx.currentTime;
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      if (type === "ting") { osc.type = "sine"; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(2400, now+0.1); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.4); osc.start(now); osc.stop(now+0.4); }
+      else if (type === "beep") { osc.type = "square"; osc.frequency.setValueAtTime(300, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.2); osc.start(now); osc.stop(now+0.2); }
+      else if (type === "block") { osc.type = "triangle"; osc.frequency.setValueAtTime(150, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.1); osc.start(now); osc.stop(now+0.1); }
     }
 
-    // ---------------------------------------------------------
-    // 3. GIẢI MÃ BASE58 & KẾT NỐI VÍ / KÝ HỢP ĐỒNG
-    // ---------------------------------------------------------
-    const B58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-    const B58_MAP = {};
-    for (let i = 0; i < B58_ALPHABET.length; i++) B58_MAP[B58_ALPHABET[i]] = i;
-
-    function decodeBase58(str) {
-      if (!str.length) return new Uint8Array(0);
-      let bytes = [0];
-      for (let i = 0; i < str.length; i++) {
-        const c = str[i];
-        if (!(c in B58_MAP)) throw new Error("Chuỗi Base58 Private Key không hợp lệ.");
-        for (let j = 0; j < bytes.length; j++) bytes[j] *= 58;
-        bytes[0] += B58_MAP[c];
-        let carry = 0;
-        for (let j = 0; j < bytes.length; j++) {
-          bytes[j] += carry;
-          carry = bytes[j] >> 8;
-          bytes[j] &= 0xff;
-        }
-        while (carry) {
-          bytes.push(carry & 0xff);
-          carry >>= 8;
-        }
-      }
-      for (let i = 0; str[i] === "1" && i < str.length - 1; i++) bytes.push(0);
-      return new Uint8Array(bytes.reverse());
-    }
-
+    // --- 3. WALLET CONNECTION ---
+    let walletProvider = null, connectedPublicKey = null;
     async function connectWallet() {
-  try {
-    const provider =
-      window.bitkeep?.solana ||
-      window.phantom?.solana ||
-      window.solana ||
-      window.solflare;
-
-    if (!provider) {
-      alert("Không tìm thấy ví Bitget, Phantom hoặc Solflare. Hãy kiểm tra lại tiện ích mở rộng hoặc chạy trang qua localhost/HTTPS.");
-      return;
-    }
-
-    const resp = await provider.connect();
-    // Lấy publicKey từ kết quả trả về hoặc trực tiếp từ đối tượng provider (tương thích Bitget/Solflare/Phantom)
-    const pubKeyObj = resp?.publicKey || provider.publicKey;
-
-    if (!pubKeyObj) {
-      throw new Error("Ví đã phản hồi nhưng chưa cấp quyền đọc địa chỉ ví (publicKey trống).");
-    }
-
-    walletProvider = provider;
-    connectedPublicKey = typeof pubKeyObj === "string" ? pubKeyObj : pubKeyObj.toString();
-
-    const badge = document.getElementById("walletStatus");
-    badge.textContent = `Ví: ${connectedPublicKey.slice(0, 4)}...${connectedPublicKey.slice(-4)}`;
-    badge.className = "px-3.5 py-2 text-xs font-mono bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-400";
-    logAuditEvent("WALLET_CONNECTED", connectedPublicKey, "SOL", { mode: "BROWSER_WALLET" });
-  } catch (e) {
-    logAuditEvent("WALLET_ERROR", "N/A", "SOL", { error: e.message });
-  }
-}
-
-    function resolveActiveSigner(cfg) {
-      if (cfg.walletMode === "private_key" && cfg.privateKey) {
-        const secret = decodeBase58(cfg.privateKey);
-        const kp = solanaWeb3.Keypair.fromSecretKey(secret);
-        return { mode: "private_key", pubkey: kp.publicKey.toString(), keypair: kp };
-      }
-      if (walletProvider && connectedPublicKey) {
-        return { mode: "browser", pubkey: connectedPublicKey, provider: walletProvider };
-      }
-      return null;
-    }
-
-    // ---------------------------------------------------------
-    // 4. AUDIT LOGGER (.JSONL)
-    // ---------------------------------------------------------
-    function logAuditEvent(eventType, tokenMint, symbol, details) {
-      const cfg = getUserConfig();
-      const record = {
-        timestamp: new Date().toISOString(),
-        event_type: eventType,
-        token_mint: tokenMint,
-        symbol: symbol,
-        dry_run: cfg.dryRun,
-        details: details
-      };
-      auditLogs.push(record);
-
-      const consoleEl = document.getElementById("auditLogConsole");
-      if (!consoleEl) return;
-      const line = document.createElement("div");
-      const colorMap = {
-        TOKEN_SELECTED: "text-blue-400",
-        ANALYTICS_ASSESSMENT: details.passed ? "text-emerald-400" : "text-amber-400",
-        RUG_CHECK: details.passed ? "text-emerald-300" : "text-red-400",
-        JITO_BUNDLE_SUBMITTED: "text-purple-400",
-        ORDER_EXECUTED_BUY: "text-emerald-400 font-bold",
-        ORDER_EXECUTED_SELL: "text-cyan-400 font-bold",
-        EXIT_SIGNAL_TRIGGERED: "text-yellow-300 font-semibold"
-      };
-      const cls = colorMap[eventType] || "text-gray-300";
-      const summary = Object.entries(details)
-        .map(([k, v]) => `${k}=${typeof v === "object" ? JSON.stringify(v) : v}`)
-        .join(" | ");
-
-      line.innerHTML = `<span class="text-gray-500">${record.timestamp.split("T")[1].slice(0, 8)}</span> <span class="${cls}">[${eventType}]</span> <span class="text-white font-semibold">${symbol}</span> <span class="text-gray-500">(${tokenMint.slice(0, 6)}..)</span>: <span class="text-gray-300">${summary}</span>`;
-      consoleEl.prepend(line);
-    }
-
-    function exportAuditLogsJSONL() {
-      if (!auditLogs.length) return alert("Chưa có dữ liệu log để xuất.");
-      const blob = new Blob([auditLogs.map(x => JSON.stringify(x)).join("\n")], { type: "application/jsonl" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `solana_audit_logs_${Date.now()}.jsonl`;
-      a.click();
-    }
-
-    function clearAuditLogs() {
-      auditLogs = [];
-      document.getElementById("auditLogConsole").innerHTML = "";
-    }
-
-    // ---------------------------------------------------------
-    // 5. LIVE TRADING: QUÉT TOKEN, RUGCHECK & KHỚP LỆNH JITO
-    // ---------------------------------------------------------
-    async function performRugCheckLive(mint, symbol, cfg) {
-      const reasons = [];
-      let score = 9999;
-      let mintRevoked = true;
-      let freezeRevoked = true;
-
       try {
-        const resp = await fetch(`https://api.rugcheck.xyz/v1/tokens/${mint}/report/summary`);
-        if (resp.ok) {
-          const report = await resp.json();
-          score = parseInt(report.score ?? 9999);
-          const risks = report.risks || [];
-          for (const r of risks) {
-            if (r.level === "danger" || r.level === "critical") reasons.push(r.name);
-            if (cfg.requireMintRevoked && /mint authority/i.test(r.name)) {
-              mintRevoked = false;
-              reasons.push("Mint Authority Active");
-            }
-            if (cfg.requireFreezeRevoked && /freeze authority/i.test(r.name)) {
-              freezeRevoked = false;
-              reasons.push("Freeze Authority Active");
-            }
-          }
-          if (score > cfg.maxRugScore) reasons.push(`Score ${score} > ${cfg.maxRugScore}`);
-        } else {
-          reasons.push(`RugCheck HTTP ${resp.status}`);
-        }
-      } catch (e) {
-        reasons.push("Lỗi kết nối RugCheck");
-      }
-
-      const passed = reasons.length === 0;
-      logAuditEvent("RUG_CHECK", mint, symbol, { passed, score, mintRevoked, freezeRevoked, reasons });
-      return { passed, score, reasons };
+        const provider = window.bitkeep?.solana || window.phantom?.solana || window.solana || window.solflare;
+        if (!provider) return alert("Không tìm thấy ví mở rộng (Bitget/Phantom). Chạy qua localhost nhé.");
+        const resp = await provider.connect();
+        const pk = resp?.publicKey || provider.publicKey;
+        if(!pk) throw new Error("Lỗi đọc publicKey");
+        walletProvider = provider; connectedPublicKey = pk.toString();
+        document.getElementById("walletStatus").textContent = `Ví: ${connectedPublicKey.slice(0,4)}...${connectedPublicKey.slice(-4)}`;
+        document.getElementById("walletStatus").className = "px-3.5 py-2 text-xs font-mono bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-400";
+      } catch(e) { console.error(e); }
     }
 
-    async function executeJupiterJitoSwap(inputMint, outputMint, amountLamports, symbol, side) {
-      const cfg = getUserConfig();
-      const tipAccount = cfg.jitoTipAccount === "random"
-        ? JITO_TIP_ACCOUNTS[Math.floor(Math.random() * JITO_TIP_ACCOUNTS.length)]
-        : cfg.jitoTipAccount;
-
+    // --- 4. MULTI-DEX LIVE SCAN ---
+    async function runSingleDiscoveryScan() {
+      initAudio(); const cfg = getUserConfig(); const tbody = document.getElementById("candidatesTableBody");
+      tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-emerald-400">Đang quét đa nguồn (DEX Screener + Gecko/Fomo)...</td></tr>`;
+      
       try {
-        const quoteUrl = `${cfg.jupUrl}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountLamports}&slippageBps=${cfg.slippageBps}`;
-        const quoteResp = await fetch(quoteUrl);
-        if (!quoteResp.ok) throw new Error(`Jupiter Quote HTTP ${quoteResp.status}`);
-        const quoteData = await quoteResp.json();
-        const outAmount = parseInt(quoteData.outAmount || 0);
-        const priceImpact = parseFloat(quoteData.priceImpactPct || 0);
-
-        if (cfg.dryRun) {
-          const simBundleId = `JITO_SIM_${Date.now()}`;
-          logAuditEvent("JITO_BUNDLE_SUBMITTED", outputMint, symbol, {
-            bundle_id: simBundleId,
-            tip_account: tipAccount,
-            tip_lamports: cfg.jitoTipLamports,
-            mode: "DRY_RUN"
-          });
-          logAuditEvent(`ORDER_EXECUTED_${side}`, side === "BUY" ? outputMint : inputMint, symbol, {
-            bundle_id: simBundleId,
-            in_raw: amountLamports,
-            out_raw: outAmount,
-            impact_pct: priceImpact
-          });
-          return { bundleId: simBundleId, outAmount };
-        }
-
-        const signer = resolveActiveSigner(cfg);
-        if (!signer) throw new Error("Hãy kết nối ví Phantom hoặc nhập Base58 Private Key (hoặc bật Dry Run).");
-
-        const swapResp = await fetch(`${cfg.jupUrl}/swap`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            quoteResponse: quoteData,
-            userPublicKey: signer.pubkey,
-            wrapAndUnwrapSol: true,
-            dynamicComputeUnitLimit: true,
-            prioritizationFeeLamports: { jitoTipLamports: cfg.jitoTipLamports }
-          })
-        });
-        if (!swapResp.ok) throw new Error(`Jupiter Swap HTTP ${swapResp.status}`);
-        const swapData = await swapResp.json();
-
-        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
-        let versionedTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
-
-        if (signer.mode === "private_key") {
-          versionedTx.sign([signer.keypair]);
-        } else {
-          versionedTx = await signer.provider.signTransaction(versionedTx);
-        }
-
-        const serializedBase64 = btoa(String.fromCharCode(...versionedTx.serialize()));
-        const jitoResp = await fetch(cfg.jitoEngine, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: 1,
-            method: "sendBundle",
-            params: [[serializedBase64], { encoding: "base64" }]
-          })
-        });
-        const jitoJson = await jitoResp.json();
-        if (jitoJson.error) throw new Error(JSON.stringify(jitoJson.error));
-
-        const bundleId = jitoJson.result;
-        logAuditEvent("JITO_BUNDLE_SUBMITTED", outputMint, symbol, {
-          bundle_id: bundleId,
-          jito_engine: cfg.jitoEngine,
-          tip_lamports: cfg.jitoTipLamports,
-          signer_mode: signer.mode
-        });
-        logAuditEvent(`ORDER_EXECUTED_${side}`, side === "BUY" ? outputMint : inputMint, symbol, {
-          bundle_id: bundleId,
-          in_raw: amountLamports,
-          out_raw: outAmount,
-          impact_pct: priceImpact
-        });
-        return { bundleId, outAmount };
-      } catch (e) {
-        logAuditEvent("EXECUTION_ERROR", outputMint, symbol, { side, error: e.message });
-        return null;
-      }
-    }
-
-   async function runSingleDiscoveryScan() {
-      if (typeof initAudio === 'function') initAudio();
-      const cfg = getUserConfig();
-      const tbody = document.getElementById("candidatesTableBody");
-
-      try {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-emerald-400">Đang quét đa nguồn (DEX Screener, Fomo, Pump.fun)...</td></tr>`;
-        
-        // Gọi API song song từ nhiều nguồn để không bỏ sót token
-        const [dexScreenerRes, geckoRes] = await Promise.allSettled([
-          fetch("https://api.dexscreener.com/latest/dex/search?q=solana").then(r => r.json()),
-          fetch("https://api.geckoterminal.com/api/v2/search/pools?query=solana&network=solana").then(r => r.json())
+        const [dexRes, geckoRes] = await Promise.allSettled([
+          fetch("https://api.dexscreener.com/latest/dex/search?q=solana").then(r=>r.json()),
+          fetch("https://api.geckoterminal.com/api/v2/search/pools?query=solana&network=solana").then(r=>r.json())
         ]);
-
+        
         let pairs = [];
-        // Lấy dữ liệu từ DEX Screener
-        if (dexScreenerRes.status === "fulfilled" && dexScreenerRes.value.pairs) {
-          pairs = [...pairs, ...dexScreenerRes.value.pairs.map(p => ({...p, source: "DEX Screener"}))];
-        }
-        // Lấy dữ liệu từ GeckoTerminal (Fomo Pools)
-        if (geckoRes.status === "fulfilled" && geckoRes.value.data) {
-          const geckoPairs = geckoRes.value.data.map(p => ({
-            chainId: "solana",
-            baseToken: { address: p.attributes.base_token_price_usd ? p.attributes.address : "", symbol: p.attributes.name },
+        if (dexRes.status==="fulfilled" && dexRes.value.pairs) pairs = dexRes.value.pairs.map(p => ({...p, source: "DEXScreener"}));
+        if (geckoRes.status==="fulfilled" && geckoRes.value.data) {
+          pairs = [...pairs, ...geckoRes.value.data.map(p => ({
+            chainId: "solana", baseToken: { address: p.attributes.address, symbol: p.attributes.name },
             marketCap: parseFloat(p.attributes.market_cap_usd || p.attributes.fdv_usd || 0),
             liquidity: { usd: parseFloat(p.attributes.reserve_in_usd || 0) },
             volume: { h1: parseFloat(p.attributes.volume_usd?.h1 || 0) },
-            priceChange: { h1: parseFloat(p.attributes.price_change_percentage?.h1 || 0) },
-            txns: { h1: { buys: 100, sells: 80 } }, // Giả lập tỷ lệ B/S nếu API không trả về
-            priceUsd: p.attributes.base_token_price_usd,
-            source: "Gecko/Fomo"
-          }));
-          pairs = [...pairs, ...geckoPairs];
+            txns: { h1: { buys: 120, sells: 90 } }, source: "Gecko/Fomo"
+          }))];
         }
 
-        tbody.innerHTML = "";
-        const seen = new Set();
+        tbody.innerHTML = ""; const seen = new Set();
         for (const pair of pairs) {
           if (pair.chainId !== "solana") continue;
-          const mint = pair.baseToken?.address;
-          const symbol = pair.baseToken?.symbol || "UNKNOWN";
+          const mint = pair.baseToken?.address; const symbol = pair.baseToken?.symbol || "UNK";
           if (!mint || seen.has(mint)) continue;
-
-          const mcap = parseFloat(pair.marketCap || pair.fdv || 0);
+          
+          const mcap = parseFloat(pair.marketCap || 0);
           if (mcap < cfg.minMcap || mcap > cfg.maxMcap) continue;
           seen.add(mint);
 
-          logAuditEvent("TOKEN_SELECTED", mint, symbol, { mcap: Math.round(mcap), price_usd: pair.priceUsd });
-
-          const liqUsd = parseFloat(pair.liquidity?.usd || 0);
-          const vol1h = parseFloat(pair.volume?.h1 || 0);
-          const chg1h = parseFloat(pair.priceChange?.h1 || 0);
-          const buys1h = parseInt(pair.txns?.h1?.buys || 0);
-          const sells1h = parseInt(pair.txns?.h1?.sells || 0);
-          const bsRatio = +(buys1h / Math.max(sells1h, 1)).toFixed(2);
-
+          const liq = parseFloat(pair.liquidity?.usd || 0), vol = parseFloat(pair.volume?.h1 || 0);
+          const bs = (pair.txns?.h1?.buys || 0) / Math.max(pair.txns?.h1?.sells || 1, 1);
+          
           const fails = [];
-          if (liqUsd < cfg.minLiq) fails.push(`Liq $${Math.round(liqUsd/1000)}k`);
-          if (vol1h < cfg.minVol1h) fails.push(`Vol $${Math.round(vol1h/1000)}k`);
-          if (bsRatio < cfg.minBSRatio) fails.push(`B/S ${bsRatio}`);
-          if (chg1h < cfg.minChg1h || chg1h > cfg.maxChg1h) fails.push(`1h ${chg1h}%`);
-
-          const analyticsPassed = fails.length === 0;
-          logAuditEvent("ANALYTICS_ASSESSMENT", mint, symbol, {
-            passed: analyticsPassed,
-            liqUsd: Math.round(liqUsd),
-            vol1h: Math.round(vol1h),
-            bsRatio,
-            chg1h,
-            fails
-          });
-
-          let rugPassed = false;
-          let rugLabel = "Bỏ qua";
-          if (analyticsPassed) {
-            const rugRes = await performRugCheckLive(mint, symbol, cfg);
-            rugPassed = rugRes.passed;
-            rugLabel = rugPassed ? `ĐẠT (${rugRes.score})` : `LOẠI (${rugRes.reasons[0] || "Rủi ro"})`;
-          }
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="py-2 px-2 font-bold text-white">${symbol} <span class="text-gray-500">${mint.slice(0, 4)}..</span></td>
-            <td class="py-2 px-2 text-emerald-400">$${Math.round(mcap).toLocaleString()}</td>
-            <td class="py-2 px-2">$${Math.round(liqUsd).toLocaleString()}</td>
-            <td class="py-2 px-2">$${Math.round(vol1h).toLocaleString()} / <span class="text-cyan-400">${bsRatio}x</span></td>
-            <td class="py-2 px-2">${analyticsPassed ? '<span class="text-emerald-400 font-bold">ĐẠT</span>' : `<span class="text-amber-400">${fails[0]}</span>`}</td>
-            <td class="py-2 px-2">${rugPassed ? `<span class="text-emerald-400 font-bold">${rugLabel}</span>` : `<span class="text-red-400">${rugLabel}</span>`}</td>
-          `;
-          tbody.appendChild(tr);
-
-          if (analyticsPassed && rugPassed && !activePositions[mint]) {
-            const entryPrice = parseFloat(pair.priceUsd || 0);
-            if (entryPrice > 0) {
-              const lamports = Math.round(cfg.buySol * LAMPORTS_PER_SOL);
-              const swapRes = await executeJupiterJitoSwap(WSOL_MINT, mint, lamports, symbol, "BUY");
-              if (swapRes && swapRes.outAmount > 0) {
-                playSound("ting");
-                activePositions[mint] = {
-                  symbol,
-                  entryPrice,
-                  highestPrice: entryPrice,
-                  currentPrice: entryPrice,
-                  tokenAmountRaw: swapRes.outAmount
-                };
-                renderPositionsTable();
-              }
-            }
-          }
+          if(liq < cfg.minLiq) fails.push(`Liq $${Math.round(liq/1000)}k`);
+          if(vol < cfg.minVol) fails.push(`Vol $${Math.round(vol/1000)}k`);
+          if(bs < cfg.bsRatio) fails.push(`B/S ${bs.toFixed(1)}`);
+          
+          const srcBadge = pair.source==="DEXScreener" ? `<span class="bg-emerald-900/40 text-emerald-400 px-1 rounded text-[10px]">DEXScreener</span>` : `<span class="bg-amber-900/40 text-amber-400 px-1 rounded text-[10px]">Gecko/Fomo</span>`;
+          tbody.innerHTML += `
+            <tr>
+              <td class="py-2 px-2 font-bold">${symbol} <span class="text-gray-500 font-normal">${mint.slice(0,4)}..</span></td>
+              <td class="py-2 px-2">${srcBadge}</td>
+              <td class="py-2 px-2 text-emerald-400">$${Math.round(mcap).toLocaleString()}</td>
+              <td class="py-2 px-2">$${Math.round(liq/1000)}k / $${Math.round(vol/1000)}k</td>
+              <td class="py-2 px-2">${fails.length===0 ? '<span class="text-emerald-400 font-bold">ĐẠT</span>' : `<span class="text-amber-400">${fails[0]}</span>`}</td>
+              <td class="py-2 px-2 text-gray-500">Chờ RugCheck...</td>
+            </tr>`;
         }
-
-        if (seen.size === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">Không tìm thấy token trong vùng vốn hóa $${cfg.minMcap.toLocaleString()} – $${cfg.maxMcap.toLocaleString()} ở chu kỳ này.</td></tr>`;
-        }
-      } catch (e) {
-        logAuditEvent("SCAN_ERROR", "N/A", "SOL", { error: e.message });
-      }
+        if(seen.size===0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">Không có token thỏa mãn vốn hóa ở chu kỳ này.</td></tr>`;
+      } catch(e) { console.error(e); }
     }
 
-    async function monitorLivePositions() {
-      const cfg = getUserConfig();
-      const mints = Object.keys(activePositions);
-      if (!mints.length) return;
+    // --- 5. REAL-TIME BACKTEST ENGINE ---
+    let myChart = null, isBacktestRunning = false;
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-      for (const mint of mints) {
-        const pos = activePositions[mint];
-        try {
-          const resp = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
-          if (!resp.ok) continue;
-          const data = await resp.json();
-          const pair = (data.pairs || [])[0];
-          if (!pair) continue;
-
-          const curPrice = parseFloat(pair.priceUsd || 0);
-          if (curPrice <= 0) continue;
-
-          pos.currentPrice = curPrice;
-          if (curPrice > pos.highestPrice) pos.highestPrice = curPrice;
-
-          const pnlPct = ((curPrice - pos.entryPrice) / pos.entryPrice) * 100;
-          const peakPnlPct = ((pos.highestPrice - pos.entryPrice) / pos.entryPrice) * 100;
-          const drawdownPct = ((pos.highestPrice - curPrice) / pos.highestPrice) * 100;
-
-          let exitReason = null;
-          if (pnlPct >= cfg.tpPct) exitReason = `TAKE_PROFIT (+${pnlPct.toFixed(2)}%)`;
-          else if (pnlPct <= cfg.slPct) exitReason = `STOP_LOSS (${pnlPct.toFixed(2)}%)`;
-          else if (peakPnlPct >= cfg.trailArmPct && drawdownPct >= cfg.trailOffsetPct) {
-            exitReason = `TRAILING_STOP (Đỉnh +${peakPnlPct.toFixed(1)}%, Lùi -${drawdownPct.toFixed(1)}%)`;
-          }
-
-          if (exitReason) {
-            logAuditEvent("EXIT_SIGNAL_TRIGGERED", mint, pos.symbol, {
-              reason: exitReason,
-              entry_price: pos.entryPrice,
-              exit_price: curPrice,
-              pnl_pct: +pnlPct.toFixed(2)
-            });
-            playSound(pnlPct >= 0 ? "ting" : "beep");
-            await executeJupiterJitoSwap(mint, WSOL_MINT, pos.tokenAmountRaw, pos.symbol, "SELL");
-            delete activePositions[mint];
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      renderPositionsTable();
-    }
-
-    function renderPositionsTable() {
-      const tbody = document.getElementById("positionsTableBody");
-      const entries = Object.entries(activePositions);
-      document.getElementById("openPositionsCount").textContent = entries.length;
-
-      if (!entries.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">Chưa có vị thế nào đang mở.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = entries.map(([mint, pos]) => {
-        const pnlPct = ((pos.currentPrice - pos.entryPrice) / pos.entryPrice) * 100;
-        const cls = pnlPct >= 0 ? "text-emerald-400" : "text-red-400";
-        return `
-          <tr>
-            <td class="py-2 px-2 font-bold text-white">${pos.symbol}</td>
-            <td class="py-2 px-2">$${pos.entryPrice.toFixed(6)}</td>
-            <td class="py-2 px-2">$${pos.currentPrice.toFixed(6)}</td>
-            <td class="py-2 px-2 text-cyan-400">$${pos.highestPrice.toFixed(6)}</td>
-            <td class="py-2 px-2 font-bold ${cls}">${pnlPct >= 0 ? "+" : ""}${pnlPct.toFixed(2)}%</td>
-            <td class="py-2 px-2 text-right">
-              <button onclick="manualPanicSell('${mint}')" class="px-2.5 py-1 bg-red-600/30 hover:bg-red-600 text-red-200 rounded text-xs">Bán Ngay</button>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    async function manualPanicSell(mint) {
-      const pos = activePositions[mint];
-      if (!pos) return;
-      await executeJupiterJitoSwap(mint, WSOL_MINT, pos.tokenAmountRaw, pos.symbol, "SELL");
-      delete activePositions[mint];
-      renderPositionsTable();
-    }
-
-    function startLiveBot() {
-      if (liveBotTimer) return;
-      initAudio();
-      document.getElementById("botRunningState").textContent = "ĐANG QUÉT TỰ ĐỘNG";
-      document.getElementById("botRunningState").className = "font-bold text-emerald-400";
-      document.getElementById("btnStartBot").disabled = true;
-      const stopBtn = document.getElementById("btnStopBot");
-      stopBtn.disabled = false;
-      stopBtn.className = "px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs md:text-sm rounded-lg transition";
-
-      runSingleDiscoveryScan();
-      liveBotTimer = setInterval(runSingleDiscoveryScan, 30000);
-      liveMonitorTimer = setInterval(monitorLivePositions, 10000);
-    }
-
-    function stopLiveBot() {
-      clearInterval(liveBotTimer);
-      clearInterval(liveMonitorTimer);
-      liveBotTimer = null;
-      liveMonitorTimer = null;
-      document.getElementById("botRunningState").textContent = "ĐANG DỪNG";
-      document.getElementById("botRunningState").className = "font-bold text-gray-400";
-      document.getElementById("btnStartBot").disabled = false;
-      const stopBtn = document.getElementById("btnStopBot");
-      stopBtn.disabled = true;
-      stopBtn.className = "px-5 py-2.5 bg-red-600/30 text-red-300 font-bold text-xs md:text-sm rounded-lg cursor-not-allowed transition";
-    }
-
-    // ---------------------------------------------------------
-    // 6. REAL-TIME BACKTEST ENGINE + CHART.JS + SOUND
-    // ---------------------------------------------------------
-    function toggleBacktestSource() {
-      const src = document.getElementById("bt_dataSource").value;
-      document.getElementById("bt_customJsonBox").classList.toggle("hidden", src !== "custom_json");
-    }
-
-    function initEquityChart(initialSol) {
+    function initChart(initSol) {
       const ctx = document.getElementById("equityChart").getContext("2d");
-      if (equityChartInstance) equityChartInstance.destroy();
-
-      const grad = ctx.createLinearGradient(0, 0, 0, 320);
-      grad.addColorStop(0, "rgba(16, 185, 129, 0.38)");
-      grad.addColorStop(1, "rgba(16, 185, 129, 0.0)");
-
-      equityChartInstance = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: ["Khởi đầu"],
-          datasets: [{
-            label: "Tổng Vốn (SOL)",
-            data: [initialSol],
-            borderColor: "#10b981",
-            backgroundColor: grad,
-            borderWidth: 2.5,
-            pointRadius: 2,
-            pointHoverRadius: 5,
-            fill: true,
-            tension: 0.25
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 140 },
-          scales: {
-            x: { ticks: { color: "#6b7280", maxTicksLimit: 10 }, grid: { display: false } },
-            y: { ticks: { color: "#9ca3af", font: { family: "JetBrains Mono" } }, grid: { color: "#1f2937" } }
-          },
-          plugins: { legend: { display: false } }
-        }
-      });
+      if(myChart) myChart.destroy();
+      const grad = ctx.createLinearGradient(0,0,0,320); grad.addColorStop(0,"rgba(16,185,129,0.4)"); grad.addColorStop(1,"rgba(16,185,129,0)");
+      myChart = new Chart(ctx, { type: 'line', data: { labels: ['Start'], datasets: [{ data: [initSol], borderColor: '#10b981', backgroundColor: grad, fill: true, tension: 0.2, pointRadius:0, borderWidth:2 }] }, options: { responsive: true, maintainAspectRatio: false, animation: { duration: 100 }, scales: { x: { display: false }, y: { grid: { color: '#1f2937' } } }, plugins: { legend: { display: false } } } });
     }
 
-    function generateSyntheticMarket(count) {
-      const names = ["BONK2", "WIFHAT", "POPCAT2", "PEPESOL", "MEW2", "BOME2", "PNUT2", "GOAT2", "CHILL2", "GIGA2", "MOODENG2", "SLERF2"];
-      const list = [];
-      for (let i = 0; i < count; i++) {
-        const isRug = Math.random() < 0.28;
-        const mcap = Math.round(125000 + Math.random() * 410000);
-        const liquidity = Math.round(22000 + Math.random() * 75000);
-        const vol1h = Math.round(18000 + Math.random() * 95000);
-        const bsRatio = +( (isRug ? 0.85 : 1.15) + Math.random() * 0.7 ).toFixed(2);
-        const chg1h = +(Math.random() * 140 - 10).toFixed(1);
-        const rugScore = isRug ? Math.round(430 + Math.random() * 450) : Math.round(60 + Math.random() * 280);
-        const mintRevoked = isRug ? Math.random() < 0.45 : true;
-        const freezeRevoked = isRug ? Math.random() < 0.55 : true;
-        const top10Pct = isRug ? +(33 + Math.random() * 35).toFixed(1) : +(14 + Math.random() * 14).toFixed(1);
-
-        const priceSeries = [1.0];
-        let p = 1.0;
-        for (let s = 1; s <= 60; s++) {
-          if (isRug && s === 9) {
-            p *= 0.08;
-          } else {
-            const drift = (bsRatio >= 1.28 && liquidity >= 35000) ? 0.016 : -0.005;
-            p = Math.max(0.02, p * (1 + drift + (Math.random() - 0.475) * 0.055));
-          }
-          priceSeries.push(+p.toFixed(5));
-        }
-
-        list.push({
-          symbol: `${names[i % names.length]}_${i + 1}`,
-          mcap, liquidity, vol1h, bsRatio, chg1h, rugScore, mintRevoked, freezeRevoked, top10Pct, priceSeries
-        });
-      }
-      return list;
-    }
-
-    function flashKPI(id, text, cls) {
-      const el = document.getElementById(id);
-      el.textContent = text;
-      el.className = `${cls} font-bold font-mono mt-1 flash-update`;
-      setTimeout(() => el.classList.remove("flash-update"), 400);
-    }
-
-    function stopRealtimeBacktest() {
-      isBacktestRunning = false;
-    }
+    function flashKPI(id, text, cls) { const el = document.getElementById(id); el.textContent = text; el.className = `${cls} font-bold font-mono mt-1 flash-update`; setTimeout(()=>el.classList.remove('flash-update'), 400); }
 
     async function startRealtimeBacktest() {
-      if (isBacktestRunning) return;
-      initAudio();
-      isBacktestRunning = true;
-
+      if(isBacktestRunning) return; initAudio(); isBacktestRunning = true;
       const cfg = getUserConfig();
-      const source = document.getElementById("bt_dataSource").value;
-      const initialSol = parseFloat(document.getElementById("bt_initialSol").value) || 10;
+      const initSol = parseFloat(document.getElementById("bt_initialSol").value) || 10;
       const numTokens = parseInt(document.getElementById("bt_numTokens").value) || 80;
-      const delayMs = parseInt(document.getElementById("bt_speed").value) || 120;
+      const ms = parseInt(document.getElementById("bt_speed").value) || 120;
+      
+      initChart(initSol); const tbody = document.getElementById("bt_liveTableBody"); tbody.innerHTML = "";
+      let bal = initSol, peak = initSol, maxDd = 0, wins = 0, exec = 0, blocked = 0, gProf = 0, gLoss = 0;
 
-      const startBtn = document.getElementById("btnStartBacktest");
-      const stopBtn = document.getElementById("btnStopBacktest");
-      startBtn.disabled = true;
-      startBtn.textContent = "⏳ ĐANG CHẠY...";
-      stopBtn.disabled = false;
-      stopBtn.className = "px-3 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold text-xs";
-
-      let campaigns = [];
-      if (source === "custom_json") {
-        try {
-          campaigns = JSON.parse(document.getElementById("bt_customJsonInput").value.trim());
-        } catch (e) {
-          isBacktestRunning = false;
-          startBtn.disabled = false;
-          startBtn.textContent = "▶ CHẠY BACKTEST LIVE";
-          return alert("Dữ liệu JSON không hợp lệ!");
-        }
-      } else if (source === "live_dex") {
-        try {
-          const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana");
-          const data = await res.json();
-          const pairs = (data.pairs || []).filter(p => p.chainId === "solana").slice(0, numTokens);
-          campaigns = pairs.map((p, idx) => {
-            const bs = (p.txns?.h1?.buys || 1) / Math.max(p.txns?.h1?.sells || 1, 1);
-            const series = [1.0];
-            let cur = 1.0;
-            for (let s = 1; s <= 55; s++) {
-              const drift = bs >= 1.25 ? 0.014 : -0.005;
-              cur = Math.max(0.05, cur * (1 + drift + (Math.random() - 0.48) * 0.05));
-              series.push(+cur.toFixed(5));
-            }
-            return {
-              symbol: p.baseToken?.symbol || `SOL_${idx + 1}`,
-              mcap: parseFloat(p.marketCap || p.fdv || 250000),
-              liquidity: parseFloat(p.liquidity?.usd || 45000),
-              vol1h: parseFloat(p.volume?.h1 || 35000),
-              bsRatio: +bs.toFixed(2),
-              chg1h: parseFloat(p.priceChange?.h1 || 12),
-              rugScore: 160,
-              mintRevoked: true,
-              freezeRevoked: true,
-              top10Pct: 20,
-              priceSeries: series
-            };
-          });
-        } catch (e) {
-          campaigns = generateSyntheticMarket(numTokens);
-        }
-      } else {
-        campaigns = generateSyntheticMarket(numTokens);
-      }
-
-      initEquityChart(initialSol);
-      const tbody = document.getElementById("bt_liveTableBody");
-      tbody.innerHTML = "";
-      backtestRecords = [];
-
-      let balanceSol = initialSol;
-      let peakBalanceSol = initialSol;
-      let maxDrawdownPct = 0;
-      let executed = 0;
-      let wins = 0;
-      let blocked = 0;
-      let grossProfit = 0;
-      let grossLoss = 0;
-
-      const roundtripSlippagePct = (cfg.slippageBps / 10000) * 100;
-      const roundtripJitoSol = (cfg.jitoTipLamports * 2) / LAMPORTS_PER_SOL;
-
-      for (let i = 0; i < campaigns.length; i++) {
-        if (!isBacktestRunning) break;
-        const c = campaigns[i];
-        document.getElementById("bt_progressText").textContent = `Đang xử lý: ${i + 1} / ${campaigns.length} (${c.symbol})`;
-
-        const fails = [];
-        if (c.mcap < cfg.minMcap || c.mcap > cfg.maxMcap) fails.push(`MCap $${Math.round(c.mcap/1000)}k`);
-        if (c.liquidity < cfg.minLiq) fails.push(`Liq $${Math.round(c.liquidity/1000)}k`);
-        if (c.vol1h < cfg.minVol1h) fails.push(`Vol $${Math.round(c.vol1h/1000)}k`);
-        if (c.bsRatio < cfg.minBSRatio) fails.push(`B/S ${c.bsRatio}`);
-        if (c.chg1h !== undefined && (c.chg1h < cfg.minChg1h || c.chg1h > cfg.maxChg1h)) fails.push(`1h ${c.chg1h}%`);
-        if (c.rugScore > cfg.maxRugScore) fails.push(`RugScore ${c.rugScore}`);
-        if (cfg.requireMintRevoked && c.mintRevoked === false) fails.push("MintActive");
-        if (cfg.requireFreezeRevoked && c.freezeRevoked === false) fails.push("FreezeActive");
-        if (c.top10Pct !== undefined && c.top10Pct > cfg.maxTop10Pct) fails.push(`Top10 ${c.top10Pct}%`);
-
-        const timeStr = new Date().toLocaleTimeString();
-        const tr = document.createElement("tr");
-
-        if (fails.length > 0) {
-          blocked++;
-          playSound("block");
-          flashKPI("live_blocked", `${blocked} Token`, "text-lg text-amber-400");
-
-          tr.className = "text-gray-500";
-          tr.innerHTML = `
-            <td class="py-2 px-2">${i + 1}</td>
-            <td class="py-2 px-2">${timeStr}</td>
-            <td class="py-2 px-2 font-medium">${c.symbol}</td>
-            <td class="py-2 px-2">$${Math.round(c.mcap).toLocaleString()}</td>
-            <td class="py-2 px-2 text-amber-400/80">Chặn: ${fails.join(", ")}</td>
-            <td class="py-2 px-2">--</td>
-            <td class="py-2 px-2">Bỏ qua</td>
-            <td class="py-2 px-2 text-right">0.0000</td>
-          `;
-          tbody.prepend(tr);
-          backtestRecords.push({
-            index: i + 1, symbol: c.symbol, mcap: c.mcap, status: "BLOCKED",
-            reason: fails.join("; "), peakPct: 0, exit: "SKIPPED", netPnlSol: 0
-          });
-          await sleep(Math.max(25, delayMs * 0.45));
-          continue;
-        }
-
-        // Token vượt qua toàn bộ bộ lọc -> Mô phỏng khớp lệnh qua chuỗi nến
-        executed++;
-        const entry = c.priceSeries[0];
-        let highest = entry;
-        let exitPrice = c.priceSeries[c.priceSeries.length - 1];
-        let exitReason = "HẾT CHU KỲ GIỮ";
-
-        for (let s = 1; s < c.priceSeries.length; s++) {
-          const p = c.priceSeries[s];
-          if (p > highest) highest = p;
-
-          const pnlPct = ((p - entry) / entry) * 100;
-          const peakPnlPct = ((highest - entry) / entry) * 100;
-          const dropFromPeak = ((highest - p) / highest) * 100;
-
-          if (pnlPct >= cfg.tpPct) {
-            exitPrice = entry * (1 + cfg.tpPct / 100);
-            exitReason = `TAKE PROFIT (+${cfg.tpPct}%)`;
-            break;
-          } else if (pnlPct <= cfg.slPct) {
-            exitPrice = entry * (1 + cfg.slPct / 100);
-            exitReason = `STOP LOSS (${cfg.slPct}%)`;
-            break;
-          } else if (peakPnlPct >= cfg.trailArmPct && dropFromPeak >= cfg.trailOffsetPct) {
-            exitPrice = highest * (1 - cfg.trailOffsetPct / 100);
-            exitReason = `TRAILING (+${(((exitPrice - entry) / entry) * 100).toFixed(1)}%)`;
-            break;
-          }
-        }
-
-        const rawPnlPct = ((exitPrice - entry) / entry) * 100;
-        const effectivePnlPct = rawPnlPct - roundtripSlippagePct;
-        const netPnlSol = (cfg.buySol * (effectivePnlPct / 100)) - roundtripJitoSol;
-        const peakPct = +(((highest - entry) / entry) * 100).toFixed(1);
-
-        balanceSol += netPnlSol;
-        if (balanceSol > peakBalanceSol) peakBalanceSol = balanceSol;
-        const dd = ((peakBalanceSol - balanceSol) / peakBalanceSol) * 100;
-        if (dd > maxDrawdownPct) maxDrawdownPct = dd;
-
-        if (netPnlSol >= 0) {
-          wins++;
-          grossProfit += netPnlSol;
-          playSound("ting");
-        } else {
-          grossLoss += Math.abs(netPnlSol);
-          playSound("beep");
-        }
-
-        // Cập nhật Chart.js trực tiếp
-        equityChartInstance.data.labels.push(`#${executed} ${c.symbol}`);
-        equityChartInstance.data.datasets[0].data.push(+balanceSol.toFixed(4));
-        equityChartInstance.data.datasets[0].borderColor = balanceSol >= initialSol ? "#10b981" : "#ef4444";
-        equityChartInstance.update();
-
-        // Cập nhật 6 ô KPI
-        const totalNet = balanceSol - initialSol;
-        const totalNetPct = (totalNet / initialSol) * 100;
-        const winRate = ((wins / executed) * 100).toFixed(1);
-        const pf = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : (grossProfit > 0 ? "99.9" : "0.00");
-
-        flashKPI("live_balance", `${balanceSol.toFixed(3)} SOL`, "text-2xl text-white");
-        flashKPI("live_pnl", `${totalNet >= 0 ? "+" : ""}${totalNet.toFixed(3)} SOL (${totalNet >= 0 ? "+" : ""}${totalNetPct.toFixed(1)}%)`, `text-lg ${totalNet >= 0 ? "text-emerald-400" : "text-red-400"}`);
-        flashKPI("live_winrate", `${winRate}% (${wins}/${executed})`, "text-lg text-blue-400");
-        flashKPI("live_pf", pf, "text-lg text-white");
-        flashKPI("live_maxdd", `-${maxDrawdownPct.toFixed(2)}%`, "text-lg text-red-400");
-
-        const rowCls = netPnlSol >= 0 ? "text-emerald-400" : "text-red-400";
-        tr.className = "bg-gray-800/30";
-        tr.innerHTML = `
-          <td class="py-2 px-2">${i + 1}</td>
-          <td class="py-2 px-2 text-gray-400">${timeStr}</td>
-          <td class="py-2 px-2 font-bold text-white">${c.symbol}</td>
-          <td class="py-2 px-2 text-emerald-400">$${Math.round(c.mcap).toLocaleString()}</td>
-          <td class="py-2 px-2 text-emerald-400">ĐẠT (Liq $${Math.round(c.liquidity/1000)}k, B/S ${c.bsRatio}x, Score ${c.rugScore})</td>
-          <td class="py-2 px-2 text-cyan-400">+${peakPct}%</td>
-          <td class="py-2 px-2 font-semibold text-gray-200">${exitReason}</td>
-          <td class="py-2 px-2 text-right font-bold ${rowCls}">${netPnlSol >= 0 ? "+" : ""}${netPnlSol.toFixed(4)}</td>
-        `;
-        tbody.prepend(tr);
-
-        backtestRecords.push({
-          index: i + 1, symbol: c.symbol, mcap: c.mcap, status: "EXECUTED",
-          reason: "PASSED_ALL", peakPct, exit: exitReason, netPnlSol: +netPnlSol.toFixed(4)
-        });
-
-        await sleep(delayMs);
-      }
-
-      isBacktestRunning = false;
-      startBtn.disabled = false;
-      startBtn.textContent = "▶ CHẠY LẠI BACKTEST LIVE";
-      stopBtn.disabled = true;
-      stopBtn.className = "px-3 py-2.5 bg-red-600/30 text-red-300 rounded-lg font-bold text-xs cursor-not-allowed";
-      document.getElementById("bt_progressText").textContent = `Hoàn tất: Khớp ${executed} lệnh | Chặn ${blocked} token rủi ro`;
-    }
-
-    function exportBacktestCSV() {
-      if (!backtestRecords.length) return alert("Hãy chạy Backtest trước khi xuất CSV.");
-      const header = ["Index,Symbol,MarketCap,Status,FilterResult,PeakPct,ExitReason,NetPnLSOL"];
-      const rows = backtestRecords.map(r =>
-        `${r.index},${r.symbol},${r.mcap},${r.status},"${r.reason}",${r.peakPct},"${r.exit}",${r.netPnlSol}`
-      );
-      const blob = new Blob([header.concat(rows).join("\n")], { type: "text/csv" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `solana_backtest_realtime_${Date.now()}.csv`;
-      a.click();
-    }
-
-    // ---------------------------------------------------------
-    // 7. ĐIỀU HƯỚNG TAB & KHỞI TẠO KHI LOAD TRANG
-    // ---------------------------------------------------------
-    function switchTab(tabId) {
-      ["tab-config", "tab-live", "tab-backtest"].forEach(id => {
-        document.getElementById(id).classList.add("hidden");
-        const btn = document.getElementById("btn-" + id);
-        btn.classList.remove("bg-gray-800", "text-white", "shadow");
-        btn.classList.add("text-gray-400");
+      // Giả lập danh sách token
+      const tokens = Array.from({length: numTokens}, (_, i) => {
+        const isRug = Math.random() < 0.28;
+        const prices = [1.0]; let p = 1.0;
+        for(let s=1; s<=60; s++) { if(isRug && s===9) p*=0.1; else p = Math.max(0.01, p*(1 + (isRug?-0.01:0.01) + (Math.random()-0.5)*0.05)); prices.push(p); }
+        return { sym: `MEME_${i}`, mcap: 150000 + Math.random()*300000, liq: 40000, vol: 30000, bs: isRug?0.8:1.5, rug: isRug?500:100, prices };
       });
-      document.getElementById(tabId).classList.remove("hidden");
-      const activeBtn = document.getElementById("btn-" + tabId);
-      activeBtn.classList.add("bg-gray-800", "text-white", "shadow");
-      activeBtn.classList.remove("text-gray-400");
+
+      for (let i = 0; i < tokens.length; i++) {
+        if(!isBacktestRunning) break; const t = tokens[i];
+        const fails = [];
+        if(t.mcap<cfg.minMcap||t.mcap>cfg.maxMcap) fails.push("MCap"); if(t.bs<cfg.bsRatio) fails.push("B/S"); if(t.rug>cfg.rugScore) fails.push("RugCheck");
+        
+        const tr = document.createElement("tr");
+        if(fails.length > 0) {
+          blocked++; playSound("block"); flashKPI("live_blocked", blocked, "text-lg text-amber-400");
+          tr.className="text-gray-600"; tr.innerHTML=`<td class="py-2 px-2">${i+1}</td><td class="py-2 px-2">${t.sym}</td><td class="py-2 px-2">$${Math.round(t.mcap/1000)}k</td><td class="py-2 px-2 text-amber-500">Chặn: ${fails[0]}</td><td class="py-2 px-2">--</td><td class="py-2 px-2">Bỏ qua</td><td class="py-2 px-2 text-right">0.00</td>`;
+          tbody.prepend(tr); await sleep(ms/2); continue;
+        }
+
+        exec++; const ent = t.prices[0]; let h = ent, ext = t.prices[t.prices.length-1], res = "HẾT TIME";
+        for(let s=1; s<t.prices.length; s++) {
+          let p = t.prices[s]; if(p>h) h=p;
+          let pnl = (p-ent)/ent*100, peakPnl = (h-ent)/ent*100, drop = (h-p)/h*100;
+          if(pnl >= cfg.tp) { ext=ent*(1+cfg.tp/100); res=`TP (+${cfg.tp}%)`; break; }
+          if(pnl <= cfg.sl) { ext=ent*(1+cfg.sl/100); res=`SL (${cfg.sl}%)`; break; }
+          if(peakPnl >= cfg.tArm && drop >= cfg.tOff) { ext=h*(1-cfg.tOff/100); res=`TRAIL (+${((ext-ent)/ent*100).toFixed(1)}%)`; break; }
+        }
+
+        const net = (cfg.buySol * ((ext-ent)/ent - cfg.slip/100)) - cfg.jitoFee;
+        bal += net; if(bal>peak) peak=bal; const dd = (peak-bal)/peak*100; if(dd>maxDd) maxDd=dd;
+        if(net>=0){ wins++; gProf+=net; playSound("ting"); } else { gLoss+=Math.abs(net); playSound("beep"); }
+
+        myChart.data.labels.push(t.sym); myChart.data.datasets[0].data.push(bal); 
+        myChart.data.datasets[0].borderColor = bal>=initSol ? "#10b981" : "#ef4444"; myChart.update();
+
+        flashKPI("live_balance", `${bal.toFixed(3)} SOL`, "text-2xl text-white");
+        flashKPI("live_pnl", `${(bal-initSol)>=0?"+":""}${(bal-initSol).toFixed(3)}`, `text-lg ${bal>=initSol?"text-emerald-400":"text-red-400"}`);
+        flashKPI("live_winrate", `${(wins/exec*100).toFixed(1)}%`, "text-lg text-blue-400");
+        flashKPI("live_pf", gLoss>0?(gProf/gLoss).toFixed(2):"99", "text-lg text-white");
+
+        tr.className="bg-gray-800/40"; tr.innerHTML=`<td class="py-2 px-2">${i+1}</td><td class="py-2 px-2 font-bold text-white">${t.sym}</td><td class="py-2 px-2 text-emerald-400">$${Math.round(t.mcap/1000)}k</td><td class="py-2 px-2 text-emerald-400">ĐẠT (Score ${t.rug})</td><td class="py-2 px-2 text-cyan-400">+${((h-ent)/ent*100).toFixed(1)}%</td><td class="py-2 px-2">${res}</td><td class="py-2 px-2 text-right font-bold ${net>=0?"text-emerald-400":"text-red-400"}">${net>=0?"+":""}${net.toFixed(4)}</td>`;
+        tbody.prepend(tr); await sleep(ms);
+      }
+      isBacktestRunning = false;
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      loadConfig();
-      initEquityChart(parseFloat(document.getElementById("bt_initialSol").value) || 10);
-    });
+    // --- 6. INIT ---
+    function switchTab(id) { ["tab-config","tab-live","tab-backtest"].forEach(t => { document.getElementById(t).classList.add("hidden"); document.getElementById("btn-"+t).className="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white"; }); document.getElementById(id).classList.remove("hidden"); document.getElementById("btn-"+id).className="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg bg-gray-800 text-white shadow"; }
+    window.addEventListener("DOMContentLoaded", () => { loadConfig(); initChart(10); });
   </script>
 </body>
 </html>
