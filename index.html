@@ -698,7 +698,7 @@
 
     async function connectWallet() {
       try {
-        const provider = window.phantom?.solana || window.solana || window.solflare;
+        const provider = window.bitkeep?.solana || window.phantom?.solana || window.solana || window.solflare;
         if (!provider) {
           alert("Không tìm thấy ví Phantom hoặc Solflare trên trình duyệt. Bạn vẫn có thể dùng chế độ Dry Run hoặc nhập Base58 Private Key.");
           return;
