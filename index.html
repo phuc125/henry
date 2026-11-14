@@ -697,23 +697,37 @@
     }
 
     async function connectWallet() {
-      try {
-        const provider = window.bitkeep?.solana || window.phantom?.solana || window.solana || window.solflare;
-        if (!provider) {
-          alert("Không tìm thấy ví Phantom hoặc Solflare trên trình duyệt. Bạn vẫn có thể dùng chế độ Dry Run hoặc nhập Base58 Private Key.");
-          return;
-        }
-        const resp = await provider.connect();
-        walletProvider = provider;
-        connectedPublicKey = resp.publicKey.toString();
-        const badge = document.getElementById("walletStatus");
-        badge.textContent = `Ví: ${connectedPublicKey.slice(0, 4)}...${connectedPublicKey.slice(-4)}`;
-        badge.className = "px-3.5 py-2 text-xs font-mono bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-400";
-        logAuditEvent("WALLET_CONNECTED", connectedPublicKey, "SOL", { mode: "BROWSER_WALLET" });
-      } catch (e) {
-        logAuditEvent("WALLET_ERROR", "N/A", "SOL", { error: e.message });
-      }
+  try {
+    const provider =
+      window.bitkeep?.solana ||
+      window.phantom?.solana ||
+      window.solana ||
+      window.solflare;
+
+    if (!provider) {
+      alert("Không tìm thấy ví Bitget, Phantom hoặc Solflare. Hãy kiểm tra lại tiện ích mở rộng hoặc chạy trang qua localhost/HTTPS.");
+      return;
     }
+
+    const resp = await provider.connect();
+    // Lấy publicKey từ kết quả trả về hoặc trực tiếp từ đối tượng provider (tương thích Bitget/Solflare/Phantom)
+    const pubKeyObj = resp?.publicKey || provider.publicKey;
+
+    if (!pubKeyObj) {
+      throw new Error("Ví đã phản hồi nhưng chưa cấp quyền đọc địa chỉ ví (publicKey trống).");
+    }
+
+    walletProvider = provider;
+    connectedPublicKey = typeof pubKeyObj === "string" ? pubKeyObj : pubKeyObj.toString();
+
+    const badge = document.getElementById("walletStatus");
+    badge.textContent = `Ví: ${connectedPublicKey.slice(0, 4)}...${connectedPublicKey.slice(-4)}`;
+    badge.className = "px-3.5 py-2 text-xs font-mono bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-400";
+    logAuditEvent("WALLET_CONNECTED", connectedPublicKey, "SOL", { mode: "BROWSER_WALLET" });
+  } catch (e) {
+    logAuditEvent("WALLET_ERROR", "N/A", "SOL", { error: e.message });
+  }
+}
 
     function resolveActiveSigner(cfg) {
       if (cfg.walletMode === "private_key" && cfg.privateKey) {
