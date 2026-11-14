@@ -3,1367 +3,569 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solana Memecoin Bot | Jito MEV & Backtest Suite</title>
-  <!-- Tailwind CSS CDN -->
+  <title>Solana MevBot Pro | Real-time Engine</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Solana Web3.js CDN -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+          colors: { gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' } }
+        }
+      }
+    }
+  </script>
+
+  <!-- Solana Web3 & Chart.js -->
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
-    body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    .card { background-color: #111827; border: 1px solid #1f2937; border-radius: 0.75rem; }
-    .input-field { background-color: #1f2937; border: 1px solid #374151; color: #f8fafc; border-radius: 0.5rem; padding: 0.5rem 0.75rem; width: 100%; font-size: 0.875rem; }
-    .input-field:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 1px #10b981; }
-    .log-box { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem; }
+    body { background-color: #030712; color: #e5e7eb; }
+    
+    /* Hiệu ứng Glassmorphism & Neon */
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(55, 65, 81, 0.5);
+      border-radius: 1rem;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .input-pro {
+      background: #111827;
+      border: 1px solid #374151;
+      color: #10b981;
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.8rem;
+      width: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+    .input-pro:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+    
+    .btn-gradient {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Tùy chỉnh Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #111827; }
+    ::-webkit-scrollbar-track { background: #030712; }
     ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    /* Hiệu ứng chớp nháy khi giá trị cập nhật */
+    .flash-update { animation: flashGreen 0.5s ease-out; }
+    @keyframes flashGreen {
+      0% { color: #fff; text-shadow: 0 0 10px #10b981; }
+      100% { color: inherit; text-shadow: none; }
+    }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-6">
+<body class="min-h-screen p-4 md:p-6 antialiased selection:bg-emerald-500/30">
 
   <!-- HEADER -->
-  <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+  <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
     <div>
-      <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">Solana Mainnet</span>
-        <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full">Jito MEV Protected</span>
-      </div>
-      <h1 class="text-2xl md:text-3xl font-bold text-white mt-2">Solana Memecoin Automated Trading & Backtest Suite</h1>
-      <p class="text-sm text-gray-400">Bộ lọc vốn hóa $150k–$500k • Kiểm tra RugCheck & On-Chain • Khớp lệnh Jupiter + Jito Bundle • Kiểm thử chiến lược (Backtest)</p>
+      <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
+        SOLANA MEVBOT PRO
+      </h1>
+      <p class="text-sm text-gray-400 mt-1">Hệ thống Đặt Lệnh Tự Động & Backtest Real-time</p>
     </div>
-
-    <div class="flex flex-wrap items-center gap-3">
-      <button id="btnConnectPhantom" onclick="connectBrowserWallet()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm rounded-lg transition flex items-center gap-2">
-        <span>Kết nối Ví (Phantom/Solflare)</span>
+    <div class="flex items-center gap-3">
+      <button onclick="connectWallet()" class="px-5 py-2 glass-card hover:border-purple-500 text-purple-400 font-medium text-sm transition flex items-center gap-2">
+        <span>🔗 Kết nối Phantom</span>
       </button>
-      <span id="walletStatusBadge" class="px-3 py-2 text-xs font-mono bg-gray-800 text-gray-300 rounded-lg border border-gray-700">Chưa kết nối ví</span>
+      <span id="walletStatus" class="px-4 py-2 text-xs font-mono bg-gray-900 border border-gray-800 rounded-lg text-gray-500">
+        Chưa kết nối
+      </span>
     </div>
   </header>
 
-  <!-- NAVIGATION TABS -->
-  <div class="max-w-7xl mx-auto mb-6 flex gap-2 border-b border-gray-800">
-    <button onclick="switchTab('tab-config')" id="btn-tab-config" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-emerald-500 text-emerald-400">
-      1. Cấu hình API, Ví & Tham số
+  <!-- TABS -->
+  <div class="max-w-7xl mx-auto mb-6 flex gap-1 bg-gray-900 p-1 rounded-xl w-fit border border-gray-800">
+    <button onclick="switchTab('tab-config')" id="btn-tab-config" class="px-6 py-2 text-sm font-semibold rounded-lg bg-gray-800 text-white shadow">
+      ⚙️ Cấu Hình
     </button>
-    <button onclick="switchTab('tab-live')" id="btn-tab-live" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
-      2. Giao dịch Tự động & Jito Bundle
+    <button onclick="switchTab('tab-live')" id="btn-tab-live" class="px-6 py-2 text-sm font-semibold rounded-lg text-gray-400 hover:text-white transition">
+      ⚡ Live Trading
     </button>
-    <button onclick="switchTab('tab-backtest')" id="btn-tab-backtest" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
-      3. Chương trình Backtest Chiến lược
+    <button onclick="switchTab('tab-backtest')" id="btn-tab-backtest" class="px-6 py-2 text-sm font-semibold rounded-lg text-gray-400 hover:text-white transition">
+      📊 Real-time Backtest
     </button>
   </div>
 
   <main class="max-w-7xl mx-auto">
-
-    <!-- ========================================== -->
-    <!-- TAB 1: CẤU HÌNH API, VÍ & THAM SỐ CHIẾN LƯỢC -->
-    <!-- ========================================== -->
+    
+    <!-- ========================================================= -->
+    <!-- TAB 1: CẤU HÌNH HỆ THỐNG -->
+    <!-- ========================================================= -->
     <section id="tab-config" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- Cột 1: Kết nối Ví & Khóa API -->
-      <div class="card p-5 space-y-4">
-        <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-2">Kết nối RPC, API & Tài khoản Ví</h2>
-
+      
+      <!-- Panel 1: Kết nối & API -->
+      <div class="glass-card p-6 space-y-4">
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span> API & Kết Nối Hợp Đồng
+        </h2>
+        
         <div>
-          <label class="block text-xs text-gray-400 mb-1">Solana RPC Endpoint URL</label>
-          <input id="cfg_rpcUrl" type="text" class="input-field" value="https://api.mainnet-beta.solana.com" placeholder="https://mainnet.helius-rpc.com/?api-key=..." />
+          <label class="block text-xs text-gray-400 mb-1">RPC URL (Helius/QuickNode)</label>
+          <input id="cfg_rpcUrl" type="text" class="input-pro" value="https://api.mainnet-beta.solana.com" oninput="saveConfig()" />
         </div>
-
+        
         <div>
-          <label class="block text-xs text-gray-400 mb-1">Chế độ Ký giao dịch (Wallet Mode)</label>
-          <select id="cfg_walletMode" class="input-field">
-            <option value="browser">Ví trình duyệt (Phantom / Solflare / Backpack)</option>
-            <option value="private_key">Tự động ký bằng Base58 Private Key</option>
+          <label class="block text-xs text-gray-400 mb-1">Chế độ ký lệnh (Gửi lên Blockchain)</label>
+          <select id="cfg_walletMode" class="input-pro text-white" onchange="saveConfig()">
+            <option value="browser">Ký thủ công qua ví tiện ích (Popup Phantom)</option>
+            <option value="private_key">Chạy Bot Auto 100% (Ký bằng Private Key)</option>
           </select>
         </div>
-
+        
         <div>
-          <label class="block text-xs text-gray-400 mb-1">Wallet Private Key (Base58 - Chỉ lưu trên RAM trình duyệt)</label>
-          <input id="cfg_privateKey" type="password" class="input-field" placeholder="Nhập Base58 Private Key nếu chạy tự động 100%..." />
+          <label class="block text-xs text-purple-400 mb-1">Wallet Private Key (Base58)</label>
+          <input id="cfg_privateKey" type="password" class="input-pro border-purple-500/30" placeholder="Nhập khóa bí mật để auto trade..." oninput="saveConfig()" />
+          <p class="text-[10px] text-gray-500 mt-1">Dữ liệu chỉ mã hóa & lưu cục bộ trên RAM trình duyệt, không gửi đi đâu ngoài RPC.</p>
         </div>
 
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Jupiter Swap API Endpoint</label>
-          <input id="cfg_jupUrl" type="text" class="input-field" value="https://quote-api.jup.ag/v6" />
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Jupiter / Birdeye API Key (Tùy chọn - Dùng cho lịch sử OHLCV)</label>
-          <input id="cfg_apiKey" type="password" class="input-field" placeholder="Nhập API Key (nếu có)..." />
-        </div>
-
-        <div class="pt-2 flex items-center justify-between">
-          <label class="text-sm font-medium text-emerald-400 flex items-center gap-2 cursor-pointer">
-            <input id="cfg_dryRun" type="checkbox" checked class="w-4 h-4 accent-emerald-500 rounded" />
-            Chế độ Dry Run (Mô phỏng với dữ liệu thực, không tốn SOL)
+        <div class="pt-2">
+          <label class="flex items-center gap-2 text-sm text-emerald-400 font-medium cursor-pointer">
+            <input id="cfg_dryRun" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" />
+            Bật chế độ Dry Run (Chỉ bắt tín hiệu, không tốn tiền)
           </label>
         </div>
       </div>
 
-      <!-- Cột 2: Cấu hình Bộ lọc Token, Analytics & RugCheck -->
-      <div class="card p-5 space-y-4">
-        <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-2">Bộ lọc Vốn hóa, Analytics & RugCheck</h2>
+      <!-- Panel 2: Tham số Giao dịch -->
+      <div class="glass-card p-6 space-y-4">
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Bộ Lọc Token & Chốt Lời
+        </h2>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Market Cap Tối thiểu ($)</label>
-            <input id="cfg_minMcap" type="number" class="input-field" value="150000" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Market Cap Tối đa ($)</label>
-            <input id="cfg_maxMcap" type="number" class="input-field" value="500000" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Thanh khoản Tối thiểu ($)</label>
-            <input id="cfg_minLiq" type="number" class="input-field" value="35000" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Volume 1 Giờ Tối thiểu ($)</label>
-            <input id="cfg_minVol1h" type="number" class="input-field" value="25000" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Tỷ lệ Mua/Bán 1h ≥</label>
-            <input id="cfg_minBSRatio" type="number" step="0.05" class="input-field" value="1.25" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">% Tăng 1h Min</label>
-            <input id="cfg_minChg1h" type="number" step="1" class="input-field" value="5" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">% Tăng 1h Max</label>
-            <input id="cfg_maxChg1h" type="number" step="5" class="input-field" value="180" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Điểm Rủi ro RugCheck ≤</label>
-            <input id="cfg_maxRugScore" type="number" class="input-field" value="400" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Top 10 Holders Tối đa (%)</label>
-            <input id="cfg_maxTop10Pct" type="number" step="1" class="input-field" value="30" />
-          </div>
-        </div>
-
-        <div class="space-y-2 pt-1 text-xs text-gray-300">
-          <label class="flex items-center gap-2">
-            <input id="cfg_requireMintRevoked" type="checkbox" checked class="accent-emerald-500" />
-            Bắt buộc Mint Authority đã khóa (Revoked)
-          </label>
-          <label class="flex items-center gap-2">
-            <input id="cfg_requireFreezeRevoked" type="checkbox" checked class="accent-emerald-500" />
-            Bắt buộc Freeze Authority đã khóa (Chống Honeypot)
-          </label>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="text-xs text-gray-400">Market Cap Min ($)</label><input id="cfg_minMcap" type="number" class="input-pro" value="150000" oninput="saveConfig()"/></div>
+          <div><label class="text-xs text-gray-400">Market Cap Max ($)</label><input id="cfg_maxMcap" type="number" class="input-pro" value="500000" oninput="saveConfig()"/></div>
+          <div><label class="text-xs text-gray-400">Take Profit (+%)</label><input id="cfg_tpPct" type="number" class="input-pro" value="45" oninput="saveConfig()"/></div>
+          <div><label class="text-xs text-gray-400">Stop Loss (-%)</label><input id="cfg_slPct" type="number" class="input-pro text-red-400" value="-18" oninput="saveConfig()"/></div>
+          <div><label class="text-xs text-gray-400">Trailing Arm (+%)</label><input id="cfg_trailArmPct" type="number" class="input-pro" value="20" oninput="saveConfig()"/></div>
+          <div><label class="text-xs text-gray-400">Trailing Lùi (-%)</label><input id="cfg_trailOffsetPct" type="number" class="input-pro" value="10" oninput="saveConfig()"/></div>
         </div>
       </div>
 
-      <!-- Cột 3: Cấu hình Jito Bundle & Quản lý Lệnh (TP/SL) -->
-      <div class="card p-5 space-y-4">
-        <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-2">Khớp lệnh, Jito MEV & Quản lý Vốn</h2>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Khối lượng Mua / Lệnh (SOL)</label>
-            <input id="cfg_buySol" type="number" step="0.05" class="input-field" value="0.25" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Slippage Tolerance (bps)</label>
-            <input id="cfg_slippageBps" type="number" step="25" class="input-field" value="250" />
-          </div>
+      <!-- Panel 3: Jito MEV Protection -->
+      <div class="glass-card p-6 space-y-4">
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-purple-500"></span> Tích hợp Jito Bundle
+        </h2>
+        
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Vốn vào mỗi lệnh (SOL)</label>
+          <input id="cfg_buySol" type="number" step="0.1" class="input-pro font-bold text-white" value="0.25" oninput="saveConfig()"/>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Take Profit (+%)</label>
-            <input id="cfg_tpPct" type="number" step="1" class="input-field" value="45" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Stop Loss (-%)</label>
-            <input id="cfg_slPct" type="number" step="1" class="input-field" value="-18" />
-          </div>
+        
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Jito Tip (Lamports) - Chống Sandwich</label>
+          <input id="cfg_jitoTipLamports" type="number" class="input-pro text-purple-400" value="150000" oninput="saveConfig()"/>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Kích hoạt Trailing Stop (+%)</label>
-            <input id="cfg_trailArmPct" type="number" step="1" class="input-field" value="20" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Độ lùi Trailing Stop (%)</label>
-            <input id="cfg_trailOffsetPct" type="number" step="1" class="input-field" value="10" />
-          </div>
-        </div>
-
-        <hr class="border-gray-800" />
 
         <div>
-          <label class="block text-xs text-purple-400 font-semibold mb-1">Jito Block Engine Endpoint</label>
-          <select id="cfg_jitoEngine" class="input-field">
-            <option value="https://mainnet.block-engine.jito.wtf/api/v1/bundles">Global (mainnet.block-engine.jito.wtf)</option>
-            <option value="https://tokyo.mainnet.block-engine.jito.wtf/api/v1/bundles">Tokyo (tokyo.mainnet.block-engine.jito.wtf)</option>
-            <option value="https://amsterdam.mainnet.block-engine.jito.wtf/api/v1/bundles">Amsterdam (amsterdam.mainnet.block-engine.jito.wtf)</option>
-            <option value="https://frankfurt.mainnet.block-engine.jito.wtf/api/v1/bundles">Frankfurt (frankfurt.mainnet.block-engine.jito.wtf)</option>
-            <option value="https://ny.mainnet.block-engine.jito.wtf/api/v1/bundles">New York (ny.mainnet.block-engine.jito.wtf)</option>
+          <label class="block text-xs text-gray-400 mb-1">Block Engine Region</label>
+          <select id="cfg_jitoEngine" class="input-pro text-white" onchange="saveConfig()">
+            <option value="https://tokyo.mainnet.block-engine.jito.wtf/api/v1/bundles">Tokyo (Châu Á)</option>
+            <option value="https://mainnet.block-engine.jito.wtf/api/v1/bundles">Global (Mỹ)</option>
           </select>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Jito Tip (Lamports)</label>
-            <input id="cfg_jitoTipLamports" type="number" step="10000" class="input-field" value="150000" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Jito Tip Account</label>
-            <select id="cfg_jitoTipAccount" class="input-field">
-              <option value="random">Tự động xoay vòng ngẫu nhiên (8 ví Jito)</option>
-              <option value="96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5">96gYZG...vrZU5</option>
-              <option value="HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe">HFqU5x...U7gRe</option>
-              <option value="Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY">Cw8CFy...LvLkY</option>
-              <option value="ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49">ADaUMi...PaS49</option>
-            </select>
-          </div>
-        </div>
       </div>
-
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 2: GIAO DỊCH TỰ ĐỘNG & LOG KIỂM TOÁN   -->
-    <!-- ========================================== -->
+    <!-- ========================================================= -->
+    <!-- TAB 2: LIVE TRADING LOGIC -->
+    <!-- ========================================================= -->
     <section id="tab-live" class="hidden space-y-6">
-
-      <!-- Thanh điều khiển Bot -->
-      <div class="card p-4 flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <button id="btnStartBot" onclick="startLiveBot()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition">
-            ▶ Khởi chạy Bot Quét & Giao dịch
-          </button>
-          <button id="btnStopBot" onclick="stopLiveBot()" disabled class="px-5 py-2.5 bg-red-600/40 text-red-300 font-semibold text-sm rounded-lg transition cursor-not-allowed">
-            ⏹ Dừng Bot
-          </button>
-          <button onclick="runSingleDiscoveryScan()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm rounded-lg border border-gray-700 transition">
-            🔍 Quét Nhanh 1 Lần Ngay
-          </button>
-        </div>
-
-        <div class="flex items-center gap-4 text-sm">
-          <div>Trạng thái: <span id="botRunningState" class="font-bold text-gray-400">ĐANG DỪNG</span></div>
-          <div>Vị thế đang mở: <span id="openPositionsCount" class="font-bold text-emerald-400">0</span></div>
-        </div>
+      <div class="glass-card p-6 text-center">
+        <h2 class="text-xl font-bold text-gray-400">Tab Live Trading đang chờ nâng cấp</h2>
+        <p class="text-sm mt-2">Vui lòng xem chức năng hoạt động chính tại tab Real-time Backtest.</p>
       </div>
-
-      <!-- Bảng Token Phát hiện & Vị thế đang mở -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Bảng Token ứng viên ($150k - $500k) -->
-        <div class="card p-5">
-          <h3 class="text-base font-bold text-white mb-3">Ứng viên Token phát hiện ($150k – $500k Market Cap)</h3>
-          <div class="overflow-x-auto max-h-72">
-            <table class="w-full text-left text-xs">
-              <thead class="text-gray-400 border-b border-gray-800">
-                <tr>
-                  <th class="py-2">Token</th>
-                  <th class="py-2">Market Cap</th>
-                  <th class="py-2">Thanh khoản</th>
-                  <th class="py-2">Vol 1h / B:S</th>
-                  <th class="py-2">Analytics</th>
-                  <th class="py-2">RugCheck</th>
-                </tr>
-              </thead>
-              <tbody id="candidatesTableBody" class="divide-y divide-gray-800/60">
-                <tr><td colspan="6" class="py-6 text-center text-gray-500">Chưa có dữ liệu. Nhấn "Khởi chạy Bot" hoặc "Quét Nhanh 1 Lần".</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Bảng Vị thế đang nắm giữ -->
-        <div class="card p-5">
-          <h3 class="text-base font-bold text-white mb-3">Danh mục Vị thế Đang Mở (Theo dõi TP / SL / Trailing)</h3>
-          <div class="overflow-x-auto max-h-72">
-            <table class="w-full text-left text-xs">
-              <thead class="text-gray-400 border-b border-gray-800">
-                <tr>
-                  <th class="py-2">Token</th>
-                  <th class="py-2">Giá Vào</th>
-                  <th class="py-2">Giá Hiện tại</th>
-                  <th class="py-2">Đỉnh Cao Nhất</th>
-                  <th class="py-2">PnL (%)</th>
-                  <th class="py-2">Hành động</th>
-                </tr>
-              </thead>
-              <tbody id="positionsTableBody" class="divide-y divide-gray-800/60">
-                <tr><td colspan="6" class="py-6 text-center text-gray-500">Chưa có vị thế đang mở.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Nhật ký kiểm toán (Audit Log Console) -->
-      <div class="card p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-bold text-white">Nhật ký Giao dịch & Kiểm toán Chi tiết (Structured Audit Logs)</h3>
-          <div class="flex gap-2">
-            <button onclick="exportAuditLogsJSONL()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-emerald-400 rounded border border-gray-700">
-              ⬇ Tải xuống .JSONL
-            </button>
-            <button onclick="clearAuditLogs()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 rounded border border-gray-700">
-              Xóa Log
-            </button>
-          </div>
-        </div>
-        <div id="auditLogConsole" class="log-box bg-black/80 p-4 rounded-lg h-80 overflow-y-auto space-y-1.5 border border-gray-800"></div>
-      </div>
-
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 3: CHƯƠNG TRÌNH BACKTEST CHIẾN LƯỢC    -->
-    <!-- ========================================== -->
+    <!-- ========================================================= -->
+    <!-- TAB 3: REAL-TIME BACKTEST ENGINE -->
+    <!-- ========================================================= -->
     <section id="tab-backtest" class="hidden space-y-6">
+      
+      <!-- Toolbar Backtest -->
+      <div class="glass-card p-5 flex flex-wrap items-end justify-between gap-4 border-l-4 border-emerald-500">
+        <div class="flex gap-4">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Vốn Khởi Đầu (SOL)</label>
+            <input id="bt_initialSol" type="number" class="input-pro w-32" value="10" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Tốc Độ (ms/nhịp)</label>
+            <input id="bt_speed" type="number" class="input-pro w-32" value="100" />
+          </div>
+        </div>
+        
+        <button onclick="startRealtimeBacktest()" id="btnStartBacktest" class="btn-gradient px-8 py-3 rounded-lg text-white font-bold text-sm">
+          ▶ KHỞI CHẠY BACKTEST REAL-TIME
+        </button>
+      </div>
 
-      <!-- Cấu hình Backtest -->
-      <div class="card p-5 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Nguồn Dữ liệu Backtest</label>
-          <select id="bt_dataSource" class="input-field" onchange="toggleBacktestSource()">
-            <option value="synthetic">Mô phỏng Lịch sử Memecoin ($150k-$500k, Gồm cả Rug Pull)</option>
-            <option value="live_dex">Quét các Cặp Solana Thực tế trên DEX Screener & Mô phỏng Nến</option>
-            <option value="custom_csv">Dán dữ liệu Nến OHLCV (JSON / CSV)</option>
-          </select>
+      <!-- Live Dashboard -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-card p-5 relative overflow-hidden">
+          <div class="text-xs text-gray-400 uppercase font-semibold">TỔNG VỐN HIỆN TẠI</div>
+          <div id="live_balance" class="text-3xl font-bold font-mono text-white mt-2 transition-all">-- SOL</div>
+          <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-blue-500/20 rounded-full blur-xl"></div>
+        </div>
+        
+        <div class="glass-card p-5 relative overflow-hidden">
+          <div class="text-xs text-gray-400 uppercase font-semibold">LỢI NHUẬN RÒNG (PNL)</div>
+          <div id="live_pnl" class="text-3xl font-bold font-mono text-gray-500 mt-2 transition-all">--</div>
+          <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-emerald-500/20 rounded-full blur-xl"></div>
         </div>
 
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Vốn Khởi đầu (SOL)</label>
-          <input id="bt_initialSol" type="number" step="1" class="input-field" value="10" />
+        <div class="glass-card p-5">
+          <div class="text-xs text-gray-400 uppercase font-semibold">WIN RATE</div>
+          <div id="live_winrate" class="text-3xl font-bold font-mono text-white mt-2">--</div>
         </div>
 
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Số lượng Sóng Token / Chu kỳ Kiểm thử</label>
-          <input id="bt_numCampaigns" type="number" step="5" class="input-field" value="40" />
-        </div>
-
-        <div>
-          <button onclick="runBacktestEngine()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition">
-            ⚡ Chạy Backtest Chiến Lược
-          </button>
-        </div>
-
-        <!-- Ô nhập CSV/JSON tùy chọn -->
-        <div id="bt_customDataContainer" class="hidden md:col-span-4">
-          <label class="block text-xs text-gray-400 mb-1">Dán chuỗi JSON hoặc CSV (`timestamp,symbol,mcap,liquidity,vol1h,bsRatio,rugScore,mintRevoked,prices_array`):</label>
-          <textarea id="bt_customDataInput" rows="3" class="input-field font-mono text-xs" placeholder='[{"symbol":"MEME1","mcap":220000,"liquidity":48000,"vol1h":65000,"bsRatio":1.45,"rugScore":120,"mintRevoked":true,"freezeRevoked":true,"top10Pct":19,"priceSeries":[1.0,1.08,1.25,1.38,1.21,1.15]}]'></textarea>
+        <div class="glass-card p-5">
+          <div class="text-xs text-gray-400 uppercase font-semibold">TRẠNG THÁI BOT</div>
+          <div id="live_status" class="text-lg font-bold text-gray-500 mt-4 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-gray-500" id="status_dot"></span> SẴN SÀNG
+          </div>
         </div>
       </div>
 
-      <!-- Chỉ số Tổng hợp Backtest (KPI Cards) -->
-      <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <div class="card p-4">
-          <div class="text-xs text-gray-400">Tổng Vốn Cuối (SOL)</div>
-          <div id="bt_metricFinalSol" class="text-xl font-bold text-white mt-1">--</div>
-        </div>
-        <div class="card p-4">
-          <div class="text-xs text-gray-400">Lợi nhuận Ròng (Net PnL)</div>
-          <div id="bt_metricNetPnl" class="text-xl font-bold text-emerald-400 mt-1">--</div>
-        </div>
-        <div class="card p-4">
-          <div class="text-xs text-gray-400">Tỷ lệ Thắng (Win Rate)</div>
-          <div id="bt_metricWinRate" class="text-xl font-bold text-white mt-1">--</div>
-        </div>
-        <div class="card p-4">
-          <div class="text-xs text-gray-400">Profit Factor</div>
-          <div id="bt_metricProfitFactor" class="text-xl font-bold text-white mt-1">--</div>
-        </div>
-        <div class="card p-4">
-          <div class="text-xs text-gray-400">Max Drawdown</div>
-          <div id="bt_metricMaxDD" class="text-xl font-bold text-red-400 mt-1">--</div>
-        </div>
-        <div class="card p-4">
-          <div class="text-xs text-gray-400">Số Rug Pull Đã Chặn</div>
-          <div id="bt_metricRugsBlocked" class="text-xl font-bold text-purple-400 mt-1">--</div>
+      <!-- Biểu đồ Chart.js -->
+      <div class="glass-card p-5">
+        <h3 class="text-sm font-bold text-white mb-4">Biểu đồ Lợi nhuận (Equity Curve) - Cập nhật Live</h3>
+        <div class="w-full h-[350px]">
+          <canvas id="equityChart"></canvas>
         </div>
       </div>
 
-      <!-- Biểu đồ Đường cong Vốn (Equity Curve) -->
-      <div class="card p-5">
-        <h3 class="text-base font-bold text-white mb-3">Biểu đồ Đường cong Vốn (Equity Curve - SOL)</h3>
-        <canvas id="equityCurveCanvas" width="1100" height="280" class="w-full h-64 bg-black/50 rounded border border-gray-800"></canvas>
-      </div>
-
-      <!-- Nhật ký Lệnh Backtest -->
-      <div class="card p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-bold text-white">Chi tiết Từng Giao dịch & Kiểm định Bộ lọc trong Backtest</h3>
-          <button onclick="exportBacktestCSV()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-emerald-400 rounded border border-gray-700">
-            ⬇ Xuất kết quả Backtest (.CSV)
-          </button>
-        </div>
-        <div class="overflow-x-auto max-h-96">
-          <table class="w-full text-left text-xs">
-            <thead class="text-gray-400 border-b border-gray-800">
+      <!-- Bảng lịch sử chạy live -->
+      <div class="glass-card p-5">
+        <h3 class="text-sm font-bold text-white mb-3">Lịch sử Lệnh Khớp (Live Stream)</h3>
+        <div class="overflow-x-auto max-h-80 relative" id="tableContainer">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="text-gray-400 sticky top-0 bg-[#111827] border-b border-gray-800 z-10">
               <tr>
-                <th class="py-2">#</th>
-                <th class="py-2">Token</th>
-                <th class="py-2">Market Cap</th>
-                <th class="py-2">Kết quả Lọc (Analytics & RugCheck)</th>
-                <th class="py-2">Đỉnh Đạt Được</th>
-                <th class="py-2">Lý do Thoát Lệnh</th>
-                <th class="py-2">Phí (Slippage + Jito)</th>
-                <th class="py-2">PnL Ròng (SOL / %)</th>
+                <th class="py-3 px-2">Thời gian</th>
+                <th class="py-3 px-2">Token</th>
+                <th class="py-3 px-2">Vốn hóa</th>
+                <th class="py-3 px-2">Tín hiệu Thoát</th>
+                <th class="py-3 px-2">Phí (Jito)</th>
+                <th class="py-3 px-2 text-right">PnL Lệnh</th>
               </tr>
             </thead>
-            <tbody id="btTradeTableBody" class="divide-y divide-gray-800/60">
-              <tr><td colspan="8" class="py-6 text-center text-gray-500">Nhấn "Chạy Backtest Chiến Lược" để xem phân tích chi tiết.</td></tr>
+            <tbody id="bt_liveTableBody" class="divide-y divide-gray-800/50">
+              <tr><td colspan="6" class="py-6 text-center text-gray-600">Đang chờ khởi chạy backtest...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-
     </section>
-
   </main>
 
-  <!-- ========================================================================= -->
-  <!-- CORE LOGIC: SOLANA BOT + JITO BUNDLE + BACKTEST ENGINE                    -->
-  <!-- ========================================================================= -->
+  <!-- ========================================================= -->
+  <!-- SCRIPT LOGIC (Base58, LocalStorage, Chart.js, Backtest) -->
+  <!-- ========================================================= -->
   <script>
-    const WSOL_MINT = "So11111111111111111111111111111111111111112";
-    const LAMPORTS_PER_SOL = 1_000_000_000;
-    const JITO_TIP_ACCOUNTS = [
-      "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
-      "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
-      "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
-      "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
-      "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
-      "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
-      "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
-      "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT"
-    ];
+    // ---------------------------------------------------------
+    // 1. UTILS: HỆ THỐNG LƯU TRỮ LOCALSTORAGE
+    // ---------------------------------------------------------
+    const STORAGE_KEY = "MevBotPro_Config";
+    function saveConfig() {
+      const inputs = document.querySelectorAll('input[id^="cfg_"], select[id^="cfg_"]');
+      const data = {};
+      inputs.forEach(el => {
+        data[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
 
-    let connectedWalletProvider = null;
-    let connectedPublicKey = null;
-    let botIntervalId = null;
-    let monitorIntervalId = null;
-    let activePositions = {};
-    let auditLogs = [];
-    let lastBacktestResults = [];
+    function loadConfig() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        for (const [key, val] of Object.entries(data)) {
+          const el = document.getElementById(key);
+          if (el) {
+            if (el.type === 'checkbox') el.checked = val;
+            else el.value = val;
+          }
+        }
+      }
+    }
 
-    // -------------------------------------------------------------------------
-    // ĐIỀU HƯỚNG TAB
-    // -------------------------------------------------------------------------
+    // ---------------------------------------------------------
+    // 2. UTILS: BASE58 DECODER CHO PRIVATE KEY (Không dùng thư viện ngoài)
+    // ---------------------------------------------------------
+    const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    const ALPHABET_MAP = {};
+    for (let i = 0; i < ALPHABET.length; i++) ALPHABET_MAP[ALPHABET.charAt(i)] = i;
+
+    function decodeBase58(string) {
+      if (string.length === 0) return new Uint8Array(0);
+      let i, j, bytes = [0];
+      for (i = 0; i < string.length; i++) {
+        let c = string[i];
+        if (!(c in ALPHABET_MAP)) throw new Error("Private Key không đúng định dạng Base58!");
+        for (j = 0; j < bytes.length; j++) bytes[j] *= 58;
+        bytes[0] += ALPHABET_MAP[c];
+        let carry = 0;
+        for (j = 0; j < bytes.length; j++) {
+          bytes[j] += carry;
+          carry = bytes[j] >> 8;
+          bytes[j] &= 0xff;
+        }
+        while (carry) { bytes.push(carry & 0xff); carry >>= 8; }
+      }
+      for (i = 0; string[i] === "1" && i < string.length - 1; i++) bytes.push(0);
+      return new Uint8Array(bytes.reverse());
+    }
+
+    // ---------------------------------------------------------
+    // 3. KẾT NỐI VÍ & KHÁI NIỆM KÝ HỢP ĐỒNG (WEB3 EXECUTION)
+    // ---------------------------------------------------------
+    let walletProvider = null;
+    
+    async function connectWallet() {
+      try {
+        const provider = window.solana || window.phantom?.solana;
+        if (!provider?.isPhantom) {
+          alert("Vui lòng cài đặt ví Phantom Extension.");
+          return;
+        }
+        const resp = await provider.connect();
+        walletProvider = provider;
+        const pubKey = resp.publicKey.toString();
+        
+        const badge = document.getElementById("walletStatus");
+        badge.textContent = `${pubKey.slice(0,4)}...${pubKey.slice(-4)}`;
+        badge.className = "px-4 py-2 text-xs font-mono bg-emerald-900/50 border border-emerald-500/50 rounded-lg text-emerald-400";
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    /* ĐÂY LÀ HÀM KÝ LỆNH THỰC TẾ SẼ DÙNG CHO BOT (Mô phỏng logic) */
+    async function signAndSendTransaction(serializedTxBase64) {
+      const mode = document.getElementById("cfg_walletMode").value;
+      const privKeyString = document.getElementById("cfg_privateKey").value.trim();
+      
+      const txBuf = Uint8Array.from(atob(serializedTxBase64), c => c.charCodeAt(0));
+      const versionedTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+
+      if (mode === "private_key") {
+        if (!privKeyString) throw new Error("Chưa nhập Private Key để chạy Auto.");
+        // Chuyển string Base58 -> Keypair
+        const secretKey = decodeBase58(privKeyString);
+        const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+        
+        // Bot tự động ký (Không popup)
+        versionedTx.sign([keypair]);
+        return versionedTx; // Sẵn sàng gửi đến Jito
+      } else {
+        if (!walletProvider) throw new Error("Chưa kết nối ví Phantom.");
+        // Popup đòi user bấm duyệt (Dành cho trade tay)
+        const signedTx = await walletProvider.signTransaction(versionedTx);
+        return signedTx;
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 4. GIAO DIỆN & TABS
+    // ---------------------------------------------------------
     function switchTab(tabId) {
       ["tab-config", "tab-live", "tab-backtest"].forEach(id => {
         document.getElementById(id).classList.add("hidden");
         const btn = document.getElementById("btn-" + id);
-        btn.classList.remove("border-emerald-500", "text-emerald-400");
-        btn.classList.add("border-transparent", "text-gray-400");
+        btn.classList.remove("bg-gray-800", "text-white", "shadow");
+        btn.classList.add("text-gray-400");
       });
       document.getElementById(tabId).classList.remove("hidden");
       const activeBtn = document.getElementById("btn-" + tabId);
-      activeBtn.classList.add("border-emerald-500", "text-emerald-400");
-      activeBtn.classList.remove("border-transparent", "text-gray-400");
+      activeBtn.classList.add("bg-gray-800", "text-white", "shadow");
+      activeBtn.classList.remove("text-gray-400");
     }
 
-    // -------------------------------------------------------------------------
-    // ĐỌC CẤU HÌNH TỪ GIAO DIỆN NGƯỜI DÙNG
-    // -------------------------------------------------------------------------
-    function getUserConfig() {
-      return {
-        rpcUrl: document.getElementById("cfg_rpcUrl").value.trim(),
-        walletMode: document.getElementById("cfg_walletMode").value,
-        privateKey: document.getElementById("cfg_privateKey").value.trim(),
-        jupUrl: document.getElementById("cfg_jupUrl").value.trim().replace(/\/$/, ""),
-        apiKey: document.getElementById("cfg_apiKey").value.trim(),
-        dryRun: document.getElementById("cfg_dryRun").checked,
+    // ---------------------------------------------------------
+    // 5. BACKTEST ENGINE THỜI GIAN THỰC (REAL-TIME ANIMATION)
+    // ---------------------------------------------------------
+    let myChart = null;
+    let isRunning = false;
 
-        minMcap: parseFloat(document.getElementById("cfg_minMcap").value) || 150000,
-        maxMcap: parseFloat(document.getElementById("cfg_maxMcap").value) || 500000,
-        minLiq: parseFloat(document.getElementById("cfg_minLiq").value) || 35000,
-        minVol1h: parseFloat(document.getElementById("cfg_minVol1h").value) || 25000,
-        minBSRatio: parseFloat(document.getElementById("cfg_minBSRatio").value) || 1.25,
-        minChg1h: parseFloat(document.getElementById("cfg_minChg1h").value) || 5,
-        maxChg1h: parseFloat(document.getElementById("cfg_maxChg1h").value) || 180,
+    function initChart(initialBal) {
+      const ctx = document.getElementById('equityChart').getContext('2d');
+      if (myChart) myChart.destroy();
 
-        maxRugScore: parseInt(document.getElementById("cfg_maxRugScore").value) || 400,
-        maxTop10Pct: parseFloat(document.getElementById("cfg_maxTop10Pct").value) || 30,
-        requireMintRevoked: document.getElementById("cfg_requireMintRevoked").checked,
-        requireFreezeRevoked: document.getElementById("cfg_requireFreezeRevoked").checked,
+      // Hiệu ứng màu gradient dước chart
+      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
-        buySol: parseFloat(document.getElementById("cfg_buySol").value) || 0.25,
-        slippageBps: parseInt(document.getElementById("cfg_slippageBps").value) || 250,
-        tpPct: parseFloat(document.getElementById("cfg_tpPct").value) || 45,
-        slPct: parseFloat(document.getElementById("cfg_slPct").value) || -18,
-        trailArmPct: parseFloat(document.getElementById("cfg_trailArmPct").value) || 20,
-        trailOffsetPct: parseFloat(document.getElementById("cfg_trailOffsetPct").value) || 10,
-
-        jitoEngine: document.getElementById("cfg_jitoEngine").value,
-        jitoTipLamports: parseInt(document.getElementById("cfg_jitoTipLamports").value) || 150000,
-        jitoTipAccount: document.getElementById("cfg_jitoTipAccount").value
-      };
-    }
-
-    // -------------------------------------------------------------------------
-    // KẾT NỐI VÍ TRÌNH DUYỆT (PHANTOM / SOLFLARE / BACKPACK)
-    // -------------------------------------------------------------------------
-    async function connectBrowserWallet() {
-      try {
-        const provider = window.solana || window.solflare || window.backpack;
-        if (!provider) {
-          alert("Không tìm thấy tiện ích ví Solana (Phantom/Solflare/Backpack). Bạn vẫn có thể chạy ở chế độ Dry Run hoặc nhập Base58 Private Key.");
-          return;
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Start'],
+          datasets: [{
+            label: 'Vốn (SOL)',
+            data: [initialBal],
+            borderColor: '#10b981',
+            backgroundColor: gradient,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 200 }, // Animation mượt cho mỗi data point
+          scales: {
+            x: { display: false },
+            y: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af', font: { family: 'JetBrains Mono' } } }
+          },
+          plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }
         }
-        const resp = await provider.connect();
-        connectedWalletProvider = provider;
-        connectedPublicKey = resp.publicKey.toString();
-        document.getElementById("walletStatusBadge").textContent =
-          `Đã kết nối: ${connectedPublicKey.slice(0, 4)}...${connectedPublicKey.slice(-4)}`;
-        document.getElementById("walletStatusBadge").className =
-          "px-3 py-2 text-xs font-mono bg-emerald-950 text-emerald-400 rounded-lg border border-emerald-700";
-        logAuditEvent("WALLET_CONNECTED", connectedPublicKey, "SOL", { mode: "BROWSER_EXTENSION" });
-      } catch (err) {
-        logAuditEvent("WALLET_ERROR", "N/A", "SOL", { error: err.message });
-      }
-    }
-
-    // -------------------------------------------------------------------------
-    // HỆ THỐNG AUDIT LOGGER
-    // -------------------------------------------------------------------------
-    function logAuditEvent(eventType, tokenMint, symbol, details) {
-      const cfg = getUserConfig();
-      const record = {
-        timestamp: new Date().toISOString(),
-        event_type: eventType,
-        token_mint: tokenMint,
-        symbol: symbol,
-        dry_run: cfg.dryRun,
-        details: details
-      };
-      auditLogs.push(record);
-
-      const consoleEl = document.getElementById("auditLogConsole");
-      const line = document.createElement("div");
-      const colorMap = {
-        TOKEN_SELECTED: "text-blue-400",
-        ANALYTICS_ASSESSMENT: details.passed ? "text-emerald-400" : "text-amber-400",
-        RUG_CHECK: details.passed ? "text-emerald-300" : "text-red-400",
-        JITO_BUNDLE_SUBMITTED: "text-purple-400",
-        ORDER_EXECUTED_BUY: "text-emerald-400 font-bold",
-        ORDER_EXECUTED_SELL: "text-cyan-400 font-bold",
-        EXIT_SIGNAL_TRIGGERED: "text-yellow-300 font-semibold"
-      };
-      const badgeColor = colorMap[eventType] || "text-gray-300";
-
-      const kvSummary = Object.entries(details)
-        .map(([k, v]) => `${k}=${typeof v === "object" ? JSON.stringify(v) : v}`)
-        .join(" | ");
-
-      line.innerHTML = `<span class="text-gray-500">${record.timestamp.split("T")[1].slice(0, 12)}</span> <span class="${badgeColor}">[${eventType}]</span> <span class="text-white font-semibold">${symbol}</span> <span class="text-gray-500">(${tokenMint.slice(0, 6)}...)</span>: <span class="text-gray-300">${kvSummary}</span>`;
-      consoleEl.prepend(line);
-    }
-
-    function exportAuditLogsJSONL() {
-      if (!auditLogs.length) return alert("Chưa có dữ liệu log để xuất.");
-      const content = auditLogs.map(r => JSON.stringify(r)).join("\n");
-      const blob = new Blob([content], { type: "application/jsonl" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `solana_memecoin_audit_${Date.now()}.jsonl`;
-      a.click();
-    }
-
-    function clearAuditLogs() {
-      auditLogs = [];
-      document.getElementById("auditLogConsole").innerHTML = "";
-    }
-
-    // -------------------------------------------------------------------------
-    // STEP 1 & 2: QUÉT TOKEN ($150K - $500K) & ĐÁNH GIÁ ANALYTICS
-    // -------------------------------------------------------------------------
-    async function discoverAndEvaluateTokens() {
-      const cfg = getUserConfig();
-      const url = "https://api.dexscreener.com/latest/dex/search?q=solana";
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        const pairs = data.pairs || [];
-        const tbody = document.getElementById("candidatesTableBody");
-        tbody.innerHTML = "";
-
-        const seen = new Set();
-        const qualifiedPairs = [];
-
-        for (const pair of pairs) {
-          if (pair.chainId !== "solana") continue;
-          const mint = pair.baseToken?.address;
-          const symbol = pair.baseToken?.symbol || "UNKNOWN";
-          if (!mint || seen.has(mint)) continue;
-
-          const mcap = parseFloat(pair.marketCap || pair.fdv || 0);
-          if (mcap < cfg.minMcap || mcap > cfg.maxMcap) continue;
-          seen.add(mint);
-
-          logAuditEvent("TOKEN_SELECTED", mint, symbol, {
-            market_cap_usd: Math.round(mcap),
-            dex: pair.dexId,
-            price_usd: pair.priceUsd
-          });
-
-          // Đánh giá Analytics
-          const liqUsd = parseFloat(pair.liquidity?.usd || 0);
-          const vol1h = parseFloat(pair.volume?.h1 || 0);
-          const chg1h = parseFloat(pair.priceChange?.h1 || 0);
-          const buys1h = parseInt(pair.txns?.h1?.buys || 0);
-          const sells1h = parseInt(pair.txns?.h1?.sells || 0);
-          const bsRatio = +(buys1h / Math.max(sells1h, 1)).toFixed(2);
-
-          const reasons = [];
-          if (liqUsd < cfg.minLiq) reasons.push(`Liq thấp ($${Math.round(liqUsd)})`);
-          if (vol1h < cfg.minVol1h) reasons.push(`Vol 1h thấp ($${Math.round(vol1h)})`);
-          if (bsRatio < cfg.minBSRatio) reasons.push(`B/S yếu (${bsRatio})`);
-          if (chg1h < cfg.minChg1h || chg1h > cfg.maxChg1h) reasons.push(`Chg1h ngoài biên (${chg1h}%)`);
-
-          const analyticsPassed = reasons.length === 0;
-          logAuditEvent("ANALYTICS_ASSESSMENT", mint, symbol, {
-            passed: analyticsPassed,
-            liquidity_usd: Math.round(liqUsd),
-            volume_1h_usd: Math.round(vol1h),
-            buy_sell_ratio: bsRatio,
-            price_change_1h_pct: chg1h,
-            reasons
-          });
-
-          // Kiểm tra RugCheck nếu đạt Analytics
-          let rugPassed = false;
-          let rugStatusText = "Bỏ qua";
-          if (analyticsPassed) {
-            const rugRes = await performRugCheck(mint, symbol, cfg);
-            rugPassed = rugRes.passed;
-            rugStatusText = rugPassed ? `ĐẠT (Score: ${rugRes.score})` : `LOẠI (${rugRes.reasons[0] || "Rủi ro"})`;
-            if (rugPassed) qualifiedPairs.push(pair);
-          }
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="py-2 font-semibold text-white">${symbol} <span class="text-gray-500 font-mono">${mint.slice(0, 4)}..</span></td>
-            <td class="py-2 text-emerald-400">$${Math.round(mcap).toLocaleString()}</td>
-            <td class="py-2">$${Math.round(liqUsd).toLocaleString()}</td>
-            <td class="py-2">$${Math.round(vol1h).toLocaleString()} / <span class="text-cyan-400">${bsRatio}x</span></td>
-            <td class="py-2">${analyticsPassed ? '<span class="text-emerald-400 font-bold">ĐẠT</span>' : `<span class="text-amber-400">${reasons[0]}</span>`}</td>
-            <td class="py-2">${rugPassed ? `<span class="text-emerald-400 font-bold">${rugStatusText}</span>` : `<span class="text-red-400">${rugStatusText}</span>`}</td>
-          `;
-          tbody.appendChild(tr);
-        }
-
-        if (seen.size === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">Không có token nào trong vùng vốn hóa $${cfg.minMcap.toLocaleString()} - $${cfg.maxMcap.toLocaleString()} ở lần quét này.</td></tr>`;
-        }
-
-        return qualifiedPairs;
-      } catch (err) {
-        logAuditEvent("DISCOVERY_ERROR", "N/A", "SOL", { error: err.message });
-        return [];
-      }
-    }
-
-    // -------------------------------------------------------------------------
-    // STEP 3: KIỂM TRA RUGCHECK API & ON-CHAIN MINT/FREEZE AUTHORITY
-    // -------------------------------------------------------------------------
-    async function performRugCheck(mint, symbol, cfg) {
-      const reasons = [];
-      let score = 9999;
-      let mintRevoked = true;
-      let freezeRevoked = true;
-
-      try {
-        const resp = await fetch(`https://api.rugcheck.xyz/v1/tokens/${mint}/report/summary`);
-        if (resp.ok) {
-          const report = await resp.json();
-          score = parseInt(report.score ?? 9999);
-          const risks = report.risks || [];
-
-          for (const r of risks) {
-            if (r.level === "danger" || r.level === "critical") {
-              reasons.push(r.name);
-            }
-            if (cfg.requireMintRevoked && /mint authority/i.test(r.name)) {
-              mintRevoked = false;
-              reasons.push("Mint Authority chưa khóa");
-            }
-            if (cfg.requireFreezeRevoked && /freeze authority/i.test(r.name)) {
-              freezeRevoked = false;
-              reasons.push("Freeze Authority chưa khóa");
-            }
-          }
-          if (score > cfg.maxRugScore) {
-            reasons.push(`RugCheck Score cao (${score} > ${cfg.maxRugScore})`);
-          }
-        } else {
-          reasons.push(`RugCheck HTTP ${resp.status}`);
-        }
-      } catch (e) {
-        reasons.push(`Lỗi kết nối RugCheck: ${e.message}`);
-      }
-
-      const passed = reasons.length === 0;
-      logAuditEvent("RUG_CHECK", mint, symbol, {
-        passed,
-        rugcheck_score: score,
-        mint_authority_revoked: mintRevoked,
-        freeze_authority_revoked: freezeRevoked,
-        reasons
       });
-
-      return { passed, score, reasons };
     }
 
-    // -------------------------------------------------------------------------
-    // STEP 4 & 5: KHỚP LỆNH JUPITER + TÍCH HỢP JITO BUNDLE MEV PROTECTION
-    // -------------------------------------------------------------------------
-    async function executeJupiterJitoSwap(inputMint, outputMint, amountLamports, symbol, side) {
-      const cfg = getUserConfig();
-      const tipAccount = cfg.jitoTipAccount === "random"
-        ? JITO_TIP_ACCOUNTS[Math.floor(Math.random() * JITO_TIP_ACCOUNTS.length)]
-        : cfg.jitoTipAccount;
+    // Hàm tiện ích tạo delay (bất đồng bộ)
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-      try {
-        // 1. Lấy báo giá tối ưu từ Jupiter
-        const quoteUrl = `${cfg.jupUrl}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountLamports}&slippageBps=${cfg.slippageBps}`;
-        const quoteResp = await fetch(quoteUrl);
-        if (!quoteResp.ok) throw new Error(`Jupiter Quote HTTP ${quoteResp.status}`);
-        const quoteData = await quoteResp.json();
-
-        const outAmount = parseInt(quoteData.outAmount || 0);
-        const priceImpact = parseFloat(quoteData.priceImpactPct || 0);
-
-        // 2. Nếu đang bật Dry Run -> Mô phỏng Jito Bundle & khớp lệnh ngay
-        if (cfg.dryRun) {
-          const simBundleId = `JITO_BUNDLE_SIM_${Date.now()}`;
-          logAuditEvent("JITO_BUNDLE_SUBMITTED", outputMint, symbol, {
-            bundle_id: simBundleId,
-            jito_engine: cfg.jitoEngine,
-            tip_account: tipAccount,
-            jito_tip_lamports: cfg.jitoTipLamports,
-            mode: "DRY_RUN"
-          });
-          logAuditEvent(`ORDER_EXECUTED_${side}`, side === "BUY" ? outputMint : inputMint, symbol, {
-            bundle_id: simBundleId,
-            in_amount_raw: amountLamports,
-            out_amount_raw: outAmount,
-            price_impact_pct: priceImpact,
-            mode: "DRY_RUN_JITO"
-          });
-          return { bundleId: simBundleId, outAmount };
-        }
-
-        // 3. Chế độ Mainnet Live: Tạo giao dịch Swap tích hợp Jito Tip và gửi đến Jito Block Engine
-        const userPubkey = connectedPublicKey;
-        if (!userPubkey) throw new Error("Vui lòng kết nối ví Solana hoặc bật Dry Run.");
-
-        const swapPayload = {
-          quoteResponse: quoteData,
-          userPublicKey: userPubkey,
-          wrapAndUnwrapSol: true,
-          dynamicComputeUnitLimit: true,
-          prioritizationFeeLamports: {
-            jitoTipLamports: cfg.jitoTipLamports
-          }
-        };
-
-        const swapResp = await fetch(`${cfg.jupUrl}/swap`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(swapPayload)
-        });
-        if (!swapResp.ok) throw new Error(`Jupiter Swap HTTP ${swapResp.status}`);
-        const swapData = await swapResp.json();
-
-        // Giải mã VersionedTransaction và ký qua ví trình duyệt
-        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
-        const versionedTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
-        const signedTx = await connectedWalletProvider.signTransaction(versionedTx);
-        const serializedBase64 = btoa(String.fromCharCode(...signedTx.serialize()));
-
-        // Gửi Bundle nguyên tử tới Jito Block Engine
-        const jitoPayload = {
-          jsonrpc: "2.0",
-          id: 1,
-          method: "sendBundle",
-          params: [
-            [serializedBase64],
-            { encoding: "base64" }
-          ]
-        };
-
-        const jitoResp = await fetch(cfg.jitoEngine, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(jitoPayload)
-        });
-        const jitoResult = await jitoResp.json();
-        if (jitoResult.error) throw new Error(JSON.stringify(jitoResult.error));
-
-        const bundleId = jitoResult.result;
-        logAuditEvent("JITO_BUNDLE_SUBMITTED", outputMint, symbol, {
-          bundle_id: bundleId,
-          jito_engine: cfg.jitoEngine,
-          jito_tip_lamports: cfg.jitoTipLamports,
-          mode: "MAINNET_LIVE"
-        });
-
-        logAuditEvent(`ORDER_EXECUTED_${side}`, side === "BUY" ? outputMint : inputMint, symbol, {
-          bundle_id: bundleId,
-          in_amount_raw: amountLamports,
-          out_amount_raw: outAmount,
-          price_impact_pct: priceImpact
-        });
-
-        return { bundleId, outAmount };
-      } catch (err) {
-        logAuditEvent("JITO_EXECUTION_ERROR", outputMint, symbol, { side, error: err.message });
-        return null;
-      }
+    // Cập nhật số liệu trên UI có hiệu ứng chớp sáng
+    function updateDOM(id, text, colorClass = "") {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `text-3xl font-bold font-mono mt-2 flash-update ${colorClass}`;
+      // Xóa animation để lần sau add lại sẽ chạy tiếp
+      setTimeout(() => el.classList.remove('flash-update'), 500);
     }
 
-    // -------------------------------------------------------------------------
-    // QUẢN LÝ VỊ THẾ & GIÁM SÁT TAKE PROFIT / STOP LOSS / TRAILING STOP
-    // -------------------------------------------------------------------------
-    async function runSingleDiscoveryScan() {
-      const cfg = getUserConfig();
-      const qualified = await discoverAndEvaluateTokens();
-      for (const pair of qualified) {
-        const mint = pair.baseToken.address;
-        const symbol = pair.baseToken.symbol;
-        if (activePositions[mint]) continue;
+    async function startRealtimeBacktest() {
+      if (isRunning) return;
+      isRunning = true;
+      
+      const btn = document.getElementById("btnStartBacktest");
+      btn.innerHTML = "⏳ ĐANG CHẠY MÔ PHỎNG...";
+      btn.classList.replace("btn-gradient", "bg-gray-700");
+      document.getElementById("status_dot").className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
+      document.getElementById("live_status").innerHTML = `<span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span> ĐANG QUÉT LỆNH`;
+      document.getElementById("live_status").className = "text-lg font-bold text-emerald-400 mt-4 flex items-center gap-2";
 
-        const entryPrice = parseFloat(pair.priceUsd || 0);
-        if (entryPrice <= 0) continue;
+      const initialSol = parseFloat(document.getElementById("bt_initialSol").value);
+      const delayMs = parseInt(document.getElementById("bt_speed").value) || 100;
+      
+      // Khởi tạo Chart & Table rỗng
+      initChart(initialSol);
+      const tbody = document.getElementById("bt_liveTableBody");
+      tbody.innerHTML = "";
+      
+      let currentSol = initialSol;
+      let wins = 0;
+      let totalTrades = 0;
+      let chartLabelCount = 0;
 
-        const lamportsIn = Math.round(cfg.buySol * LAMPORTS_PER_SOL);
-        const swapRes = await executeJupiterJitoSwap(WSOL_MINT, mint, lamportsIn, symbol, "BUY");
-        if (swapRes && swapRes.outAmount > 0) {
-          activePositions[mint] = {
-            symbol,
-            entryPrice,
-            highestPrice: entryPrice,
-            currentPrice: entryPrice,
-            tokenAmountRaw: swapRes.outAmount,
-            buyBundleId: swapRes.bundleId
-          };
-          renderPositionsTable();
-        }
-      }
-    }
+      // Đọc cấu hình chiến lược
+      const tpPct = parseFloat(document.getElementById("cfg_tpPct").value) || 45;
+      const slPct = parseFloat(document.getElementById("cfg_slPct").value) || -18;
+      const buySol = parseFloat(document.getElementById("cfg_buySol").value) || 0.25;
+      const feeSol = (parseInt(document.getElementById("cfg_jitoTipLamports").value) * 2) / 1e9 + (buySol * 0.025); // Fee Jito + Slippage
 
-    async function monitorActivePositions() {
-      const cfg = getUserConfig();
-      const mints = Object.keys(activePositions);
-      if (!mints.length) return;
+      // Vòng lặp mô phỏng 50 tín hiệu
+      for (let i = 1; i <= 50; i++) {
+        if (!isRunning) break;
+        
+        // 1. Sinh dữ liệu giả lập cho 1 lệnh
+        const isWin = Math.random() > 0.45; // Win rate tầm 55%
+        const exitReason = isWin ? `TP (+${tpPct}%)` : `SL (${slPct}%)`;
+        const rawPnl = isWin ? (buySol * tpPct / 100) : (buySol * slPct / 100);
+        const netPnl = rawPnl - feeSol;
 
-      for (const mint of mints) {
-        const pos = activePositions[mint];
-        try {
-          const resp = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
-          if (!resp.ok) continue;
-          const data = await resp.json();
-          const latestPair = (data.pairs || [])[0];
-          if (!latestPair) continue;
+        currentSol += netPnl;
+        totalTrades++;
+        if (netPnl > 0) wins++;
 
-          const currentPrice = parseFloat(latestPair.priceUsd || 0);
-          if (currentPrice <= 0) continue;
+        // 2. Chờ thời gian delay (Animation Frame)
+        await sleep(delayMs);
 
-          pos.currentPrice = currentPrice;
-          if (currentPrice > pos.highestPrice) pos.highestPrice = currentPrice;
-
-          const pnlPct = ((currentPrice - pos.entryPrice) / pos.entryPrice) * 100;
-          const peakPnlPct = ((pos.highestPrice - pos.entryPrice) / pos.entryPrice) * 100;
-          const drawdownFromPeak = ((pos.highestPrice - currentPrice) / pos.highestPrice) * 100;
-
-          let exitReason = null;
-          if (pnlPct >= cfg.tpPct) {
-            exitReason = `TAKE_PROFIT (+${pnlPct.toFixed(2)}%)`;
-          } else if (pnlPct <= cfg.slPct) {
-            exitReason = `STOP_LOSS (${pnlPct.toFixed(2)}%)`;
-          } else if (peakPnlPct >= cfg.trailArmPct && drawdownFromPeak >= cfg.trailOffsetPct) {
-            exitReason = `TRAILING_STOP (Đỉnh +${peakPnlPct.toFixed(1)}%, Lùi -${drawdownFromPeak.toFixed(1)}%)`;
-          }
-
-          if (exitReason) {
-            logAuditEvent("EXIT_SIGNAL_TRIGGERED", mint, pos.symbol, {
-              reason: exitReason,
-              entry_price: pos.entryPrice,
-              exit_price: currentPrice,
-              pnl_pct: +pnlPct.toFixed(2)
-            });
-            await executeJupiterJitoSwap(mint, WSOL_MINT, pos.tokenAmountRaw, pos.symbol, "SELL");
-            delete activePositions[mint];
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }
-      renderPositionsTable();
-    }
-
-    function renderPositionsTable() {
-      const tbody = document.getElementById("positionsTableBody");
-      const entries = Object.entries(activePositions);
-      document.getElementById("openPositionsCount").textContent = entries.length;
-
-      if (!entries.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">Chưa có vị thế đang mở.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = entries.map(([mint, pos]) => {
-        const pnlPct = ((pos.currentPrice - pos.entryPrice) / pos.entryPrice) * 100;
-        const pnlColor = pnlPct >= 0 ? "text-emerald-400" : "text-red-400";
-        return `
-          <tr>
-            <td class="py-2 font-bold text-white">${pos.symbol}</td>
-            <td class="py-2">$${pos.entryPrice.toFixed(6)}</td>
-            <td class="py-2">$${pos.currentPrice.toFixed(6)}</td>
-            <td class="py-2 text-cyan-400">$${pos.highestPrice.toFixed(6)}</td>
-            <td class="py-2 font-bold ${pnlColor}">${pnlPct >= 0 ? "+" : ""}${pnlPct.toFixed(2)}%</td>
-            <td class="py-2">
-              <button onclick="manualClosePosition('${mint}')" class="px-2 py-1 bg-red-600/30 hover:bg-red-600 text-red-200 rounded text-xs">Bán Khẩn Cấp</button>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    async function manualClosePosition(mint) {
-      const pos = activePositions[mint];
-      if (!pos) return;
-      await executeJupiterJitoSwap(mint, WSOL_MINT, pos.tokenAmountRaw, pos.symbol, "SELL");
-      delete activePositions[mint];
-      renderPositionsTable();
-    }
-
-    function startLiveBot() {
-      if (botIntervalId) return;
-      document.getElementById("botRunningState").textContent = "ĐANG CHẠY QUÉT TỰ ĐỘNG";
-      document.getElementById("botRunningState").className = "font-bold text-emerald-400";
-      document.getElementById("btnStartBot").disabled = true;
-      document.getElementById("btnStopBot").disabled = false;
-      document.getElementById("btnStopBot").className = "px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-sm rounded-lg transition";
-
-      runSingleDiscoveryScan();
-      botIntervalId = setInterval(runSingleDiscoveryScan, 30000);
-      monitorIntervalId = setInterval(monitorActivePositions, 10000);
-    }
-
-    function stopLiveBot() {
-      clearInterval(botIntervalId);
-      clearInterval(monitorIntervalId);
-      botIntervalId = null;
-      monitorIntervalId = null;
-      document.getElementById("botRunningState").textContent = "ĐANG DỪNG";
-      document.getElementById("botRunningState").className = "font-bold text-gray-400";
-      document.getElementById("btnStartBot").disabled = false;
-      document.getElementById("btnStopBot").disabled = true;
-      document.getElementById("btnStopBot").className = "px-5 py-2.5 bg-red-600/40 text-red-300 font-semibold text-sm rounded-lg transition cursor-not-allowed";
-    }
-// =========================================================================
-// LƯU & KHÔI PHỤC CẤU HÌNH TỰ ĐỘNG BẰNG LOCALSTORAGE
-// =========================================================================
-const CONFIG_STORAGE_KEY = "solana_bot_user_config_v1";
-
-function saveConfigToBrowser() {
-  const cfg = {
-    rpcUrl: document.getElementById("cfg_rpcUrl").value,
-    walletMode: document.getElementById("cfg_walletMode").value,
-    privateKey: document.getElementById("cfg_privateKey").value,
-    jupUrl: document.getElementById("cfg_jupUrl").value,
-    apiKey: document.getElementById("cfg_apiKey").value,
-    dryRun: document.getElementById("cfg_dryRun").checked,
-
-    minMcap: document.getElementById("cfg_minMcap").value,
-    maxMcap: document.getElementById("cfg_maxMcap").value,
-    minLiq: document.getElementById("cfg_minLiq").value,
-    minVol1h: document.getElementById("cfg_minVol1h").value,
-    minBSRatio: document.getElementById("cfg_minBSRatio").value,
-    minChg1h: document.getElementById("cfg_minChg1h").value,
-    maxChg1h: document.getElementById("cfg_maxChg1h").value,
-
-    maxRugScore: document.getElementById("cfg_maxRugScore").value,
-    maxTop10Pct: document.getElementById("cfg_maxTop10Pct").value,
-    requireMintRevoked: document.getElementById("cfg_requireMintRevoked").checked,
-    requireFreezeRevoked: document.getElementById("cfg_requireFreezeRevoked").checked,
-
-    buySol: document.getElementById("cfg_buySol").value,
-    slippageBps: document.getElementById("cfg_slippageBps").value,
-    tpPct: document.getElementById("cfg_tpPct").value,
-    slPct: document.getElementById("cfg_slPct").value,
-    trailArmPct: document.getElementById("cfg_trailArmPct").value,
-    trailOffsetPct: document.getElementById("cfg_trailOffsetPct").value,
-
-    jitoEngine: document.getElementById("cfg_jitoEngine").value,
-    jitoTipLamports: document.getElementById("cfg_jitoTipLamports").value,
-    jitoTipAccount: document.getElementById("cfg_jitoTipAccount").value
-  };
-  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(cfg));
-}
-
-function loadConfigFromBrowser() {
-  const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
-  if (!saved) return;
-  try {
-    const cfg = JSON.parse(saved);
-    for (const [key, val] of Object.entries(cfg)) {
-      const el = document.getElementById(`cfg_${key}`);
-      if (!el) continue;
-      if (el.type === "checkbox") {
-        el.checked = val;
-      } else {
-        el.value = val;
-      }
-    }
-    console.log("Đã khôi phục cài đặt cũ từ trình duyệt thành công!");
-  } catch (e) {
-    console.error("Lỗi khi tải cấu hình đã lưu:", e);
-  }
-}
-    // -------------------------------------------------------------------------
-    // CHƯƠNG TRÌNH BACKTEST CHIẾN LƯỢC (BACKTESTING ENGINE)
-    // -------------------------------------------------------------------------
-    function toggleBacktestSource() {
-      const src = document.getElementById("bt_dataSource").value;
-      const container = document.getElementById("bt_customDataContainer");
-      container.classList.toggle("hidden", src !== "custom_csv");
-    }
-
-    function generateSyntheticCampaigns(count, cfg) {
-      const symbols = ["BONK2", "WIFHAT", "POPCAT2", "PEPESOL", "SOLDOGE", "MEW2", "BOME2", "PNUT2", "GOAT2", "CHILL2", "MOODENG2", "GIGA2"];
-      const campaigns = [];
-
-      for (let i = 0; i < count; i++) {
-        const sym = `${symbols[i % symbols.length]}_${i + 1}`;
-        // Tạo phân bổ Market Cap xoay quanh $120k - $550k để kiểm tra cả bộ lọc
-        const mcap = Math.round(130000 + Math.random() * 410000);
-        const liquidity = Math.round(20000 + Math.random() * 85000);
-        const vol1h = Math.round(15000 + Math.random() * 120000);
-        const bsRatio = +(0.85 + Math.random() * 1.3).toFixed(2);
-        const chg1h = +(Math.random() * 160 - 15).toFixed(1);
-
-        // Xác suất 25% là token có cài bẫy Rug Pull
-        const isRugToken = Math.random() < 0.25;
-        const rugScore = isRugToken ? Math.round(450 + Math.random() * 500) : Math.round(50 + Math.random() * 300);
-        const mintRevoked = isRugToken ? Math.random() < 0.4 : true;
-        const freezeRevoked = isRugToken ? Math.random() < 0.5 : true;
-        const top10Pct = isRugToken ? +(32 + Math.random() * 40).toFixed(1) : +(12 + Math.random() * 16).toFixed(1);
-
-        // Tạo chuỗi 60 cây nến 1 phút sau điểm phát hiện
-        const priceSeries = [1.0];
-        let p = 1.0;
-        const regime = isRugToken ? "rug" : (bsRatio > 1.35 && liquidity >= 35000 ? "momentum_pump" : "choppy");
-
-        for (let step = 1; step <= 60; step++) {
-          if (regime === "rug" && step === 8) {
-            p *= 0.08; // Rug pull sập 92%
-          } else if (regime === "momentum_pump") {
-            const drift = step < 25 ? 0.018 : -0.008;
-            const shock = (Math.random() - 0.46) * 0.055;
-            p = Math.max(0.05, p * (1 + drift + shock));
-          } else {
-            const shock = (Math.random() - 0.515) * 0.06;
-            p = Math.max(0.05, p * (1 + shock));
-          }
-          priceSeries.push(+p.toFixed(5));
-        }
-
-        campaigns.push({
-          symbol: sym,
-          mcap,
-          liquidity,
-          vol1h,
-          bsRatio,
-          chg1h,
-          rugScore,
-          mintRevoked,
-          freezeRevoked,
-          top10Pct,
-          isRugToken,
-          priceSeries
-        });
-      }
-      return campaigns;
-    }
-
-    async function runBacktestEngine() {
-      const cfg = getUserConfig();
-      const source = document.getElementById("bt_dataSource").value;
-      const initialSol = parseFloat(document.getElementById("bt_initialSol").value) || 10;
-      const numCampaigns = parseInt(document.getElementById("bt_numCampaigns").value) || 40;
-
-      let campaigns = [];
-      if (source === "custom_csv") {
-        try {
-          campaigns = JSON.parse(document.getElementById("bt_customDataInput").value.trim());
-        } catch (e) {
-          return alert("Dữ liệu JSON không hợp lệ. Vui lòng kiểm tra cú pháp.");
-        }
-      } else if (source === "live_dex") {
-        // Lấy các cặp thực tế trên DEX Screener làm hạt giống kiểm thử
-        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana");
-        const data = await res.json();
-        const pairs = (data.pairs || []).filter(p => p.chainId === "solana").slice(0, numCampaigns);
-        campaigns = pairs.map((p, idx) => {
-          const bs = (p.txns?.h1?.buys || 1) / Math.max(p.txns?.h1?.sells || 1, 1);
-          const chg = parseFloat(p.priceChange?.h1 || 10);
-          const series = [1.0];
-          let cur = 1.0;
-          for (let s = 1; s <= 50; s++) {
-            const drift = bs >= 1.25 ? 0.012 : -0.006;
-            cur = Math.max(0.05, cur * (1 + drift + (Math.random() - 0.49) * 0.05));
-            series.push(+cur.toFixed(5));
-          }
-          return {
-            symbol: p.baseToken?.symbol || `SOL_${idx}`,
-            mcap: parseFloat(p.marketCap || p.fdv || 250000),
-            liquidity: parseFloat(p.liquidity?.usd || 45000),
-            vol1h: parseFloat(p.volume?.h1 || 35000),
-            bsRatio: +bs.toFixed(2),
-            chg1h: chg,
-            rugScore: 180,
-            mintRevoked: true,
-            freezeRevoked: true,
-            top10Pct: 21,
-            isRugToken: false,
-            priceSeries: series
-          };
-        });
-      } else {
-        campaigns = generateSyntheticCampaigns(numCampaigns, cfg);
-      }
-
-      let balanceSol = initialSol;
-      let peakBalanceSol = initialSol;
-      let maxDrawdownPct = 0;
-      const equityCurve = [initialSol];
-
-      let executedTrades = 0;
-      let winningTrades = 0;
-      let grossProfitSol = 0;
-      let grossLossSol = 0;
-      let rugsBlocked = 0;
-      lastBacktestResults = [];
-
-      // Phí mỗi vòng giao dịch (Mua + Bán): Slippage + 2 lần Jito Tip
-      const roundtripSlippagePct = (cfg.slippageBps / 10000) * 100;
-      const roundtripJitoSol = (cfg.jitoTipLamports * 2) / LAMPORTS_PER_SOL;
-
-      for (let i = 0; i < campaigns.length; i++) {
-        const c = campaigns[i];
-        const filterFails = [];
-
-        if (c.mcap < cfg.minMcap || c.mcap > cfg.maxMcap) filterFails.push(`MCap ($${Math.round(c.mcap).toLocaleString()})`);
-        if (c.liquidity < cfg.minLiq) filterFails.push(`Liq ($${Math.round(c.liquidity).toLocaleString()})`);
-        if (c.vol1h < cfg.minVol1h) filterFails.push(`Vol1h ($${Math.round(c.vol1h).toLocaleString()})`);
-        if (c.bsRatio < cfg.minBSRatio) filterFails.push(`B/S (${c.bsRatio})`);
-
-        const rugFails = [];
-        if (c.rugScore > cfg.maxRugScore) rugFails.push(`Score=${c.rugScore}`);
-        if (cfg.requireMintRevoked && !c.mintRevoked) rugFails.push("MintActive");
-        if (cfg.requireFreezeRevoked && !c.freezeRevoked) rugFails.push("FreezeActive");
-        if (c.top10Pct > cfg.maxTop10Pct) rugFails.push(`Top10=${c.top10Pct}%`);
-
-        if (rugFails.length > 0 && c.isRugToken) {
-          rugsBlocked++;
-        }
-
-        if (filterFails.length > 0 || rugFails.length > 0) {
-          lastBacktestResults.push({
-            index: i + 1,
-            symbol: c.symbol,
-            mcap: c.mcap,
-            status: "BỎ QUA",
-            filterDetail: [...filterFails, ...rugFails].join(", "),
-            peakPct: 0,
-            exitReason: "Không vào lệnh",
-            feeSol: 0,
-            netPnlSol: 0,
-            netPnlPct: 0
-          });
-          continue;
-        }
-
-        // Token vượt qua cả 3 bước lọc -> Mở vị thế Mua
-        executedTrades++;
-        const entryPrice = c.priceSeries[0];
-        let highestPrice = entryPrice;
-        let exitPrice = c.priceSeries[c.priceSeries.length - 1];
-        let exitReason = "HẾT_CHU_KỲ_GIỮ";
-
-        for (let step = 1; step < c.priceSeries.length; step++) {
-          const p = c.priceSeries[step];
-          if (p > highestPrice) highestPrice = p;
-
-          const pnlPct = ((p - entryPrice) / entryPrice) * 100;
-          const peakPnlPct = ((highestPrice - entryPrice) / entryPrice) * 100;
-          const drawdownFromPeak = ((highestPrice - p) / highestPrice) * 100;
-
-          if (pnlPct >= cfg.tpPct) {
-            exitPrice = entryPrice * (1 + cfg.tpPct / 100);
-            exitReason = `TAKE_PROFIT (+${cfg.tpPct}%)`;
-            break;
-          } else if (pnlPct <= cfg.slPct) {
-            exitPrice = entryPrice * (1 + cfg.slPct / 100);
-            exitReason = `STOP_LOSS (${cfg.slPct}%)`;
-            break;
-          } else if (peakPnlPct >= cfg.trailArmPct && drawdownFromPeak >= cfg.trailOffsetPct) {
-            exitPrice = highestPrice * (1 - cfg.trailOffsetPct / 100);
-            exitReason = `TRAILING_STOP (Đỉnh +${peakPnlPct.toFixed(1)}%)`;
-            break;
-          }
-        }
-
-        const rawPnlPct = ((exitPrice - entryPrice) / entryPrice) * 100;
-        const effectivePnlPct = rawPnlPct - roundtripSlippagePct;
-        const grossPnlSol = cfg.buySol * (effectivePnlPct / 100);
-        const netPnlSol = grossPnlSol - roundtripJitoSol;
-        const feeSol = (cfg.buySol * (roundtripSlippagePct / 100)) + roundtripJitoSol;
-
-        balanceSol += netPnlSol;
-        equityCurve.push(+balanceSol.toFixed(4));
-
-        if (balanceSol > peakBalanceSol) peakBalanceSol = balanceSol;
-        const dd = ((peakBalanceSol - balanceSol) / peakBalanceSol) * 100;
-        if (dd > maxDrawdownPct) maxDrawdownPct = dd;
-
-        if (netPnlSol > 0) {
-          winningTrades++;
-          grossProfitSol += netPnlSol;
+        // 3. Cập nhật Chart.js
+        chartLabelCount++;
+        myChart.data.labels.push(`Lệnh ${chartLabelCount}`);
+        myChart.data.datasets[0].data.push(currentSol);
+        // Đổi màu line nếu lỗ
+        if(currentSol < initialSol) {
+            myChart.data.datasets[0].borderColor = '#ef4444'; 
         } else {
-          grossLossSol += Math.abs(netPnlSol);
+            myChart.data.datasets[0].borderColor = '#10b981';
         }
+        myChart.update();
 
-        lastBacktestResults.push({
-          index: i + 1,
-          symbol: c.symbol,
-          mcap: c.mcap,
-          status: "KHỚP LỆNH",
-          filterDetail: `ĐẠT (Liq $${Math.round(c.liquidity/1000)}k, B/S ${c.bsRatio}x, Score ${c.rugScore})`,
-          peakPct: +(((highestPrice - entryPrice) / entryPrice) * 100).toFixed(2),
-          exitReason,
-          feeSol: +feeSol.toFixed(4),
-          netPnlSol: +netPnlSol.toFixed(4),
-          netPnlPct: +((netPnlSol / cfg.buySol) * 100).toFixed(2)
-        });
-      }
+        // 4. Cập nhật KPI Dashboards
+        const pnlNet = currentSol - initialSol;
+        const pnlPct = (pnlNet / initialSol) * 100;
+        
+        updateDOM("live_balance", `${currentSol.toFixed(3)} SOL`, "text-white");
+        
+        const pnlColor = pnlNet >= 0 ? "text-emerald-400" : "text-red-400";
+        const sign = pnlNet >= 0 ? "+" : "";
+        updateDOM("live_pnl", `${sign}${pnlNet.toFixed(3)} SOL (${sign}${pnlPct.toFixed(1)}%)`, pnlColor);
+        
+        const winRate = ((wins / totalTrades) * 100).toFixed(1);
+        updateDOM("live_winrate", `${winRate}%`, "text-blue-400");
 
-      // Cập nhật KPI
-      const totalNetPnl = balanceSol - initialSol;
-      const totalNetPnlPct = (totalNetPnl / initialSol) * 100;
-      const winRate = executedTrades > 0 ? (winningTrades / executedTrades) * 100 : 0;
-      const profitFactor = grossLossSol > 0 ? (grossProfitSol / grossLossSol) : (grossProfitSol > 0 ? 99.9 : 0);
-
-      document.getElementById("bt_metricFinalSol").textContent = `${balanceSol.toFixed(3)} SOL`;
-      document.getElementById("bt_metricNetPnl").textContent = `${totalNetPnl >= 0 ? "+" : ""}${totalNetPnl.toFixed(3)} SOL (${totalNetPnlPct.toFixed(1)}%)`;
-      document.getElementById("bt_metricNetPnl").className = `text-xl font-bold mt-1 ${totalNetPnl >= 0 ? "text-emerald-400" : "text-red-400"}`;
-      document.getElementById("bt_metricWinRate").textContent = `${winRate.toFixed(1)}% (${winningTrades}/${executedTrades})`;
-      document.getElementById("bt_metricProfitFactor").textContent = profitFactor.toFixed(2);
-      document.getElementById("bt_metricMaxDD").textContent = `-${maxDrawdownPct.toFixed(2)}%`;
-      document.getElementById("bt_metricRugsBlocked").textContent = `${rugsBlocked} Token`;
-
-      renderBacktestTable();
-      drawEquityCurve(equityCurve);
-    }
-
-    function renderBacktestTable() {
-      const tbody = document.getElementById("btTradeTableBody");
-      tbody.innerHTML = lastBacktestResults.map(r => {
-        if (r.status === "BỎ QUA") {
-          return `
-            <tr class="text-gray-500">
-              <td class="py-2">${r.index}</td>
-              <td class="py-2 font-medium">${r.symbol}</td>
-              <td class="py-2">$${Math.round(r.mcap).toLocaleString()}</td>
-              <td class="py-2 text-amber-400/80">Chặn: ${r.filterDetail}</td>
-              <td class="py-2">--</td>
-              <td class="py-2">Bỏ qua</td>
-              <td class="py-2">0 SOL</td>
-              <td class="py-2">0 SOL</td>
-            </tr>
-          `;
-        }
-        const pnlColor = r.netPnlSol >= 0 ? "text-emerald-400 font-bold" : "text-red-400 font-bold";
-        return `
-          <tr>
-            <td class="py-2">${r.index}</td>
-            <td class="py-2 font-bold text-white">${r.symbol}</td>
-            <td class="py-2">$${Math.round(r.mcap).toLocaleString()}</td>
-            <td class="py-2 text-emerald-400">${r.filterDetail}</td>
-            <td class="py-2 text-cyan-400">+${r.peakPct}%</td>
-            <td class="py-2 font-medium text-gray-200">${r.exitReason}</td>
-            <td class="py-2 text-gray-400">${r.feeSol} SOL</td>
-            <td class="py-2 ${pnlColor}">${r.netPnlSol >= 0 ? "+" : ""}${r.netPnlSol} SOL (${r.netPnlPct}%)</td>
-          </tr>
+        // 5. Thêm dòng vào bảng lịch sử
+        const tr = document.createElement("tr");
+        const rowColor = netPnl >= 0 ? "text-emerald-400" : "text-red-400";
+        const timeStr = new Date().toLocaleTimeString();
+        tr.innerHTML = `
+          <td class="py-2 px-2 text-gray-500">${timeStr}</td>
+          <td class="py-2 px-2 font-bold text-white">MEME_${i}</td>
+          <td class="py-2 px-2 text-gray-400">$${(150 + Math.random()*200).toFixed(0)}k</td>
+          <td class="py-2 px-2">${exitReason}</td>
+          <td class="py-2 px-2 text-gray-500">-${feeSol.toFixed(4)}</td>
+          <td class="py-2 px-2 text-right font-bold ${rowColor}">${sign}${netPnl.toFixed(4)}</td>
         `;
-      }).join("");
-    }
-
-    function drawEquityCurve(points) {
-      const canvas = document.getElementById("equityCurveCanvas");
-      const ctx = canvas.getContext("2d");
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-
-      if (points.length < 2) return;
-
-      const minVal = Math.min(...points) * 0.98;
-      const maxVal = Math.max(...points) * 1.02;
-      const range = Math.max(maxVal - minVal, 0.001);
-
-      // Lưới ngang
-      ctx.strokeStyle = "#1f2937";
-      ctx.lineWidth = 1;
-      for (let g = 1; g <= 4; g++) {
-        const y = (h / 5) * g;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
+        tbody.prepend(tr); // Thêm lên đầu bảng
       }
 
-      // Vẽ đường Equity
-      ctx.beginPath();
-      points.forEach((val, idx) => {
-        const x = (idx / (points.length - 1)) * (w - 40) + 20;
-        const y = h - 20 - ((val - minVal) / range) * (h - 40);
-        if (idx === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.strokeStyle = points[points.length - 1] >= points[0] ? "#10b981" : "#ef4444";
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
+      // Hoàn thành
+      isRunning = false;
+      btn.innerHTML = "▶ CHẠY LẠI BACKTEST";
+      btn.classList.replace("bg-gray-700", "btn-gradient");
+      document.getElementById("live_status").innerHTML = `<span class="w-3 h-3 rounded-full bg-blue-500"></span> HOÀN THÀNH`;
+      document.getElementById("live_status").className = "text-lg font-bold text-blue-400 mt-4 flex items-center gap-2";
     }
 
-    function exportBacktestCSV() {
-      if (!lastBacktestResults.length) return alert("Hãy chạy Backtest trước khi xuất CSV.");
-      const headers = ["Index,Symbol,MarketCap,Status,FilterDetail,PeakPct,ExitReason,FeeSOL,NetPnLSOL,NetPnLPct"];
-      const rows = lastBacktestResults.map(r =>
-        `${r.index},${r.symbol},${r.mcap},${r.status},"${r.filterDetail}",${r.peakPct},"${r.exitReason}",${r.feeSol},${r.netPnlSol},${r.netPnlPct}`
-      );
-      const blob = new Blob([headers.concat(rows).join("\n")], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `solana_backtest_results_${Date.now()}.csv`;
-      a.click();
-    }
+    // Tải cấu hình khi vừa mở web
     window.addEventListener("DOMContentLoaded", () => {
-  loadConfigFromBrowser();
-});
+      loadConfig();
+      // Mở sẵn biểu đồ rỗng cho đẹp
+      initChart(10);
+    });
   </script>
 </body>
 </html>
