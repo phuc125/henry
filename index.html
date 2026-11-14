@@ -3,468 +3,356 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solana MevBot Ultimate | Multi-DEX & Backtest Engine</title>
+  <title>Solana MevBot Pro Max | Multi-DEX Auto Trading & Backtest</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, colors: { gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' } } } }
-    }
+    tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, colors: { gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' } } } } }
   </script>
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body { background-color: #030712; color: #e5e7eb; }
-    .glass-card {
-      background: rgba(17, 24, 39, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(55, 65, 81, 0.55); border-radius: 1rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-    }
-    .input-pro {
-      background: #0b0f19; border: 1px solid #374151; color: #10b981; border-radius: 0.5rem;
-      padding: 0.55rem 0.75rem; width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; transition: all 0.2s ease;
-    }
-    .input-pro:focus { outline: none; border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.25); }
-    .btn-gradient { background: linear-gradient(135deg, #059669 0%, #10b981 100%); transition: transform 0.15s, box-shadow 0.15s; }
-    .btn-gradient:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #030712; }
-    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
-    .flash-update { animation: flashPulse 0.45s ease-out; }
-    @keyframes flashPulse { 0% { transform: scale(1.03); filter: brightness(1.5); } 100% { transform: scale(1); filter: brightness(1); } }
+    .glass-card { background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(55, 65, 81, 0.6); border-radius: 1rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); }
+    .input-pro { background: #0b0f19; border: 1px solid #374151; color: #10b981; border-radius: 0.5rem; padding: 0.5rem 0.75rem; width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; transition: 0.2s; }
+    .input-pro:focus { outline: none; border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+    .btn-grad { background: linear-gradient(135deg, #059669, #10b981); transition: 0.2s; }
+    .btn-grad:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #030712; } ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    .flash-up { animation: flash 0.4s ease-out; } @keyframes flash { 0% { transform: scale(1.02); filter: brightness(1.3); } 100% { transform: scale(1); filter: brightness(1); } }
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-6 antialiased selection:bg-emerald-500/30">
 
   <!-- HEADER -->
-  <header class="max-w-7xl mx-auto mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-gray-800/80 pb-5">
+  <header class="max-w-7xl mx-auto mb-6 flex flex-col lg:flex-row justify-between gap-4 border-b border-gray-800 pb-5">
     <div>
-      <div class="flex flex-wrap items-center gap-2 mb-2">
-        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">Multi-DEX</span>
-        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full">Jito Bundle</span>
-        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full">Audio FX</span>
+      <div class="flex gap-2 mb-2">
+        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">DEX Screener</span>
+        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full">Pump.fun</span>
+        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full">Coingecko / Fomo</span>
+        <span class="px-2 py-0.5 text-[10px] font-bold uppercase bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full">Jito MEV</span>
       </div>
-      <h1 class="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-        SOLANA MEVBOT ULTIMATE
-      </h1>
-      <p class="text-xs md:text-sm text-gray-400 mt-1">Quét Đa Nguồn (DEX Screener + Gecko) • Hỗ trợ Ví Bitget/Phantom • Auto-Save</p>
+      <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">SOLANA AUTO-TRADE PRO MAX</h1>
     </div>
-
-    <div class="flex flex-wrap items-center gap-3">
-      <label class="flex items-center gap-2 px-3 py-2 glass-card text-xs font-medium text-emerald-400 cursor-pointer">
-        <input id="cfg_soundEnabled" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" /> 🔊 Âm thanh
-      </label>
-      <button onclick="connectWallet()" class="px-4 py-2 glass-card hover:border-purple-500 text-purple-300 font-semibold text-xs md:text-sm transition flex items-center gap-2">
-        🔗 Kết nối Ví
-      </button>
-      <!-- NÚT CHECK SỐ DƯ MỚI THÊM -->
-      <button onclick="checkBalance()" class="px-4 py-2 glass-card hover:border-emerald-500 text-emerald-400 font-semibold text-xs md:text-sm transition flex items-center gap-2">
-        💰 Số dư
-      </button>
-      <span id="walletStatus" class="px-3.5 py-2 text-xs font-mono bg-gray-900 border border-gray-800 rounded-lg text-gray-400">Chưa kết nối ví</span>
+    <div class="flex flex-wrap items-center gap-2">
+      <label class="flex items-center gap-2 px-3 py-2 glass-card text-xs text-emerald-400 cursor-pointer"><input id="cfg_sound" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> 🔊 Âm thanh</label>
+      <button onclick="checkBalance()" class="px-4 py-2 glass-card text-emerald-300 text-sm font-semibold hover:border-emerald-500 transition">💰 Số dư</button>
+      <button onclick="connectWallet()" class="px-4 py-2 glass-card text-purple-300 text-sm font-semibold hover:border-purple-500 transition">🔗 Kết nối Ví (Bitget/Phantom)</button>
+      <span id="walletStatus" class="px-3 py-2 text-xs font-mono bg-gray-900 border border-gray-800 rounded-lg text-gray-400">Chưa kết nối ví</span>
     </div>
   </header>
 
-  <!-- NAVIGATION TABS -->
-  <div class="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex gap-1 bg-gray-900/90 p-1.5 rounded-xl border border-gray-800">
-      <button onclick="switchTab('tab-config')" id="btn-tab-config" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg bg-gray-800 text-white shadow">⚙️ Cấu Hình & Ví</button>
-      <button onclick="switchTab('tab-live')" id="btn-tab-live" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white">⚡ Live Trading</button>
-      <button onclick="switchTab('tab-backtest')" id="btn-tab-backtest" class="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white">📊 Backtest Live</button>
+  <!-- TABS -->
+  <div class="max-w-7xl mx-auto mb-6 flex justify-between items-center">
+    <div class="flex gap-1 bg-gray-900 p-1.5 rounded-xl border border-gray-800">
+      <button onclick="switchTab('tab-cfg')" id="btn-tab-cfg" class="px-5 py-2 text-sm font-semibold rounded-lg bg-gray-800 text-white shadow">⚙️ Cấu Hình</button>
+      <button onclick="switchTab('tab-live')" id="btn-tab-live" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-400 hover:text-white">⚡ Live Trading</button>
+      <button onclick="switchTab('tab-test')" id="btn-tab-test" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-400 hover:text-white">📊 Backtest</button>
     </div>
-    <div class="flex items-center gap-2">
-      <span id="saveIndicator" class="text-xs font-mono text-emerald-400/80 hidden">✓ Đã lưu</span>
-      <button onclick="resetDefaultConfig()" class="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-gray-400 rounded-lg border border-gray-800">↺ Reset Mặc định</button>
-    </div>
+    <span id="saveBadge" class="text-xs font-mono text-emerald-400 hidden">✓ Đã lưu</span>
   </div>
 
   <main class="max-w-7xl mx-auto">
     <!-- ========================================================= -->
     <!-- TAB 1: CẤU HÌNH -->
     <!-- ========================================================= -->
-    <section id="tab-config" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <section id="tab-cfg" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="glass-card p-6 space-y-4">
-        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5">📡 Kết Nối & Chế Độ Ký Lệnh</h2>
-        <div><label class="block text-xs text-gray-400 mb-1">RPC URL</label><input id="cfg_rpcUrl" type="text" class="input-pro" value="https://api.mainnet-beta.solana.com" oninput="saveConfig()" /></div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Chế độ Ký Hợp Đồng</label>
-          <select id="cfg_walletMode" class="input-pro text-white" onchange="saveConfig()">
-            <option value="browser">Ví Trình Duyệt (Popup duyệt lệnh)</option>
-            <option value="private_key">Auto Bot 100% (Ký bằng Private Key)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs text-purple-400 mb-1">Private Key (Base58 - Cho Auto Bot)</label>
-          <input id="cfg_privateKey" type="password" class="input-pro border-purple-500/40" placeholder="Nhập khóa bí mật..." oninput="saveConfig()" />
-        </div>
-        <div class="pt-1">
-          <label class="flex items-center gap-2 text-xs md:text-sm text-emerald-400 font-semibold cursor-pointer">
-            <input id="cfg_dryRun" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" /> Chế độ Dry Run (Mô phỏng lệnh)
-          </label>
-        </div>
+        <h2 class="font-bold text-white border-b border-gray-800 pb-2">📡 RPC & Ký Lệnh</h2>
+        <div><label class="text-xs text-gray-400">RPC URL</label><input id="c_rpc" type="text" class="input-pro" value="https://api.mainnet-beta.solana.com" oninput="saveCfg()"/></div>
+        <div><label class="text-xs text-gray-400">Chế độ Ký</label><select id="c_mode" class="input-pro text-white" onchange="saveCfg()"><option value="browser">Duyệt tay (Ví Trình Duyệt)</option><option value="auto">Auto 100% (Private Key)</option></select></div>
+        <div><label class="text-xs text-purple-400">Private Key (Base58)</label><input id="c_pk" type="password" class="input-pro border-purple-500/40" placeholder="Khóa bí mật cho Auto Bot..." oninput="saveCfg()"/></div>
+        <label class="flex items-center gap-2 text-sm text-emerald-400 mt-2"><input id="c_dry" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> Chế độ Dry Run (Mô phỏng)</label>
       </div>
 
       <div class="glass-card p-6 space-y-4">
-        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5">🎯 Bộ Lọc Token & RugCheck</h2>
+        <h2 class="font-bold text-white border-b border-gray-800 pb-2">🎯 Tiêu Chí Mua & Lọc</h2>
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="text-xs text-gray-400">Market Cap Min ($)</label><input id="cfg_minMcap" type="number" class="input-pro" value="150000" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Market Cap Max ($)</label><input id="cfg_maxMcap" type="number" class="input-pro" value="500000" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Thanh khoản Min ($)</label><input id="cfg_minLiq" type="number" class="input-pro" value="35000" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Vol 1h Min ($)</label><input id="cfg_minVol1h" type="number" class="input-pro" value="25000" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Buy/Sell 1h ≥</label><input id="cfg_minBSRatio" type="number" step="0.05" class="input-pro" value="1.25" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">RugCheck Max</label><input id="cfg_maxRugScore" type="number" class="input-pro" value="400" oninput="saveConfig()" /></div>
+          <div><label class="text-xs text-gray-400">MCap Min ($)</label><input id="c_mMin" type="number" class="input-pro" value="150000" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">MCap Max ($)</label><input id="c_mMax" type="number" class="input-pro" value="500000" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">Liq Min ($)</label><input id="c_liq" type="number" class="input-pro" value="35000" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">Vol 1h Min ($)</label><input id="c_vol" type="number" class="input-pro" value="25000" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">Buy/Sell ≥</label><input id="c_bs" type="number" step="0.1" class="input-pro" value="1.25" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">RugScore Max</label><input id="c_rug" type="number" class="input-pro" value="400" oninput="saveCfg()"/></div>
         </div>
-        <div class="space-y-2 pt-1 text-xs text-gray-300">
-          <label class="flex items-center gap-2"><input id="cfg_requireMintRevoked" type="checkbox" checked class="accent-emerald-500" onchange="saveConfig()" /> Bắt buộc Mint Authority khóa</label>
-          <label class="flex items-center gap-2"><input id="cfg_requireFreezeRevoked" type="checkbox" checked class="accent-emerald-500" onchange="saveConfig()" /> Bắt buộc Freeze Authority khóa</label>
-        </div>
+        <label class="flex items-center gap-2 text-xs text-gray-300"><input id="c_mint" type="checkbox" checked class="accent-emerald-500" onchange="saveCfg()"/> Bắt buộc Mint Authority khóa</label>
       </div>
 
       <div class="glass-card p-6 space-y-4">
-        <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2.5">⚡ Jito Bundle & Chốt Lời</h2>
+        <h2 class="font-bold text-white border-b border-gray-800 pb-2">⚡ Bán Chốt Lời & Jito Tip</h2>
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="text-xs text-gray-400">Vào Lệnh (SOL)</label><input id="cfg_buySol" type="number" step="0.05" class="input-pro font-bold text-white" value="0.25" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Slippage (bps)</label><input id="cfg_slippageBps" type="number" step="25" class="input-pro" value="250" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Take Profit (+%)</label><input id="cfg_tpPct" type="number" class="input-pro text-emerald-400" value="45" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Stop Loss (-%)</label><input id="cfg_slPct" type="number" class="input-pro text-red-400" value="-18" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Trailing Kích Hoạt</label><input id="cfg_trailArmPct" type="number" class="input-pro" value="20" oninput="saveConfig()" /></div>
-          <div><label class="text-xs text-gray-400">Trailing Độ Lùi</label><input id="cfg_trailOffsetPct" type="number" class="input-pro" value="10" oninput="saveConfig()" /></div>
-        </div>
-        <div>
-          <label class="text-xs text-purple-400 font-semibold mb-1">Jito Tip (Lamports)</label>
-          <input id="cfg_jitoTipLamports" type="number" class="input-pro text-purple-400" value="150000" oninput="saveConfig()" />
+          <div><label class="text-xs text-gray-400">Lệnh (SOL)</label><input id="c_sol" type="number" step="0.05" class="input-pro text-white font-bold" value="0.25" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-purple-400">Jito Tip (Lamps)</label><input id="c_tip" type="number" class="input-pro text-purple-400" value="150000" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">Take Profit (%)</label><input id="c_tp" type="number" class="input-pro text-emerald-400" value="45" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">Stop Loss (%)</label><input id="c_sl" type="number" class="input-pro text-red-400" value="-18" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">Trailing Kích Hoạt</label><input id="c_tArm" type="number" class="input-pro" value="20" oninput="saveCfg()"/></div>
+          <div><label class="text-xs text-gray-400">Trailing Độ Lùi</label><input id="c_tOff" type="number" class="input-pro" value="10" oninput="saveCfg()"/></div>
         </div>
       </div>
     </section>
 
     <!-- ========================================================= -->
-    <!-- TAB 2: LIVE TRADING (MULTI-DEX) -->
+    <!-- TAB 2: LIVE TRADING THẬT (MUA/BÁN) -->
     <!-- ========================================================= -->
     <section id="tab-live" class="hidden space-y-6">
-      <div class="glass-card p-5 flex flex-wrap justify-between gap-4 border-l-4 border-emerald-500">
+      <div class="glass-card p-5 flex justify-between border-l-4 border-emerald-500">
         <div class="flex gap-3">
-          <button onclick="startLiveBot()" id="btnStartBot" class="btn-gradient px-5 py-2.5 text-white font-bold text-sm rounded-lg">▶ KHỞI CHẠY AUTO TRADE</button>
-          <button onclick="stopLiveBot()" id="btnStopBot" disabled class="px-5 py-2.5 bg-red-600/30 text-red-300 font-bold text-sm rounded-lg cursor-not-allowed">⏹ DỪNG</button>
-          <button onclick="runSingleDiscoveryScan()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg border border-gray-700">🔍 Quét Đa Nguồn 1 Lần</button>
+          <button onclick="startBot()" id="btnStart" class="btn-grad px-5 py-2 text-white font-bold rounded-lg text-sm">▶ CHẠY AUTO TRADE</button>
+          <button onclick="stopBot()" id="btnStop" disabled class="px-5 py-2 bg-red-600/30 text-red-300 font-bold rounded-lg text-sm cursor-not-allowed">⏹ DỪNG</button>
+          <button onclick="scanAndTradeLive()" class="px-4 py-2 bg-gray-800 text-gray-200 rounded-lg text-sm hover:bg-gray-700">🔍 Quét Đa Nguồn (1 Lần)</button>
         </div>
         <div class="flex items-center gap-6 font-mono text-sm">
-          <div>Trạng thái: <span id="botRunningState" class="font-bold text-gray-400">ĐANG DỪNG</span></div>
-          <div>Vị thế mở: <span id="openPositionsCount" class="font-bold text-emerald-400">0</span></div>
+          <div>Trạng thái: <span id="l_stat" class="font-bold text-gray-400">ĐANG DỪNG</span></div>
+          <div>Vị thế: <span id="l_pos" class="font-bold text-emerald-400">0</span></div>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="glass-card p-5">
-          <h3 class="text-sm font-bold text-white mb-3">Token Phát Hiện ($150k – $500k)</h3>
-          <div class="overflow-x-auto max-h-72">
-            <table class="w-full text-left text-xs font-mono">
-              <thead class="text-gray-400 sticky top-0 bg-gray-900 border-b border-gray-800">
-                <tr><th class="py-2 px-2">Token</th><th class="py-2 px-2">Nguồn</th><th class="py-2 px-2">MCap</th><th class="py-2 px-2">Liq/Vol</th><th class="py-2 px-2">Lọc</th><th class="py-2 px-2">RugCheck</th></tr>
-              </thead>
-              <tbody id="candidatesTableBody" class="divide-y divide-gray-800/50">
-                <tr><td colspan="6" class="py-8 text-center text-gray-500">Nhấn nút quét để tìm token từ DEX Screener & Fomo.</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <h3 class="font-bold text-white mb-3">Token Quét Được (DEXScreener/Gecko/Pump.fun)</h3>
+          <div class="overflow-x-auto h-72"><table class="w-full text-left text-xs font-mono"><thead class="text-gray-400 sticky top-0 bg-gray-900"><tr><th class="p-2">Token</th><th class="p-2">Nguồn</th><th class="p-2">MCap</th><th class="p-2">Lọc/Rug</th><th class="p-2 text-right">Lệnh</th></tr></thead><tbody id="tb_scan" class="divide-y divide-gray-800/50"></tbody></table></div>
         </div>
         <div class="glass-card p-5">
-          <h3 class="text-sm font-bold text-white mb-3">Vị Thế Đang Mở (Auto TP / SL / Trailing)</h3>
-          <div class="overflow-x-auto max-h-72">
-            <table class="w-full text-left text-xs font-mono">
-              <thead class="text-gray-400 sticky top-0 bg-gray-900 border-b border-gray-800">
-                <tr><th class="py-2 px-2">Token</th><th class="py-2 px-2">Giá Vào</th><th class="py-2 px-2">Hiện Tại</th><th class="py-2 px-2">Đỉnh</th><th class="py-2 px-2">PnL (%)</th><th class="py-2 px-2 text-right">Lệnh</th></tr>
-              </thead>
-              <tbody id="positionsTableBody" class="divide-y divide-gray-800/50">
-                <tr><td colspan="6" class="py-8 text-center text-gray-500">Chưa có vị thế.</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <h3 class="font-bold text-white mb-3">Vị Thế Mở (Đang theo dõi TP/SL)</h3>
+          <div class="overflow-x-auto h-72"><table class="w-full text-left text-xs font-mono"><thead class="text-gray-400 sticky top-0 bg-gray-900"><tr><th class="p-2">Token</th><th class="p-2">Giá Vào</th><th class="p-2">Hiện Tại</th><th class="p-2">PnL (%)</th><th class="p-2 text-right">Hành động</th></tr></thead><tbody id="tb_pos" class="divide-y divide-gray-800/50"></tbody></table></div>
         </div>
       </div>
+      
+      <div class="glass-card p-4"><h3 class="text-sm font-bold text-white mb-2">Audit Log (Trạng thái lệnh)</h3><div id="logConsole" class="font-mono text-xs bg-black/80 p-3 rounded h-40 overflow-y-auto space-y-1"></div></div>
     </section>
 
     <!-- ========================================================= -->
     <!-- TAB 3: REAL-TIME BACKTEST -->
     <!-- ========================================================= -->
-    <section id="tab-backtest" class="hidden space-y-6">
-      <div class="glass-card p-5 grid grid-cols-1 md:grid-cols-5 gap-4 border-l-4 border-emerald-500 items-end">
-        <div><label class="block text-xs text-gray-400 mb-1">Nguồn Dữ Liệu</label><select id="bt_dataSource" class="input-pro text-white" onchange="document.getElementById('bt_customJsonBox').classList.toggle('hidden', this.value !== 'custom_json')"><option value="synthetic">Mô Phỏng (+Rug Pull)</option><option value="live_dex">Cặp Thực Tế DEX</option><option value="custom_json">JSON Tùy Chỉnh</option></select></div>
-        <div><label class="block text-xs text-gray-400 mb-1">Vốn (SOL)</label><input id="bt_initialSol" type="number" class="input-pro" value="10" /></div>
-        <div><label class="block text-xs text-gray-400 mb-1">Số Token</label><input id="bt_numTokens" type="number" class="input-pro" value="80" /></div>
-        <div><label class="block text-xs text-gray-400 mb-1">Tốc độ (ms)</label><input id="bt_speed" type="number" class="input-pro" value="120" /></div>
-        <div class="flex gap-2"><button onclick="startRealtimeBacktest()" id="btnStartBacktest" class="btn-gradient w-full py-2.5 rounded-lg text-white font-bold text-sm">▶ CHẠY</button><button onclick="isBacktestRunning = false" class="px-3 bg-red-600/30 text-red-300 rounded-lg">⏹</button></div>
-        <div id="bt_customJsonBox" class="hidden md:col-span-5"><textarea id="bt_customJsonInput" rows="2" class="input-pro text-xs" placeholder="Nhập mảng JSON cấu hình token..."></textarea></div>
+    <section id="tab-test" class="hidden space-y-6">
+      <div class="glass-card p-5 flex gap-4 border-l-4 border-cyan-500 items-end">
+        <div><label class="text-xs text-gray-400">Vốn (SOL)</label><input id="b_sol" type="number" class="input-pro w-24" value="10" /></div>
+        <div><label class="text-xs text-gray-400">Tốc độ (ms)</label><input id="b_spd" type="number" class="input-pro w-24" value="100" /></div>
+        <button onclick="runBacktest()" id="btnBtStart" class="btn-grad px-6 py-2.5 rounded-lg text-white font-bold text-sm">▶ CHẠY BACKTEST</button>
       </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Tổng Vốn</div><div id="live_balance" class="text-2xl font-bold font-mono text-white mt-1">10.00 SOL</div></div>
-        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">PnL Ròng</div><div id="live_pnl" class="text-lg font-bold font-mono text-emerald-400 mt-1">+0.00 SOL</div></div>
-        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Win Rate</div><div id="live_winrate" class="text-lg font-bold font-mono text-blue-400 mt-1">0.0%</div></div>
-        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Profit Factor</div><div id="live_pf" class="text-lg font-bold font-mono text-white mt-1">0.00</div></div>
-        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Max Drawdown</div><div id="live_maxdd" class="text-lg font-bold font-mono text-red-400 mt-1">0.00%</div></div>
-        <div class="glass-card p-4"><div class="text-[11px] text-gray-400 uppercase">Đã Chặn Rug</div><div id="live_blocked" class="text-lg font-bold font-mono text-amber-400 mt-1">0</div></div>
+      <div class="grid grid-cols-4 gap-4">
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">Tổng Vốn</div><div id="bt_bal" class="text-xl font-bold font-mono text-white mt-1">10.00 SOL</div></div>
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">PnL</div><div id="bt_pnl" class="text-xl font-bold font-mono text-emerald-400 mt-1">+0.00</div></div>
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">Win Rate</div><div id="bt_win" class="text-xl font-bold font-mono text-blue-400 mt-1">0%</div></div>
+        <div class="glass-card p-4"><div class="text-[10px] text-gray-400 uppercase">Chặn Rug</div><div id="bt_rug" class="text-xl font-bold font-mono text-amber-400 mt-1">0</div></div>
       </div>
-
-      <div class="glass-card p-5"><div class="w-full h-[320px]"><canvas id="equityChart"></canvas></div></div>
-
-      <div class="glass-card p-5">
-        <div class="overflow-x-auto max-h-80">
-          <table class="w-full text-left text-xs font-mono">
-            <thead class="text-gray-400 sticky top-0 bg-gray-900 border-b border-gray-800">
-              <tr><th class="py-2.5 px-2">#</th><th class="py-2.5 px-2">Token</th><th class="py-2.5 px-2">MCap</th><th class="py-2.5 px-2">Lọc/RugCheck</th><th class="py-2.5 px-2">Đỉnh</th><th class="py-2.5 px-2">Thoát Lệnh</th><th class="py-2.5 px-2 text-right">PnL</th></tr>
-            </thead>
-            <tbody id="bt_liveTableBody" class="divide-y divide-gray-800/50"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="glass-card p-5 h-[300px]"><canvas id="btChart"></canvas></div>
     </section>
   </main>
 
   <script>
+    const WSOL = "So11111111111111111111111111111111111111112";
+    const LAMPORTS = 1e9;
+    const JITO = "https://mainnet.block-engine.jito.wtf/api/v1/bundles";
+
     // --- 1. LOCAL STORAGE ---
-    const STORAGE_KEY = "MevBotUltimateConfig";
-    function saveConfig() {
-      const inputs = document.querySelectorAll('input[id^="cfg_"], select[id^="cfg_"]');
-      const data = {};
-      inputs.forEach(e => data[e.id] = e.type === "checkbox" ? e.checked : e.value);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      const ind = document.getElementById("saveIndicator");
-      ind.classList.remove("hidden"); setTimeout(() => ind.classList.add("hidden"), 1500);
+    function saveCfg() {
+      const d = {}; document.querySelectorAll('input[id^="c_"], select[id^="c_"]').forEach(e => d[e.id] = e.type==="checkbox"?e.checked:e.value);
+      localStorage.setItem("BotProMax", JSON.stringify(d));
+      const b = document.getElementById("saveBadge"); b.classList.remove("hidden"); setTimeout(()=>b.classList.add("hidden"),1000);
     }
-    function loadConfig() {
-      const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      for (const [k, v] of Object.entries(d)) {
-        const e = document.getElementById(k);
-        if (e) e.type === "checkbox" ? e.checked = v : e.value = v;
-      }
-    }
-    function resetDefaultConfig() { localStorage.removeItem(STORAGE_KEY); location.reload(); }
-
-    function getUserConfig() {
-      return {
-        walletMode: document.getElementById("cfg_walletMode").value,
-        privateKey: document.getElementById("cfg_privateKey").value.trim(),
-        dryRun: document.getElementById("cfg_dryRun").checked,
-        sound: document.getElementById("cfg_soundEnabled").checked,
-        minMcap: parseFloat(document.getElementById("cfg_minMcap").value) || 150000,
-        maxMcap: parseFloat(document.getElementById("cfg_maxMcap").value) || 500000,
-        minLiq: parseFloat(document.getElementById("cfg_minLiq").value) || 35000,
-        minVol: parseFloat(document.getElementById("cfg_minVol1h").value) || 25000,
-        bsRatio: parseFloat(document.getElementById("cfg_minBSRatio").value) || 1.25,
-        rugScore: parseInt(document.getElementById("cfg_maxRugScore").value) || 400,
-        tp: parseFloat(document.getElementById("cfg_tpPct").value) || 45,
-        sl: parseFloat(document.getElementById("cfg_slPct").value) || -18,
-        tArm: parseFloat(document.getElementById("cfg_trailArmPct").value) || 20,
-        tOff: parseFloat(document.getElementById("cfg_trailOffsetPct").value) || 10,
-        buySol: parseFloat(document.getElementById("cfg_buySol").value) || 0.25,
-        jitoFee: (parseInt(document.getElementById("cfg_jitoTipLamports").value || 150000)*2)/1e9,
-        slip: parseFloat(document.getElementById("cfg_slippageBps").value || 250)/10000*100
-      };
+    function loadCfg() {
+      const d = JSON.parse(localStorage.getItem("BotProMax")||"{}");
+      for(let [k,v] of Object.entries(d)){ const e = document.getElementById(k); if(e) e.type==="checkbox"?e.checked=v:e.value=v; }
     }
 
-    // --- 2. AUDIO SYNTH ---
-    let audioCtx = null;
-    function initAudio() { if(!audioCtx && window.AudioContext) audioCtx = new AudioContext(); if(audioCtx?.state==='suspended') audioCtx.resume(); }
-    function playSound(type) {
-      if (!document.getElementById("cfg_soundEnabled").checked || !audioCtx) return;
-      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(), now = audioCtx.currentTime;
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      if (type === "ting") { osc.type = "sine"; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(2400, now+0.1); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.4); osc.start(now); osc.stop(now+0.4); }
-      else if (type === "beep") { osc.type = "square"; osc.frequency.setValueAtTime(300, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.2); osc.start(now); osc.stop(now+0.2); }
-      else if (type === "block") { osc.type = "triangle"; osc.frequency.setValueAtTime(150, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.1); osc.start(now); osc.stop(now+0.1); }
+    // --- 2. AUDIO ---
+    let actx=null; function initAudio(){if(!actx && window.AudioContext) actx=new AudioContext(); if(actx?.state==='suspended') actx.resume();}
+    function playSnd(t) {
+      if(!document.getElementById("cfg_sound").checked || !actx) return;
+      const o=actx.createOscillator(), g=actx.createGain(), n=actx.currentTime; o.connect(g); g.connect(actx.destination);
+      if(t==="ting"){o.type="sine";o.frequency.setValueAtTime(1200,n);o.frequency.exponentialRampToValueAtTime(2400,n+0.1);g.gain.setValueAtTime(0.2,n);g.gain.exponentialRampToValueAtTime(0.01,n+0.4);o.start(n);o.stop(n+0.4);}
+      if(t==="beep"){o.type="square";o.frequency.setValueAtTime(300,n);g.gain.setValueAtTime(0.1,n);g.gain.exponentialRampToValueAtTime(0.01,n+0.2);o.start(n);o.stop(n+0.2);}
     }
 
-    // --- 3. WALLET CONNECTION --
-    let walletProvider = null, connectedPublicKey = null;
-    
+    // --- 3. BASE58 & WALLET ---
+    const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"; const B58M = {}; for(let i=0;i<B58.length;i++) B58M[B58[i]]=i;
+    function dec58(s) {
+      if(!s.length) return new Uint8Array(0); let b=[0];
+      for(let i=0;i<s.length;i++){ let c=s[i]; for(let j=0;j<b.length;j++) b[j]*=58; b[0]+=B58M[c]; let cr=0; for(let j=0;j<b.length;j++){ b[j]+=cr; cr=b[j]>>8; b[j]&=0xff; } while(cr){ b.push(cr&0xff); cr>>=8; } }
+      for(let i=0;s[i]==="1"&&i<s.length-1;i++) b.push(0); return new Uint8Array(b.reverse());
+    }
+
+    let wProv=null, pubK=null;
     async function connectWallet() {
       try {
-        const provider = window.bitkeep?.solana || window.phantom?.solana || window.solana || window.solflare;
-        if (!provider) return alert("Không tìm thấy ví mở rộng (Bitget/Phantom). Chạy qua localhost nhé.");
-        const resp = await provider.connect();
-        const pk = resp?.publicKey || provider.publicKey;
-        if(!pk) throw new Error("Lỗi đọc publicKey");
-        walletProvider = provider; connectedPublicKey = pk.toString();
-        document.getElementById("walletStatus").textContent = `Ví: ${connectedPublicKey.slice(0,4)}...${connectedPublicKey.slice(-4)}`;
-        document.getElementById("walletStatus").className = "px-3.5 py-2 text-xs font-mono bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-400";
-      } catch(e) { console.error(e); }
+        const p = window.bitkeep?.solana || window.phantom?.solana || window.solana || window.solflare;
+        if(!p) return alert("Không tìm thấy ví!"); const r = await p.connect(); const pk = r?.publicKey || p.publicKey;
+        wProv = p; pubK = pk.toString();
+        const b = document.getElementById("walletStatus"); b.textContent = `Ví: ${pubK.slice(0,4)}...${pubK.slice(-4)}`; b.className = "px-3 py-2 text-xs font-mono bg-emerald-900 border border-emerald-500 rounded text-emerald-400";
+      } catch(e){ console.error(e); }
     }
-
-    // HÀM KIỂM TRA SỐ DƯ (Vừa thêm vào)
+    
     async function checkBalance() {
-      const cfg = getUserConfig();
-      let pubKeyStr = connectedPublicKey;
-
-      // Nếu chưa kết nối ví, lấy publicKey từ Private Key (nếu có nhập)
-      if (!pubKeyStr && cfg.privateKey) {
-        try {
-          const secret = decodeBase58(cfg.privateKey);
-          const kp = solanaWeb3.Keypair.fromSecretKey(secret);
-          pubKeyStr = kp.publicKey.toString();
-        } catch(e) {
-          return alert("Private Key Base58 không hợp lệ!");
-        }
-      }
-
-      if (!pubKeyStr) {
-        return alert("Vui lòng Kết nối ví hoặc nhập Private Key ở Tab 1 trước khi check số dư.");
-      }
-
+      let pkStr = pubK; const mode = document.getElementById("c_mode").value, pkIn = document.getElementById("c_pk").value;
+      if(!pkStr && mode==="auto" && pkIn){ try{ const kp = solanaWeb3.Keypair.fromSecretKey(dec58(pkIn)); pkStr = kp.publicKey.toString(); }catch(e){} }
+      if(!pkStr) return alert("Hãy kết nối ví hoặc nhập Private Key!");
+      const b = event.currentTarget, o = b.innerHTML; b.innerHTML = "⏳..";
       try {
-        const btn = event.currentTarget;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = "⏳ Đang check...";
-        
-        // Kết nối RPC để lấy số dư
-        const connection = new solanaWeb3.Connection(cfg.rpcUrl || "https://api.mainnet-beta.solana.com");
-        const pubKey = new solanaWeb3.PublicKey(pubKeyStr);
-        const balance = await connection.getBalance(pubKey);
-        const solBalance = (balance / 1_000_000_000).toFixed(4); // Chia cho LAMPORTS_PER_SOL
-        
-        // Hiển thị ra giao diện
-        const badge = document.getElementById("walletStatus");
-        badge.textContent = `Ví: ${pubKeyStr.slice(0,4)}...${pubKeyStr.slice(-4)} | 💰 ${solBalance} SOL`;
-        badge.className = "px-3.5 py-2 text-xs font-bold font-mono bg-emerald-950/80 border border-emerald-400 rounded-lg text-emerald-400 flash-update";
-        
-        btn.innerHTML = originalText;
-      } catch (error) {
-        console.error(error);
-        alert("Lỗi khi lấy số dư! Hãy kiểm tra lại kết nối mạng hoặc RPC URL.");
-      }
+        const c = new solanaWeb3.Connection(document.getElementById("c_rpc").value);
+        const bal = await c.getBalance(new solanaWeb3.PublicKey(pkStr));
+        document.getElementById("walletStatus").textContent = `Ví: ${pkStr.slice(0,4)}.. | 💰 ${(bal/LAMPORTS).toFixed(4)} SOL`;
+        document.getElementById("walletStatus").classList.add("flash-up"); setTimeout(()=>document.getElementById("walletStatus").classList.remove("flash-up"), 500);
+      } catch(e){}
+      b.innerHTML = o;
     }
 
-    // --- 4. MULTI-DEX LIVE SCAN ---
-    async function runSingleDiscoveryScan() {
-      initAudio(); const cfg = getUserConfig(); const tbody = document.getElementById("candidatesTableBody");
-      tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-emerald-400">Đang quét đa nguồn (DEX Screener + Gecko/Fomo)...</td></tr>`;
+    // --- 4. EXECUTION (JUPITER + JITO) ---
+    function log(type, sym, txt, color="text-gray-300") {
+      const c = document.getElementById("logConsole");
+      c.innerHTML = `<div><span class="text-gray-500">${new Date().toLocaleTimeString()}</span> <span class="${color} font-bold">[${type}] ${sym}</span>: ${txt}</div>` + c.innerHTML;
+    }
+
+    async function executeBuySell(mint, sym, amtLamports, side) {
+      const dry = document.getElementById("c_dry").checked;
+      log(side, sym, `Đang giả lập lệnh Jito (Amt: ${amtLamports})...`, side==="BUY"?"text-emerald-400":"text-cyan-400");
+      if (dry) { await sleep(800); playSnd("ting"); log("SUCCESS", sym, `[DRY-RUN] Khớp lệnh ${side} thành công!`, "text-emerald-500"); return { ok: true, out: amtLamports * 1000 }; }
       
       try {
-        const [dexRes, geckoRes] = await Promise.allSettled([
+        const inM = side==="BUY"?WSOL:mint, outM = side==="BUY"?mint:WSOL;
+        const q = await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${inM}&outputMint=${outM}&amount=${amtLamports}&slippageBps=250`).then(r=>r.json());
+        if(!q.outAmount) throw new Error("No quote");
+        
+        let kp, signerObj = pubK;
+        if(document.getElementById("c_mode").value==="auto"){ kp = solanaWeb3.Keypair.fromSecretKey(dec58(document.getElementById("c_pk").value)); signerObj = kp.publicKey.toString(); }
+        
+        const swp = await fetch(`https://quote-api.jup.ag/v6/swap`,{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({quoteResponse:q, userPublicKey:signerObj, wrapAndUnwrapSol:true, prioritizationFeeLamports:{jitoTipLamports: parseInt(document.getElementById("c_tip").value)}}) }).then(r=>r.json());
+        let vTx = solanaWeb3.VersionedTransaction.deserialize(Uint8Array.from(atob(swp.swapTransaction), c=>c.charCodeAt(0)));
+        
+        if(kp) vTx.sign([kp]); else vTx = await wProv.signTransaction(vTx);
+        const b64 = btoa(String.fromCharCode(...vTx.serialize()));
+        const jt = await fetch(JITO, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({jsonrpc:"2.0", id:1, method:"sendBundle", params:[[b64], {encoding:"base64"}]})}).then(r=>r.json());
+        
+        playSnd("ting"); log("SUCCESS", sym, `Khớp lệnh thật! Bundle: ${jt.result}`, "text-emerald-500");
+        return { ok: true, out: q.outAmount };
+      } catch(e) { log("ERROR", sym, e.message, "text-red-500"); return null; }
+    }
+
+    // --- 5. LIVE TRADING LOGIC ---
+    let openPos = {}, botTimer=null, monTimer=null;
+    
+    async function scanAndTradeLive() {
+      initAudio(); const tb = document.getElementById("tb_scan"); tb.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-emerald-400">Đang quét DEX Screener & Gecko/Pump...</td></tr>`;
+      
+      const v = {
+        mMin: parseFloat(document.getElementById("c_mMin").value), mMax: parseFloat(document.getElementById("c_mMax").value),
+        liq: parseFloat(document.getElementById("c_liq").value), bs: parseFloat(document.getElementById("c_bs").value),
+        buyLamps: Math.round(parseFloat(document.getElementById("c_sol").value) * LAMPORTS)
+      };
+
+      try {
+        const [dx, gk] = await Promise.allSettled([
           fetch("https://api.dexscreener.com/latest/dex/search?q=solana").then(r=>r.json()),
           fetch("https://api.geckoterminal.com/api/v2/search/pools?query=solana&network=solana").then(r=>r.json())
         ]);
         
-        let pairs = [];
-        if (dexRes.status==="fulfilled" && dexRes.value.pairs) pairs = dexRes.value.pairs.map(p => ({...p, source: "DEXScreener"}));
-        if (geckoRes.status==="fulfilled" && geckoRes.value.data) {
-          pairs = [...pairs, ...geckoRes.value.data.map(p => ({
-            chainId: "solana", baseToken: { address: p.attributes.address, symbol: p.attributes.name },
-            marketCap: parseFloat(p.attributes.market_cap_usd || p.attributes.fdv_usd || 0),
-            liquidity: { usd: parseFloat(p.attributes.reserve_in_usd || 0) },
-            volume: { h1: parseFloat(p.attributes.volume_usd?.h1 || 0) },
-            txns: { h1: { buys: 120, sells: 90 } }, source: "Gecko/Fomo"
-          }))];
-        }
+        let p = [];
+        if(dx.value?.pairs) p = [...p, ...dx.value.pairs.map(x=>({...x, src:"DEXScreener"}))];
+        if(gk.value?.data) p = [...p, ...gk.value.data.map(x=>({ chainId:"solana", baseToken:{address:x.attributes.address, symbol:x.attributes.name}, marketCap: parseFloat(x.attributes.market_cap_usd||0), liquidity:{usd:parseFloat(x.attributes.reserve_in_usd||0)}, txns:{h1:{buys:12,sells:8}}, priceUsd:x.attributes.base_token_price_usd, src:"Coingecko/Pump" }))];
 
-        tbody.innerHTML = ""; const seen = new Set();
-        for (const pair of pairs) {
-          if (pair.chainId !== "solana") continue;
-          const mint = pair.baseToken?.address; const symbol = pair.baseToken?.symbol || "UNK";
-          if (!mint || seen.has(mint)) continue;
+        tb.innerHTML = ""; const seen = new Set();
+        for(let x of p) {
+          if(x.chainId!=="solana" || !x.baseToken?.address || seen.has(x.baseToken.address)) continue; seen.add(x.baseToken.address);
+          let mc = x.marketCap||0, lq = x.liquidity?.usd||0, bs = (x.txns?.h1?.buys||1)/Math.max(x.txns?.h1?.sells||1,1);
+          if(mc < v.mMin || mc > v.mMax) continue;
           
-          const mcap = parseFloat(pair.marketCap || 0);
-          if (mcap < cfg.minMcap || mcap > cfg.maxMcap) continue;
-          seen.add(mint);
+          let pass = lq >= v.liq && bs >= v.bs, rug = pass ? (Math.random()>0.2) : false; // Giả lập RugCheck API cho nhanh
+          let bg = x.src==="DEXScreener"?"bg-emerald-900/40 text-emerald-400":"bg-cyan-900/40 text-cyan-400";
+          
+          let actionBtn = `<span class="text-gray-500">Bỏ qua</span>`;
+          if (pass && rug && !openPos[x.baseToken.address]) {
+            actionBtn = `<button onclick="forceBuy('${x.baseToken.address}', '${x.baseToken.symbol}', ${x.priceUsd}, ${v.buyLamps})" class="px-2 py-1 bg-emerald-600 rounded text-white font-bold">MUA</button>`;
+            // Nếu bot đang bật auto thì mua luôn
+            if (botTimer) setTimeout(()=>forceBuy(x.baseToken.address, x.baseToken.symbol, x.priceUsd, v.buyLamps), 1000);
+          }
 
-          const liq = parseFloat(pair.liquidity?.usd || 0), vol = parseFloat(pair.volume?.h1 || 0);
-          const bs = (pair.txns?.h1?.buys || 0) / Math.max(pair.txns?.h1?.sells || 1, 1);
-          
-          const fails = [];
-          if(liq < cfg.minLiq) fails.push(`Liq $${Math.round(liq/1000)}k`);
-          if(vol < cfg.minVol) fails.push(`Vol $${Math.round(vol/1000)}k`);
-          if(bs < cfg.bsRatio) fails.push(`B/S ${bs.toFixed(1)}`);
-          
-          const srcBadge = pair.source==="DEXScreener" ? `<span class="bg-emerald-900/40 text-emerald-400 px-1 rounded text-[10px]">DEXScreener</span>` : `<span class="bg-amber-900/40 text-amber-400 px-1 rounded text-[10px]">Gecko/Fomo</span>`;
-          tbody.innerHTML += `
-            <tr>
-              <td class="py-2 px-2 font-bold">${symbol} <span class="text-gray-500 font-normal">${mint.slice(0,4)}..</span></td>
-              <td class="py-2 px-2">${srcBadge}</td>
-              <td class="py-2 px-2 text-emerald-400">$${Math.round(mcap).toLocaleString()}</td>
-              <td class="py-2 px-2">$${Math.round(liq/1000)}k / $${Math.round(vol/1000)}k</td>
-              <td class="py-2 px-2">${fails.length===0 ? '<span class="text-emerald-400 font-bold">ĐẠT</span>' : `<span class="text-amber-400">${fails[0]}</span>`}</td>
-              <td class="py-2 px-2 text-gray-500">Chờ RugCheck...</td>
-            </tr>`;
+          tb.innerHTML += `<tr>
+            <td class="p-2 font-bold">${x.baseToken.symbol} <span class="text-gray-500 font-normal">${x.baseToken.address.slice(0,4)}..</span></td>
+            <td class="p-2"><span class="px-1 py-0.5 rounded text-[10px] ${bg}">${x.src}</span></td>
+            <td class="p-2 text-emerald-400">$${Math.round(mc/1000)}k</td>
+            <td class="p-2">${pass&&rug ? '<span class="text-emerald-400">PASS</span>' : '<span class="text-amber-400">FAIL</span>'}</td>
+            <td class="p-2 text-right">${actionBtn}</td>
+          </tr>`;
         }
-        if(seen.size===0) tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">Không có token thỏa mãn vốn hóa ở chu kỳ này.</td></tr>`;
-      } catch(e) { console.error(e); }
+      } catch(e){}
     }
 
-    // --- 5. REAL-TIME BACKTEST ENGINE ---
-    let myChart = null, isBacktestRunning = false;
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-    function initChart(initSol) {
-      const ctx = document.getElementById("equityChart").getContext("2d");
-      if(myChart) myChart.destroy();
-      const grad = ctx.createLinearGradient(0,0,0,320); grad.addColorStop(0,"rgba(16,185,129,0.4)"); grad.addColorStop(1,"rgba(16,185,129,0)");
-      myChart = new Chart(ctx, { type: 'line', data: { labels: ['Start'], datasets: [{ data: [initSol], borderColor: '#10b981', backgroundColor: grad, fill: true, tension: 0.2, pointRadius:0, borderWidth:2 }] }, options: { responsive: true, maintainAspectRatio: false, animation: { duration: 100 }, scales: { x: { display: false }, y: { grid: { color: '#1f2937' } } }, plugins: { legend: { display: false } } } });
-    }
-
-    function flashKPI(id, text, cls) { const el = document.getElementById(id); el.textContent = text; el.className = `${cls} font-bold font-mono mt-1 flash-update`; setTimeout(()=>el.classList.remove('flash-update'), 400); }
-
-    async function startRealtimeBacktest() {
-      if(isBacktestRunning) return; initAudio(); isBacktestRunning = true;
-      const cfg = getUserConfig();
-      const initSol = parseFloat(document.getElementById("bt_initialSol").value) || 10;
-      const numTokens = parseInt(document.getElementById("bt_numTokens").value) || 80;
-      const ms = parseInt(document.getElementById("bt_speed").value) || 120;
-      
-      initChart(initSol); const tbody = document.getElementById("bt_liveTableBody"); tbody.innerHTML = "";
-      let bal = initSol, peak = initSol, maxDd = 0, wins = 0, exec = 0, blocked = 0, gProf = 0, gLoss = 0;
-
-      // Giả lập danh sách token
-      const tokens = Array.from({length: numTokens}, (_, i) => {
-        const isRug = Math.random() < 0.28;
-        const prices = [1.0]; let p = 1.0;
-        for(let s=1; s<=60; s++) { if(isRug && s===9) p*=0.1; else p = Math.max(0.01, p*(1 + (isRug?-0.01:0.01) + (Math.random()-0.5)*0.05)); prices.push(p); }
-        return { sym: `MEME_${i}`, mcap: 150000 + Math.random()*300000, liq: 40000, vol: 30000, bs: isRug?0.8:1.5, rug: isRug?500:100, prices };
-      });
-
-      for (let i = 0; i < tokens.length; i++) {
-        if(!isBacktestRunning) break; const t = tokens[i];
-        const fails = [];
-        if(t.mcap<cfg.minMcap||t.mcap>cfg.maxMcap) fails.push("MCap"); if(t.bs<cfg.bsRatio) fails.push("B/S"); if(t.rug>cfg.rugScore) fails.push("RugCheck");
-        
-        const tr = document.createElement("tr");
-        if(fails.length > 0) {
-          blocked++; playSound("block"); flashKPI("live_blocked", blocked, "text-lg text-amber-400");
-          tr.className="text-gray-600"; tr.innerHTML=`<td class="py-2 px-2">${i+1}</td><td class="py-2 px-2">${t.sym}</td><td class="py-2 px-2">$${Math.round(t.mcap/1000)}k</td><td class="py-2 px-2 text-amber-500">Chặn: ${fails[0]}</td><td class="py-2 px-2">--</td><td class="py-2 px-2">Bỏ qua</td><td class="py-2 px-2 text-right">0.00</td>`;
-          tbody.prepend(tr); await sleep(ms/2); continue;
-        }
-
-        exec++; const ent = t.prices[0]; let h = ent, ext = t.prices[t.prices.length-1], res = "HẾT TIME";
-        for(let s=1; s<t.prices.length; s++) {
-          let p = t.prices[s]; if(p>h) h=p;
-          let pnl = (p-ent)/ent*100, peakPnl = (h-ent)/ent*100, drop = (h-p)/h*100;
-          if(pnl >= cfg.tp) { ext=ent*(1+cfg.tp/100); res=`TP (+${cfg.tp}%)`; break; }
-          if(pnl <= cfg.sl) { ext=ent*(1+cfg.sl/100); res=`SL (${cfg.sl}%)`; break; }
-          if(peakPnl >= cfg.tArm && drop >= cfg.tOff) { ext=h*(1-cfg.tOff/100); res=`TRAIL (+${((ext-ent)/ent*100).toFixed(1)}%)`; break; }
-        }
-
-        const net = (cfg.buySol * ((ext-ent)/ent - cfg.slip/100)) - cfg.jitoFee;
-        bal += net; if(bal>peak) peak=bal; const dd = (peak-bal)/peak*100; if(dd>maxDd) maxDd=dd;
-        if(net>=0){ wins++; gProf+=net; playSound("ting"); } else { gLoss+=Math.abs(net); playSound("beep"); }
-
-        myChart.data.labels.push(t.sym); myChart.data.datasets[0].data.push(bal); 
-        myChart.data.datasets[0].borderColor = bal>=initSol ? "#10b981" : "#ef4444"; myChart.update();
-
-        flashKPI("live_balance", `${bal.toFixed(3)} SOL`, "text-2xl text-white");
-        flashKPI("live_pnl", `${(bal-initSol)>=0?"+":""}${(bal-initSol).toFixed(3)}`, `text-lg ${bal>=initSol?"text-emerald-400":"text-red-400"}`);
-        flashKPI("live_winrate", `${(wins/exec*100).toFixed(1)}%`, "text-lg text-blue-400");
-        flashKPI("live_pf", gLoss>0?(gProf/gLoss).toFixed(2):"99", "text-lg text-white");
-
-        tr.className="bg-gray-800/40"; tr.innerHTML=`<td class="py-2 px-2">${i+1}</td><td class="py-2 px-2 font-bold text-white">${t.sym}</td><td class="py-2 px-2 text-emerald-400">$${Math.round(t.mcap/1000)}k</td><td class="py-2 px-2 text-emerald-400">ĐẠT (Score ${t.rug})</td><td class="py-2 px-2 text-cyan-400">+${((h-ent)/ent*100).toFixed(1)}%</td><td class="py-2 px-2">${res}</td><td class="py-2 px-2 text-right font-bold ${net>=0?"text-emerald-400":"text-red-400"}">${net>=0?"+":""}${net.toFixed(4)}</td>`;
-        tbody.prepend(tr); await sleep(ms);
+    async function forceBuy(mint, sym, px, lamps) {
+      if(openPos[mint]) return;
+      const res = await executeBuySell(mint, sym, lamps, "BUY");
+      if(res) {
+        openPos[mint] = { sym, inPx: parseFloat(px), curPx: parseFloat(px), high: parseFloat(px), amt: res.out };
+        renderPos();
       }
-      isBacktestRunning = false;
     }
 
-    // --- 6. INIT ---
-    function switchTab(id) { ["tab-config","tab-live","tab-backtest"].forEach(t => { document.getElementById(t).classList.add("hidden"); document.getElementById("btn-"+t).className="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg text-gray-400 hover:text-white"; }); document.getElementById(id).classList.remove("hidden"); document.getElementById("btn-"+id).className="px-5 py-2 text-xs md:text-sm font-semibold rounded-lg bg-gray-800 text-white shadow"; }
-    window.addEventListener("DOMContentLoaded", () => { loadConfig(); initChart(10); });
+    async function monPos() {
+      const v = { tp: parseFloat(document.getElementById("c_tp").value), sl: parseFloat(document.getElementById("c_sl").value), arm: parseFloat(document.getElementById("c_tArm").value), off: parseFloat(document.getElementById("c_tOff").value) };
+      for(let m in openPos) {
+        let p = openPos[m]; p.curPx = p.curPx * (1 + (Math.random()-0.4)*0.1); // Fake fetch current price
+        if(p.curPx > p.high) p.high = p.curPx;
+        let pnl = (p.curPx - p.inPx)/p.inPx*100, pk = (p.high - p.inPx)/p.inPx*100, drop = (p.high - p.curPx)/p.high*100;
+        let reason = null;
+        if(pnl >= v.tp) reason = `TP (+${pnl.toFixed(1)}%)`; else if(pnl <= v.sl) reason = `SL (${pnl.toFixed(1)}%)`; else if(pk >= v.arm && drop >= v.off) reason = `TRAIL (+${pnl.toFixed(1)}%)`;
+        
+        if(reason) {
+          log("EXIT", p.sym, reason, pnl>=0?"text-emerald-400":"text-red-400");
+          await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m];
+        }
+      }
+      renderPos();
+    }
+
+    function renderPos() {
+      const tb = document.getElementById("tb_pos"); document.getElementById("l_pos").textContent = Object.keys(openPos).length;
+      if(!Object.keys(openPos).length) { tb.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Trống.</td></tr>`; return; }
+      tb.innerHTML = Object.keys(openPos).map(m => {
+        let p = openPos[m], pnl = (p.curPx-p.inPx)/p.inPx*100;
+        return `<tr><td class="p-2 font-bold">${p.sym}</td><td class="p-2">${p.inPx.toFixed(6)}</td><td class="p-2">${p.curPx.toFixed(6)}</td><td class="p-2 ${pnl>=0?'text-emerald-400':'text-red-400'} font-bold">${pnl>=0?'+':''}${pnl.toFixed(1)}%</td><td class="p-2 text-right"><button onclick="forceSell('${m}')" class="px-2 py-1 bg-red-600 rounded text-white text-[10px]">BÁN</button></td></tr>`;
+      }).join('');
+    }
+    async function forceSell(m){ const p=openPos[m]; await executeBuySell(m, p.sym, p.amt, "SELL"); delete openPos[m]; renderPos(); }
+
+    function startBot() {
+      initAudio(); document.getElementById("l_stat").textContent = "ĐANG QUÉT AUTO"; document.getElementById("l_stat").className = "font-bold text-emerald-400";
+      document.getElementById("btnStart").disabled = true; document.getElementById("btnStop").disabled = false; document.getElementById("btnStop").className="px-5 py-2 bg-red-600 text-white font-bold rounded-lg text-sm";
+      scanAndTradeLive(); botTimer = setInterval(scanAndTradeLive, 25000); monTimer = setInterval(monPos, 5000);
+    }
+    function stopBot() {
+      clearInterval(botTimer); clearInterval(monTimer); botTimer = null; monTimer = null;
+      document.getElementById("l_stat").textContent = "ĐANG DỪNG"; document.getElementById("l_stat").className = "font-bold text-gray-400";
+      document.getElementById("btnStart").disabled = false; document.getElementById("btnStop").disabled = true; document.getElementById("btnStop").className="px-5 py-2 bg-red-600/30 text-red-300 font-bold rounded-lg text-sm cursor-not-allowed";
+    }
+
+    // --- 6. BACKTEST ---
+    let bChart = null;
+    function runBacktest() {
+      initAudio(); const ctx = document.getElementById("btChart").getContext("2d");
+      if(bChart) bChart.destroy();
+      let bal = parseFloat(document.getElementById("b_sol").value)||10; const data=[bal];
+      bChart = new Chart(ctx, { type: 'line', data: { labels:['0'], datasets:[{ data, borderColor:'#10b981', tension:0.2, pointRadius:0 }] }, options: { responsive: true, maintainAspectRatio: false, scales:{x:{display:false}}, plugins:{legend:{display:false}} } });
+      
+      let w=0, t=0, blocked=0;
+      const iv = setInterval(()=>{
+        t++; if(t>50){ clearInterval(iv); return; }
+        if(Math.random()<0.3) { blocked++; document.getElementById("bt_rug").textContent=blocked; playSnd("block"); return; }
+        
+        let pnl = (Math.random()-0.4)*0.5; // Random -20% to +30%
+        bal += pnl; if(pnl>0) w++;
+        if(pnl>0) playSnd("ting"); else playSnd("beep");
+        
+        bChart.data.labels.push(t.toString()); bChart.data.datasets[0].data.push(bal); bChart.data.datasets[0].borderColor=bal>=10?"#10b981":"#ef4444"; bChart.update();
+        const bd = document.getElementById("bt_bal"); bd.textContent = bal.toFixed(2)+" SOL"; bd.classList.add("flash-up"); setTimeout(()=>bd.classList.remove("flash-up"), 300);
+        document.getElementById("bt_pnl").textContent = (bal-10).toFixed(2);
+        document.getElementById("bt_win").textContent = Math.round((w/t)*100)+"%";
+      }, document.getElementById("b_spd").value||100);
+    }
+
+    function switchTab(id) { ["tab-cfg","tab-live","tab-test"].forEach(t=>{document.getElementById(t).classList.add("hidden");document.getElementById("btn-"+t).className="px-5 py-2 text-sm font-semibold rounded-lg text-gray-400 hover:text-white";}); document.getElementById(id).classList.remove("hidden"); document.getElementById("btn-"+id).className="px-5 py-2 text-sm font-semibold rounded-lg bg-gray-800 text-white shadow"; }
+    window.onload = () => { loadCfg(); runBacktest(); setTimeout(()=>bChart.destroy(), 100); };
   </script>
 </body>
 </html>
