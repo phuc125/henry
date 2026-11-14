@@ -3,1949 +3,1305 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SOLANA AI MEME COIN AUTONOMOUS SCALPING BOT — Quant Terminal v1.0</title>
+  <title>Solana Memecoin Bot | Jito MEV & Backtest Suite</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            sol: {
-              bg: '#080B11',
-              panel: '#101622',
-              border: '#1E293B',
-              green: '#14F195',
-              purple: '#9945FF',
-              amber: '#F59E0B',
-              danger: '#EF4444'
-            }
-          },
-          fontFamily: {
-            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-            sans: ['Inter', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    };
-  </script>
+  <!-- Solana Web3.js CDN -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <style>
-    body { background-color: #080B11; color: #E2E8F0; font-family: 'Inter', system-ui, sans-serif; }
-    .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .card { background-color: #111827; border: 1px solid #1f2937; border-radius: 0.75rem; }
+    .input-field { background-color: #1f2937; border: 1px solid #374151; color: #f8fafc; border-radius: 0.5rem; padding: 0.5rem 0.75rem; width: 100%; font-size: 0.875rem; }
+    .input-field:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 1px #10b981; }
+    .log-box { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #080B11; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-    .pulse-dot { animation: pulse 2s infinite; }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
-    }
+    ::-webkit-scrollbar-track { background: #111827; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-sol-purple selection:text-white">
+<body class="min-h-screen p-4 md:p-6">
 
-  <!-- TOP STATUS & CONTROL BAR -->
-  <header class="border-b border-sol-border bg-sol-panel/90 backdrop-blur sticky top-0 z-40 px-4 py-2.5">
-    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+  <!-- HEADER -->
+  <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+    <div>
       <div class="flex items-center gap-3">
-        <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-sol-purple to-sol-green flex items-center justify-center font-bold text-black mono text-lg">
-          S
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-bold text-sm md:text-base tracking-tight text-white">SOLANA AI MEME SCALPER</h1>
-            <span id="modeBadge" class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 mono">
-              PAPER TRADING
-            </span>
-            <span id="botStateBadge" class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 mono flex items-center gap-1.5">
-              <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span> RUNNING
-            </span>
-          </div>
-          <p class="text-[11px] text-slate-400 mono">
-            Config: $10.00 Init Capital | Target Risk: 1% ($0.10) | Max Daily Loss: 3% ($0.30) | Max DD: 10% ($1.00) | Max Pos: 1 | Leverage: 0x
-          </p>
-        </div>
+        <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">Solana Mainnet</span>
+        <span class="px-2.5 py-1 text-xs font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-full">Jito MEV Protected</span>
       </div>
+      <h1 class="text-2xl md:text-3xl font-bold text-white mt-2">Solana Memecoin Automated Trading & Backtest Suite</h1>
+      <p class="text-sm text-gray-400">Bộ lọc vốn hóa $150k–$500k • Kiểm tra RugCheck & On-Chain • Khớp lệnh Jupiter + Jito Bundle • Kiểm thử chiến lược (Backtest)</p>
+    </div>
 
-      <!-- CONTROL PANEL BUTTONS -->
-      <div class="flex flex-wrap items-center gap-2">
-        <button onclick="App.toggleBotRun()" id="btnStartStop" class="px-3 py-1.5 rounded text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition">
-          Pause Trading
-        </button>
-        <button onclick="App.scanNow()" class="px-3 py-1.5 rounded text-xs font-semibold bg-sol-purple hover:bg-purple-500 text-white transition">
-          Scan Solana DEX Now
-        </button>
-        <button onclick="App.toggleStrictTenDollarGate()" id="btnFeeReality" class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 transition" title="Bật/Tắt nới lỏng phí mạng trong môi trường Paper Simulation">
-          Strict $10 Fee Gate: ON
-        </button>
-        <button onclick="App.openLiveUnlockModal()" id="btnModeSwitch" class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition">
-          🔒 Live Mode (Locked)
-        </button>
-        <button onclick="App.emergencyStop()" class="px-3 py-1.5 rounded text-xs font-bold bg-red-600 hover:bg-red-500 text-white transition">
-          EMERGENCY STOP
-        </button>
-      </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="btnConnectPhantom" onclick="connectBrowserWallet()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm rounded-lg transition flex items-center gap-2">
+        <span>Kết nối Ví (Phantom/Solflare)</span>
+      </button>
+      <span id="walletStatusBadge" class="px-3 py-2 text-xs font-mono bg-gray-800 text-gray-300 rounded-lg border border-gray-700">Chưa kết nối ví</span>
     </div>
   </header>
 
   <!-- NAVIGATION TABS -->
-  <nav class="border-b border-sol-border bg-sol-panel/50 px-4">
-    <div class="max-w-[1600px] mx-auto flex items-center gap-1 overflow-x-auto py-1.5 text-xs font-medium">
-      <button onclick="App.switchTab('dashboard')" id="tabBtn-dashboard" class="tab-btn px-3 py-1.5 rounded bg-sol-purple/20 text-sol-green border border-sol-purple/40">
-        1. Autonomous Dashboard & Live Scanner
-      </button>
-      <button onclick="App.switchTab('agents')" id="tabBtn-agents" class="tab-btn px-3 py-1.5 rounded text-slate-400 hover:text-white">
-        2. 7-Agent AI Pipeline & Scoring Breakdown
-      </button>
-      <button onclick="App.switchTab('tests')" id="tabBtn-tests" class="tab-btn px-3 py-1.5 rounded text-slate-400 hover:text-white">
-        3. Testing, Backtest & Stress Suite (11 Scenarios)
-      </button>
-      <button onclick="App.switchTab('architecture')" id="tabBtn-architecture" class="tab-btn px-3 py-1.5 rounded text-slate-400 hover:text-white">
-        4. Backend Python Source & Docker Exporter
-      </button>
-    </div>
-  </nav>
+  <div class="max-w-7xl mx-auto mb-6 flex gap-2 border-b border-gray-800">
+    <button onclick="switchTab('tab-config')" id="btn-tab-config" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-emerald-500 text-emerald-400">
+      1. Cấu hình API, Ví & Tham số
+    </button>
+    <button onclick="switchTab('tab-live')" id="btn-tab-live" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
+      2. Giao dịch Tự động & Jito Bundle
+    </button>
+    <button onclick="switchTab('tab-backtest')" id="btn-tab-backtest" class="px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white">
+      3. Chương trình Backtest Chiến lược
+    </button>
+  </div>
 
-  <!-- MAIN WORKSPACE -->
-  <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 space-y-4">
+  <main class="max-w-7xl mx-auto">
 
-    <!-- ==========================================
-         TAB 1: AUTONOMOUS DASHBOARD & LIVE SCANNER
-         ========================================== -->
-    <section id="tab-dashboard" class="space-y-4">
-      <!-- OVERVIEW METRICS (12 FIXED KPI CARDS) -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-        <div class="bg-sol-panel border border-sol-border rounded-lg p-3">
-          <div class="text-[11px] text-slate-400">Total Capital / Equity</div>
-          <div class="text-lg font-bold text-white mono mt-0.5">
-            $<span id="kpiEquity">10.0000</span>
-          </div>
-          <div class="text-[10px] text-slate-400 mono">Init: $10.0000 USD</div>
-        </div>
+    <!-- ========================================== -->
+    <!-- TAB 1: CẤU HÌNH API, VÍ & THAM SỐ CHIẾN LƯỢC -->
+    <!-- ========================================== -->
+    <section id="tab-config" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div class="bg-sol-panel border border-sol-border rounded-lg p-3">
-          <div class="text-[11px] text-slate-400">Available / Invested</div>
-          <div class="text-sm font-bold text-emerald-400 mono mt-1">
-            Avail: $<span id="kpiAvailable">10.0000</span>
-          </div>
-          <div class="text-[11px] text-amber-300 mono">
-            Invested: $<span id="kpiInvested">0.0000</span>
-          </div>
-        </div>
+      <!-- Cột 1: Kết nối Ví & Khóa API -->
+      <div class="card p-5 space-y-4">
+        <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-2">Kết nối RPC, API & Tài khoản Ví</h2>
 
-        <div class="bg-sol-panel border border-sol-border rounded-lg p-3">
-          <div class="text-[11px] text-slate-400">Daily PnL / Total PnL</div>
-          <div id="kpiDailyPnl" class="text-sm font-bold text-slate-200 mono mt-1">$0.0000 (0.00%)</div>
-          <div id="kpiTotalPnl" class="text-[11px] text-slate-400 mono">Total: $0.0000</div>
-        </div>
-
-        <div class="bg-sol-panel border border-sol-border rounded-lg p-3">
-          <div class="text-[11px] text-slate-400">Drawdown (Limit 10%)</div>
-          <div id="kpiDrawdown" class="text-lg font-bold text-emerald-400 mono mt-0.5">0.00%</div>
-          <div class="text-[10px] text-slate-400 mono">Daily Loss Limit: 3.00%</div>
-        </div>
-
-        <div class="bg-sol-panel border border-sol-border rounded-lg p-3">
-          <div class="text-[11px] text-slate-400">Win Rate & Profit Factor</div>
-          <div class="text-sm font-bold text-white mono mt-1">
-            WR: <span id="kpiWinRate">0.0%</span> | PF: <span id="kpiProfitFactor">0.00</span>
-          </div>
-          <div class="text-[11px] text-slate-400 mono">
-            Trades: <span id="kpiTotalTrades">0</span>
-          </div>
-        </div>
-
-        <div class="bg-sol-panel border border-sol-border rounded-lg p-3">
-          <div class="text-[11px] text-slate-400">Active Pos / Total Fees</div>
-          <div class="text-sm font-bold text-sol-green mono mt-1">
-            Pos: <span id="kpiActivePos">0</span> / 1
-          </div>
-          <div class="text-[11px] text-rose-400 mono">
-            Fees Paid: $<span id="kpiTotalFees">0.0000</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- $10 CAPITAL REALITY WARNING BANNER -->
-      <div class="bg-amber-950/30 border border-amber-500/40 rounded-lg px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div>
-          <span class="font-bold text-amber-300 uppercase mono">[Quantitative Risk Gate — $10 Capital Constraint]</span>
-          <span class="text-slate-300 ml-1">
-            Target Risk 1% = <strong>$0.1000</strong> (Max Risk 2% = <strong>$0.2000</strong>, Max Exposure 50% = <strong>$5.0000</strong>).
-            Nếu tổng chi phí vòng khứ hồi (Network + Priority + Jupiter Slippage + Price Impact) cộng rủi ro Stop Loss vượt quá $0.10 (hoặc $0.20), <strong>Agent 6 (Risk Manager)</strong> và <strong>Agent 7 (Validator)</strong> sẽ tự động phủ quyết (REJECT/WAIT) chứ tuyệt đối không tự tăng khối lượng lệnh.
-          </span>
-        </div>
-        <span id="gateModeStatusText" class="mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-200 border border-amber-400/30">
-          Strict 1% ($0.10) Enforcement Active
-        </span>
-      </div>
-
-      <!-- MAIN GRID: LEFT (SCANNER + ACTIVE POSITION) / RIGHT (7 AGENTS + SYSTEM MONITOR) -->
-      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
-        <!-- LEFT 8 COLS -->
-        <div class="xl:col-span-8 space-y-4">
-
-          <!-- LIVE SCANNER TABLE -->
-          <div class="bg-sol-panel border border-sol-border rounded-lg overflow-hidden">
-            <div class="px-4 py-2.5 border-b border-sol-border flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
-                <h2 class="font-bold text-xs uppercase tracking-wider text-sol-green mono">
-                  A. Live Solana Meme Coin Scanner (Real-Time DexScreener + On-Chain Feed)
-                </h2>
-                <span id="scannerSourceBadge" class="text-[10px] mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                  Initializing...
-                </span>
-              </div>
-              <div class="flex items-center gap-2 text-xs">
-                <button onclick="App.injectScenarioToken('CLEAN_GEM')" class="px-2 py-1 rounded bg-emerald-900/50 hover:bg-emerald-800/70 text-emerald-300 border border-emerald-600/40 mono text-[11px]">
-                  + Inject Validated Breakout Candidate
-                </button>
-                <button onclick="App.injectScenarioToken('HONEYPOT_RUG')" class="px-2 py-1 rounded bg-rose-900/50 hover:bg-rose-800/70 text-rose-300 border border-rose-600/40 mono text-[11px]">
-                  + Inject Rug/Mint-Auth Trap
-                </button>
-              </div>
-            </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr class="border-b border-sol-border bg-slate-900/60 text-[11px] text-slate-400 mono">
-                    <th class="py-2 px-3">Symbol / Address</th>
-                    <th class="py-2 px-2">Price (USD)</th>
-                    <th class="py-2 px-2">MCap / Liq</th>
-                    <th class="py-2 px-2">Vol 5m / B-S Ratio</th>
-                    <th class="py-2 px-2">Security (25)</th>
-                    <th class="py-2 px-2">Smart $ (10)</th>
-                    <th class="py-2 px-2">Total Score</th>
-                    <th class="py-2 px-3">AI Decision</th>
-                    <th class="py-2 px-2 text-right">Inspect</th>
-                  </tr>
-                </thead>
-                <tbody id="scannerTableBody" class="divide-y divide-sol-border/60 mono">
-                  <!-- Populated dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- ACTIVE TRADES & AUTOMATIC POSITION MANAGEMENT -->
-          <div class="bg-sol-panel border border-sol-border rounded-lg overflow-hidden">
-            <div class="px-4 py-2.5 border-b border-sol-border flex items-center justify-between">
-              <h2 class="font-bold text-xs uppercase tracking-wider text-white mono">
-                B. Active Position & Dynamic Position Manager (Max 1 Concurrent Position)
-              </h2>
-              <span class="text-[11px] text-slate-400 mono">
-                Supports: Dynamic ATR SL/TP • Trailing Stop • Break-Even • Partial TP • Time Exit • Emergency Exit
-              </span>
-            </div>
-            <div id="activeTradeContainer" class="p-4">
-              <!-- Populated dynamically -->
-            </div>
-          </div>
-
-          <!-- TRADE & EXECUTION HISTORY -->
-          <div class="bg-sol-panel border border-sol-border rounded-lg overflow-hidden">
-            <div class="px-4 py-2.5 border-b border-sol-border flex items-center justify-between">
-              <h2 class="font-bold text-xs uppercase tracking-wider text-slate-300 mono">
-                C. Verified Execution History & Post-Trade Accounting
-              </h2>
-              <button onclick="App.resetPaperAccount()" class="text-[11px] text-slate-400 hover:text-white underline mono">
-                Reset $10 Paper Ledger
-              </button>
-            </div>
-            <div class="overflow-x-auto max-h-56">
-              <table class="w-full text-left border-collapse text-xs mono">
-                <thead>
-                  <tr class="border-b border-sol-border bg-slate-900/60 text-[11px] text-slate-400">
-                    <th class="py-2 px-3">Time</th>
-                    <th class="py-2 px-2">Token</th>
-                    <th class="py-2 px-2">Size (USD)</th>
-                    <th class="py-2 px-2">Entry → Exit</th>
-                    <th class="py-2 px-2">Fees (USD)</th>
-                    <th class="py-2 px-2">Net PnL</th>
-                    <th class="py-2 px-3">Exit Trigger</th>
-                  </tr>
-                </thead>
-                <tbody id="tradeHistoryBody" class="divide-y divide-sol-border/50">
-                  <tr>
-                    <td colspan="7" class="py-4 text-center text-slate-500">Chưa có lệnh đóng. Bot đang phân tích thị trường...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <label class="block text-xs text-gray-400 mb-1">Solana RPC Endpoint URL</label>
+          <input id="cfg_rpcUrl" type="text" class="input-field" value="https://api.mainnet-beta.solana.com" placeholder="https://mainnet.helius-rpc.com/?api-key=..." />
         </div>
 
-        <!-- RIGHT 4 COLS: 7 AI AGENT MONITOR + SYSTEM HEALTH + STRUCTURED LOGS -->
-        <div class="xl:col-span-4 space-y-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Chế độ Ký giao dịch (Wallet Mode)</label>
+          <select id="cfg_walletMode" class="input-field">
+            <option value="browser">Ví trình duyệt (Phantom / Solflare / Backpack)</option>
+            <option value="private_key">Tự động ký bằng Base58 Private Key</option>
+          </select>
+        </div>
 
-          <!-- 7 AI AGENTS MONITOR -->
-          <div class="bg-sol-panel border border-sol-border rounded-lg p-3.5 space-y-2.5">
-            <div class="flex items-center justify-between border-b border-sol-border pb-2">
-              <div>
-                <h2 class="font-bold text-xs uppercase tracking-wider text-sol-purple mono">
-                  D. Multi-Agent AI Council (7 Agents)
-                </h2>
-                <p id="selectedTokenLabel" class="text-[11px] text-slate-400 mono">Evaluating: None</p>
-              </div>
-              <span id="finalVerdictBadge" class="px-2 py-0.5 rounded text-xs font-bold mono bg-slate-800 text-slate-300">
-                WAITING
-              </span>
-            </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Wallet Private Key (Base58 - Chỉ lưu trên RAM trình duyệt)</label>
+          <input id="cfg_privateKey" type="password" class="input-field" placeholder="Nhập Base58 Private Key nếu chạy tự động 100%..." />
+        </div>
 
-            <div id="agentCardsContainer" class="space-y-2">
-              <!-- Populated by JS -->
-            </div>
-          </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Jupiter Swap API Endpoint</label>
+          <input id="cfg_jupUrl" type="text" class="input-field" value="https://quote-api.jup.ag/v6" />
+        </div>
 
-          <!-- SYSTEM MONITOR -->
-          <div class="bg-sol-panel border border-sol-border rounded-lg p-3.5 space-y-2">
-            <div class="flex items-center justify-between border-b border-sol-border pb-2">
-              <h2 class="font-bold text-xs uppercase tracking-wider text-slate-300 mono">
-                E. System & Infrastructure Monitor
-              </h2>
-              <span id="lastSyncTime" class="text-[10px] text-slate-400 mono">Updated: --:--:--</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs mono">
-              <div class="p-2 rounded bg-slate-900/70 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">Solana RPC</span>
-                <span id="sysRpc" class="text-emerald-400 font-semibold">ONLINE (42ms)</span>
-              </div>
-              <div class="p-2 rounded bg-slate-900/70 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">Jupiter V6 API</span>
-                <span id="sysJup" class="text-emerald-400 font-semibold">READY</span>
-              </div>
-              <div class="p-2 rounded bg-slate-900/70 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">WebSocket Stream</span>
-                <span id="sysWs" class="text-emerald-400 font-semibold">CONNECTED</span>
-              </div>
-              <div class="p-2 rounded bg-slate-900/70 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">Wallet State Sync</span>
-                <span id="sysWallet" class="text-emerald-400 font-semibold">SYNCED</span>
-              </div>
-              <div class="p-2 rounded bg-slate-900/70 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">Social Feed API</span>
-                <span id="sysSocial" class="text-amber-400 font-semibold">UNKNOWN (No Key)</span>
-              </div>
-              <div class="p-2 rounded bg-slate-900/70 border border-slate-800 flex items-center justify-between">
-                <span class="text-slate-400">Execution Engine</span>
-                <span id="sysExec" class="text-emerald-400 font-semibold">ARMED (PAPER)</span>
-              </div>
-            </div>
-          </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Jupiter / Birdeye API Key (Tùy chọn - Dùng cho lịch sử OHLCV)</label>
+          <input id="cfg_apiKey" type="password" class="input-field" placeholder="Nhập API Key (nếu có)..." />
+        </div>
 
-          <!-- REAL-TIME AUDIT LOG -->
-          <div class="bg-sol-panel border border-sol-border rounded-lg p-3.5">
-            <div class="flex items-center justify-between border-b border-sol-border pb-2 mb-2">
-              <h2 class="font-bold text-xs uppercase tracking-wider text-slate-300 mono">
-                F. Deterministic Execution & Security Audit Log
-              </h2>
-              <button onclick="App.clearLogs()" class="text-[10px] text-slate-400 hover:text-white mono">Clear</button>
-            </div>
-            <div id="auditLogBox" class="h-56 overflow-y-auto space-y-1.5 text-[11px] mono pr-1">
-              <!-- Logs inserted here -->
-            </div>
-          </div>
-
+        <div class="pt-2 flex items-center justify-between">
+          <label class="text-sm font-medium text-emerald-400 flex items-center gap-2 cursor-pointer">
+            <input id="cfg_dryRun" type="checkbox" checked class="w-4 h-4 accent-emerald-500 rounded" />
+            Chế độ Dry Run (Mô phỏng với dữ liệu thực, không tốn SOL)
+          </label>
         </div>
       </div>
+
+      <!-- Cột 2: Cấu hình Bộ lọc Token, Analytics & RugCheck -->
+      <div class="card p-5 space-y-4">
+        <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-2">Bộ lọc Vốn hóa, Analytics & RugCheck</h2>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Market Cap Tối thiểu ($)</label>
+            <input id="cfg_minMcap" type="number" class="input-field" value="150000" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Market Cap Tối đa ($)</label>
+            <input id="cfg_maxMcap" type="number" class="input-field" value="500000" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Thanh khoản Tối thiểu ($)</label>
+            <input id="cfg_minLiq" type="number" class="input-field" value="35000" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Volume 1 Giờ Tối thiểu ($)</label>
+            <input id="cfg_minVol1h" type="number" class="input-field" value="25000" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Tỷ lệ Mua/Bán 1h ≥</label>
+            <input id="cfg_minBSRatio" type="number" step="0.05" class="input-field" value="1.25" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">% Tăng 1h Min</label>
+            <input id="cfg_minChg1h" type="number" step="1" class="input-field" value="5" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">% Tăng 1h Max</label>
+            <input id="cfg_maxChg1h" type="number" step="5" class="input-field" value="180" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Điểm Rủi ro RugCheck ≤</label>
+            <input id="cfg_maxRugScore" type="number" class="input-field" value="400" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Top 10 Holders Tối đa (%)</label>
+            <input id="cfg_maxTop10Pct" type="number" step="1" class="input-field" value="30" />
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-1 text-xs text-gray-300">
+          <label class="flex items-center gap-2">
+            <input id="cfg_requireMintRevoked" type="checkbox" checked class="accent-emerald-500" />
+            Bắt buộc Mint Authority đã khóa (Revoked)
+          </label>
+          <label class="flex items-center gap-2">
+            <input id="cfg_requireFreezeRevoked" type="checkbox" checked class="accent-emerald-500" />
+            Bắt buộc Freeze Authority đã khóa (Chống Honeypot)
+          </label>
+        </div>
+      </div>
+
+      <!-- Cột 3: Cấu hình Jito Bundle & Quản lý Lệnh (TP/SL) -->
+      <div class="card p-5 space-y-4">
+        <h2 class="text-lg font-bold text-white border-b border-gray-800 pb-2">Khớp lệnh, Jito MEV & Quản lý Vốn</h2>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Khối lượng Mua / Lệnh (SOL)</label>
+            <input id="cfg_buySol" type="number" step="0.05" class="input-field" value="0.25" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Slippage Tolerance (bps)</label>
+            <input id="cfg_slippageBps" type="number" step="25" class="input-field" value="250" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Take Profit (+%)</label>
+            <input id="cfg_tpPct" type="number" step="1" class="input-field" value="45" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Stop Loss (-%)</label>
+            <input id="cfg_slPct" type="number" step="1" class="input-field" value="-18" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Kích hoạt Trailing Stop (+%)</label>
+            <input id="cfg_trailArmPct" type="number" step="1" class="input-field" value="20" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Độ lùi Trailing Stop (%)</label>
+            <input id="cfg_trailOffsetPct" type="number" step="1" class="input-field" value="10" />
+          </div>
+        </div>
+
+        <hr class="border-gray-800" />
+
+        <div>
+          <label class="block text-xs text-purple-400 font-semibold mb-1">Jito Block Engine Endpoint</label>
+          <select id="cfg_jitoEngine" class="input-field">
+            <option value="https://mainnet.block-engine.jito.wtf/api/v1/bundles">Global (mainnet.block-engine.jito.wtf)</option>
+            <option value="https://tokyo.mainnet.block-engine.jito.wtf/api/v1/bundles">Tokyo (tokyo.mainnet.block-engine.jito.wtf)</option>
+            <option value="https://amsterdam.mainnet.block-engine.jito.wtf/api/v1/bundles">Amsterdam (amsterdam.mainnet.block-engine.jito.wtf)</option>
+            <option value="https://frankfurt.mainnet.block-engine.jito.wtf/api/v1/bundles">Frankfurt (frankfurt.mainnet.block-engine.jito.wtf)</option>
+            <option value="https://ny.mainnet.block-engine.jito.wtf/api/v1/bundles">New York (ny.mainnet.block-engine.jito.wtf)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Jito Tip (Lamports)</label>
+            <input id="cfg_jitoTipLamports" type="number" step="10000" class="input-field" value="150000" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Jito Tip Account</label>
+            <select id="cfg_jitoTipAccount" class="input-field">
+              <option value="random">Tự động xoay vòng ngẫu nhiên (8 ví Jito)</option>
+              <option value="96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5">96gYZG...vrZU5</option>
+              <option value="HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe">HFqU5x...U7gRe</option>
+              <option value="Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY">Cw8CFy...LvLkY</option>
+              <option value="ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49">ADaUMi...PaS49</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
     </section>
 
-    <!-- ==========================================
-         TAB 2: 7-AGENT AI PIPELINE & SCORING BREAKDOWN
-         ========================================== -->
-    <section id="tab-agents" class="hidden space-y-4">
-      <div class="bg-sol-panel border border-sol-border rounded-lg p-4">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-sol-border pb-3">
-          <div>
-            <h2 class="text-sm font-bold text-white uppercase mono">Intelligent Scoring System (100-Point Matrix) & Inter-Agent Bus</h2>
-            <p class="text-xs text-slate-400 mt-0.5">
-              Điểm số không bao giờ ghi đè điều kiện bảo mật bắt buộc. Dữ liệu thiếu (ví dụ Social Sentiment = UNKNOWN) nhận 0 điểm an toàn, tuyệt đối không tự động cộng điểm giả định.
-            </p>
-          </div>
-          <div id="scoringTokenTitle" class="text-xs mono px-3 py-1 rounded bg-slate-800 text-sol-green font-bold">
-            Selected Token: --
-          </div>
-        </div>
+    <!-- ========================================== -->
+    <!-- TAB 2: GIAO DỊCH TỰ ĐỘNG & LOG KIỂM TOÁN   -->
+    <!-- ========================================== -->
+    <section id="tab-live" class="hidden space-y-6">
 
-        <div id="detailedScoringGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-          <!-- Populated dynamically -->
-        </div>
-
-        <div class="mt-4 border-t border-sol-border pt-4">
-          <h3 class="text-xs font-bold uppercase text-sol-purple mono mb-2">Structured JSON Message Bus Between All 7 Agents</h3>
-          <pre id="agentPayloadJson" class="bg-slate-950 border border-slate-800 rounded p-3 text-[11px] text-emerald-300 mono overflow-x-auto max-h-96"></pre>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==========================================
-         TAB 3: TESTING, BACKTEST & STRESS SUITE
-         ========================================== -->
-    <section id="tab-tests" class="hidden space-y-4">
-      <div class="bg-sol-panel border border-sol-border rounded-lg p-4">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-sol-border pb-3">
-          <div>
-            <h2 class="text-sm font-bold text-white uppercase mono">Automated Verification Suite (11 Mandatory Edge-Case & Security Tests)</h2>
-            <p class="text-xs text-slate-400 mt-0.5">
-              Kiểm thử thực tế trên logic của Security Engine, Risk Engine ($10 Equity), Execution Engine và Position Recovery.
-            </p>
-          </div>
-          <button onclick="App.runAllTests()" class="px-4 py-2 rounded bg-sol-green text-black font-bold text-xs mono hover:opacity-90 transition">
-            ▶ Run All 11 Verification Tests & Historical Backtest
+      <!-- Thanh điều khiển Bot -->
+      <div class="card p-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <button id="btnStartBot" onclick="startLiveBot()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition">
+            ▶ Khởi chạy Bot Quét & Giao dịch
+          </button>
+          <button id="btnStopBot" onclick="stopLiveBot()" disabled class="px-5 py-2.5 bg-red-600/40 text-red-300 font-semibold text-sm rounded-lg transition cursor-not-allowed">
+            ⏹ Dừng Bot
+          </button>
+          <button onclick="runSingleDiscoveryScan()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm rounded-lg border border-gray-700 transition">
+            🔍 Quét Nhanh 1 Lần Ngay
           </button>
         </div>
 
-        <div id="testResultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-          <!-- Populated by test runner -->
+        <div class="flex items-center gap-4 text-sm">
+          <div>Trạng thái: <span id="botRunningState" class="font-bold text-gray-400">ĐANG DỪNG</span></div>
+          <div>Vị thế đang mở: <span id="openPositionsCount" class="font-bold text-emerald-400">0</span></div>
+        </div>
+      </div>
+
+      <!-- Bảng Token Phát hiện & Vị thế đang mở -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Bảng Token ứng viên ($150k - $500k) -->
+        <div class="card p-5">
+          <h3 class="text-base font-bold text-white mb-3">Ứng viên Token phát hiện ($150k – $500k Market Cap)</h3>
+          <div class="overflow-x-auto max-h-72">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-400 border-b border-gray-800">
+                <tr>
+                  <th class="py-2">Token</th>
+                  <th class="py-2">Market Cap</th>
+                  <th class="py-2">Thanh khoản</th>
+                  <th class="py-2">Vol 1h / B:S</th>
+                  <th class="py-2">Analytics</th>
+                  <th class="py-2">RugCheck</th>
+                </tr>
+              </thead>
+              <tbody id="candidatesTableBody" class="divide-y divide-gray-800/60">
+                <tr><td colspan="6" class="py-6 text-center text-gray-500">Chưa có dữ liệu. Nhấn "Khởi chạy Bot" hoặc "Quét Nhanh 1 Lần".</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="mt-6 border-t border-sol-border pt-4">
-          <h3 class="text-xs font-bold uppercase text-amber-300 mono mb-2">Unbiased Walk-Forward Backtest (Includes Rugged/Failed Tokens & Real Solana Fees)</h3>
-          <div id="backtestSummaryBox" class="bg-slate-950 border border-slate-800 rounded p-4 text-xs mono text-slate-300">
-            Nhấn "Run All 11 Verification Tests & Historical Backtest" để chạy mô phỏng Walk-Forward không thiên lệch (bao gồm cả token rug pull, honeypot và token có chi phí vượt ngưỡng 1% vốn $10).
+        <!-- Bảng Vị thế đang nắm giữ -->
+        <div class="card p-5">
+          <h3 class="text-base font-bold text-white mb-3">Danh mục Vị thế Đang Mở (Theo dõi TP / SL / Trailing)</h3>
+          <div class="overflow-x-auto max-h-72">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-400 border-b border-gray-800">
+                <tr>
+                  <th class="py-2">Token</th>
+                  <th class="py-2">Giá Vào</th>
+                  <th class="py-2">Giá Hiện tại</th>
+                  <th class="py-2">Đỉnh Cao Nhất</th>
+                  <th class="py-2">PnL (%)</th>
+                  <th class="py-2">Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="positionsTableBody" class="divide-y divide-gray-800/60">
+                <tr><td colspan="6" class="py-6 text-center text-gray-500">Chưa có vị thế đang mở.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+
+      <!-- Nhật ký kiểm toán (Audit Log Console) -->
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-bold text-white">Nhật ký Giao dịch & Kiểm toán Chi tiết (Structured Audit Logs)</h3>
+          <div class="flex gap-2">
+            <button onclick="exportAuditLogsJSONL()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-emerald-400 rounded border border-gray-700">
+              ⬇ Tải xuống .JSONL
+            </button>
+            <button onclick="clearAuditLogs()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-gray-400 rounded border border-gray-700">
+              Xóa Log
+            </button>
+          </div>
+        </div>
+        <div id="auditLogConsole" class="log-box bg-black/80 p-4 rounded-lg h-80 overflow-y-auto space-y-1.5 border border-gray-800"></div>
+      </div>
+
     </section>
 
-    <!-- ==========================================
-         TAB 4: BACKEND PYTHON SOURCE & DOCKER EXPORTER
-         ========================================== -->
-    <section id="tab-architecture" class="hidden space-y-4">
-      <div class="bg-sol-panel border border-sol-border rounded-lg p-4 space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-sol-border pb-3">
-          <div>
-            <h2 class="text-sm font-bold text-white uppercase mono">Complete Project Repository Explorer & Downloader</h2>
-            <p class="text-xs text-slate-400 mt-0.5">
-              Xem hoặc tải xuống các file cấu hình, script cài đặt và mã nguồn Python/FastAPI/Docker đồng bộ với Dashboard này.
-            </p>
-          </div>
-          <button onclick="App.downloadEnvTemplate()" class="px-3 py-1.5 rounded bg-sol-purple text-white text-xs font-semibold mono">
-            Download .env.example
+    <!-- ========================================== -->
+    <!-- TAB 3: CHƯƠNG TRÌNH BACKTEST CHIẾN LƯỢC    -->
+    <!-- ========================================== -->
+    <section id="tab-backtest" class="hidden space-y-6">
+
+      <!-- Cấu hình Backtest -->
+      <div class="card p-5 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Nguồn Dữ liệu Backtest</label>
+          <select id="bt_dataSource" class="input-field" onchange="toggleBacktestSource()">
+            <option value="synthetic">Mô phỏng Lịch sử Memecoin ($150k-$500k, Gồm cả Rug Pull)</option>
+            <option value="live_dex">Quét các Cặp Solana Thực tế trên DEX Screener & Mô phỏng Nến</option>
+            <option value="custom_csv">Dán dữ liệu Nến OHLCV (JSON / CSV)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Vốn Khởi đầu (SOL)</label>
+          <input id="bt_initialSol" type="number" step="1" class="input-field" value="10" />
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Số lượng Sóng Token / Chu kỳ Kiểm thử</label>
+          <input id="bt_numCampaigns" type="number" step="5" class="input-field" value="40" />
+        </div>
+
+        <div>
+          <button onclick="runBacktestEngine()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition">
+            ⚡ Chạy Backtest Chiến Lược
           </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div class="bg-slate-950 border border-slate-800 rounded p-3 text-xs mono text-slate-300">
-            <div class="font-bold text-sol-green mb-2">Project Directory Tree</div>
-<pre class="text-[11px] leading-relaxed">solana-meme-ai-bot/
-├── backend/
-│   ├── main.py
-│   ├── config/settings.py
-│   ├── scanner/dex_scanner.py
-│   ├── security/token_security.py
-│   ├── onchain/smart_money.py
-│   ├── technical_analysis/indicators.py
-│   ├── social_analysis/sentiment.py
-│   ├── agents/council.py
-│   ├── risk_manager/risk_engine.py
-│   ├── execution/jupiter_executor.py
-│   ├── position_manager/manager.py
-│   ├── database/models.py
-│   └── tests/test_bot_suite.py
-├── frontend/
-│   └── index.html (This Unified Terminal)
-├── config/
-│   ├── settings.yaml
-│   └── strategies.yaml
-├── docker-compose.yml
-├── Dockerfile
-├── requirements.txt
-├── .env.example
-└── README.md</pre>
-          </div>
-
-          <div class="lg:col-span-2 bg-slate-950 border border-slate-800 rounded p-3 text-xs mono text-slate-300 space-y-2">
-            <div class="font-bold text-amber-300">Live Trading Safety Gate Checklist (Mandatory Before Unlocking Live Mode)</div>
-            <ul class="list-disc list-inside space-y-1 text-slate-300 text-[11px]">
-              <li>Private Key chỉ được nạp qua biến môi trường <code>SOLANA_PRIVATE_KEY_BASE58</code> ở Backend, không bao giờ đi qua LLM hay log.</li>
-              <li>Trước khi ký giao dịch, <code>JupiterExecutor</code> giải mã <code>VersionedTransaction</code> và đối chiếu danh sách <code>program_id</code> trong whitelist (Jupiter v6 <code>JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4</code>, System Program, Token Program, Associated Token Program).</li>
-              <li>Với vốn <strong>$10.00</strong>, mức rủi ro 1% tương đương <strong>$0.10</strong>. Chỉ những lệnh có tổng phí khứ hồi + độ trượt giá + khoảng cách dừng lỗ nằm trong ngân sách rủi ro mới được phép gửi lên mạng.</li>
-            </ul>
-          </div>
+        <!-- Ô nhập CSV/JSON tùy chọn -->
+        <div id="bt_customDataContainer" class="hidden md:col-span-4">
+          <label class="block text-xs text-gray-400 mb-1">Dán chuỗi JSON hoặc CSV (`timestamp,symbol,mcap,liquidity,vol1h,bsRatio,rugScore,mintRevoked,prices_array`):</label>
+          <textarea id="bt_customDataInput" rows="3" class="input-field font-mono text-xs" placeholder='[{"symbol":"MEME1","mcap":220000,"liquidity":48000,"vol1h":65000,"bsRatio":1.45,"rugScore":120,"mintRevoked":true,"freezeRevoked":true,"top10Pct":19,"priceSeries":[1.0,1.08,1.25,1.38,1.21,1.15]}]'></textarea>
         </div>
       </div>
+
+      <!-- Chỉ số Tổng hợp Backtest (KPI Cards) -->
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div class="card p-4">
+          <div class="text-xs text-gray-400">Tổng Vốn Cuối (SOL)</div>
+          <div id="bt_metricFinalSol" class="text-xl font-bold text-white mt-1">--</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-xs text-gray-400">Lợi nhuận Ròng (Net PnL)</div>
+          <div id="bt_metricNetPnl" class="text-xl font-bold text-emerald-400 mt-1">--</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-xs text-gray-400">Tỷ lệ Thắng (Win Rate)</div>
+          <div id="bt_metricWinRate" class="text-xl font-bold text-white mt-1">--</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-xs text-gray-400">Profit Factor</div>
+          <div id="bt_metricProfitFactor" class="text-xl font-bold text-white mt-1">--</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-xs text-gray-400">Max Drawdown</div>
+          <div id="bt_metricMaxDD" class="text-xl font-bold text-red-400 mt-1">--</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-xs text-gray-400">Số Rug Pull Đã Chặn</div>
+          <div id="bt_metricRugsBlocked" class="text-xl font-bold text-purple-400 mt-1">--</div>
+        </div>
+      </div>
+
+      <!-- Biểu đồ Đường cong Vốn (Equity Curve) -->
+      <div class="card p-5">
+        <h3 class="text-base font-bold text-white mb-3">Biểu đồ Đường cong Vốn (Equity Curve - SOL)</h3>
+        <canvas id="equityCurveCanvas" width="1100" height="280" class="w-full h-64 bg-black/50 rounded border border-gray-800"></canvas>
+      </div>
+
+      <!-- Nhật ký Lệnh Backtest -->
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-bold text-white">Chi tiết Từng Giao dịch & Kiểm định Bộ lọc trong Backtest</h3>
+          <button onclick="exportBacktestCSV()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs text-emerald-400 rounded border border-gray-700">
+            ⬇ Xuất kết quả Backtest (.CSV)
+          </button>
+        </div>
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-left text-xs">
+            <thead class="text-gray-400 border-b border-gray-800">
+              <tr>
+                <th class="py-2">#</th>
+                <th class="py-2">Token</th>
+                <th class="py-2">Market Cap</th>
+                <th class="py-2">Kết quả Lọc (Analytics & RugCheck)</th>
+                <th class="py-2">Đỉnh Đạt Được</th>
+                <th class="py-2">Lý do Thoát Lệnh</th>
+                <th class="py-2">Phí (Slippage + Jito)</th>
+                <th class="py-2">PnL Ròng (SOL / %)</th>
+              </tr>
+            </thead>
+            <tbody id="btTradeTableBody" class="divide-y divide-gray-800/60">
+              <tr><td colspan="8" class="py-6 text-center text-gray-500">Nhấn "Chạy Backtest Chiến Lược" để xem phân tích chi tiết.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </section>
 
   </main>
 
-  <!-- LIVE MODE SAFETY UNLOCK MODAL -->
-  <div id="liveModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-sol-panel border border-sol-border rounded-xl max-w-lg w-full p-5 space-y-4">
-      <div class="flex items-center justify-between border-b border-sol-border pb-3">
-        <h3 class="font-bold text-sm uppercase text-rose-400 mono">⚠️ Unlock Controlled Live Trading Gate</h3>
-        <button onclick="App.closeLiveUnlockModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
-      </div>
-      <div class="space-y-2 text-xs text-slate-300 leading-relaxed">
-        <p>Live Trading bị khóa mặc định để bảo vệ vốn. Để mở khóa chế độ Live Trading có kiểm soát với vốn <strong>$10.00 USD</strong>, bạn phải xác nhận các điều kiện bắt buộc sau:</p>
-        <label class="flex items-start gap-2 bg-slate-900 p-2.5 rounded border border-slate-800 cursor-pointer">
-          <input type="checkbox" id="chkLive1" class="mt-0.5" />
-          <span>Backend FastAPI đã kết nối Solana RPC thực tế và <code>SOLANA_PRIVATE_KEY_BASE58</code> được lưu cục bộ trong biến môi trường (không đưa lên trình duyệt).</span>
-        </label>
-        <label class="flex items-start gap-2 bg-slate-900 p-2.5 rounded border border-slate-800 cursor-pointer">
-          <input type="checkbox" id="chkLive2" class="mt-0.5" />
-          <span>Tôi hiểu rằng với vốn $10.00, mục tiêu rủi ro 1% ($0.10) sẽ từ chối mọi giao dịch nếu phí mạng + slippage + rủi ro SL vượt quá ngưỡng cho phép.</span>
-        </label>
-        <label class="flex items-start gap-2 bg-slate-900 p-2.5 rounded border border-slate-800 cursor-pointer">
-          <input type="checkbox" id="chkLive3" class="mt-0.5" />
-          <span>Tôi hiểu rằng Stop Loss trên Solana DEX không phải là mức lỗ được bảo đảm tuyệt đối nếu thanh khoản bị rút đột ngột.</span>
-        </label>
-      </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="App.closeLiveUnlockModal()" class="px-3 py-1.5 rounded bg-slate-800 text-xs text-slate-300">Cancel</button>
-        <button onclick="App.confirmLiveModeUnlock()" class="px-3 py-1.5 rounded bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white">
-          Verify & Switch Mode
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       COMPLETE AUTONOMOUS BOT CORE ENGINE (JAVASCRIPT RUNTIME)
-       ========================================================================= -->
+  <!-- ========================================================================= -->
+  <!-- CORE LOGIC: SOLANA BOT + JITO BUNDLE + BACKTEST ENGINE                    -->
+  <!-- ========================================================================= -->
   <script>
-    const FIXED_CONFIG = Object.freeze({
-      blockchain: 'Solana',
-      initialCapitalUsd: 10.00,
-      targetRiskPct: 0.01,        // 1% = $0.10
-      maxRiskPct: 0.02,           // 2% = $0.20
-      maxDailyLossPct: 0.03,      // 3% = $0.30
-      maxDrawdownPct: 0.10,       // 10% = $1.00
-      maxConcurrentPositions: 1,
-      maxExposurePct: 0.50,       // 50% = $5.00 max position size
-      leverage: 1,
-      minLiquidityUsd: 25000,
-      minTradeSizeUsd: 1.00,
-      solanaBaseFeeUsd: 0.0015,   // ~5000 lamports + modest priority fee
-      jupiterProgramId: 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
-    });
+    const WSOL_MINT = "So11111111111111111111111111111111111111112";
+    const LAMPORTS_PER_SOL = 1_000_000_000;
+    const JITO_TIP_ACCOUNTS = [
+      "96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5",
+      "HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe",
+      "Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY",
+      "ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49",
+      "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh",
+      "ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt",
+      "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL",
+      "3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT"
+    ];
 
-    const App = {
-      state: {
-        running: true,
-        mode: 'PAPER',            // 'PAPER' | 'LIVE_CONTROLLED'
-        strictTenDollarGate: true, // Enforces $0.10 target / $0.20 max risk including fees
-        equity: 10.00,
-        peakEquity: 10.00,
-        availableBalance: 10.00,
-        investedCapital: 0.00,
-        dailyPnl: 0.00,
-        totalPnl: 0.00,
-        totalFees: 0.00,
-        tokens: [],
-        selectedTokenAddress: null,
-        activePosition: null,
-        tradeHistory: [],
-        walletSyncedOnBoot: false
-      },
+    let connectedWalletProvider = null;
+    let connectedPublicKey = null;
+    let botIntervalId = null;
+    let monitorIntervalId = null;
+    let activePositions = {};
+    let auditLogs = [];
+    let lastBacktestResults = [];
 
-      init() {
-        this.restorePersistedState();
-        this.log('SYSTEM', 'Khởi tạo hệ thống Solana AI Meme Coin Autonomous Scalping Bot (Capital = $10.00, Risk Target = 1% = $0.10).');
-        this.synchronizeWalletAndPositions();
-        this.scanNow();
+    // -------------------------------------------------------------------------
+    // ĐIỀU HƯỚNG TAB
+    // -------------------------------------------------------------------------
+    function switchTab(tabId) {
+      ["tab-config", "tab-live", "tab-backtest"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+        const btn = document.getElementById("btn-" + id);
+        btn.classList.remove("border-emerald-500", "text-emerald-400");
+        btn.classList.add("border-transparent", "text-gray-400");
+      });
+      document.getElementById(tabId).classList.remove("hidden");
+      const activeBtn = document.getElementById("btn-" + tabId);
+      activeBtn.classList.add("border-emerald-500", "text-emerald-400");
+      activeBtn.classList.remove("border-transparent", "text-gray-400");
+    }
 
-        // Autonomous loops
-        setInterval(() => {
-          if (this.state.running) this.tickPositionAndMarket();
-        }, 2500);
+    // -------------------------------------------------------------------------
+    // ĐỌC CẤU HÌNH TỪ GIAO DIỆN NGƯỜI DÙNG
+    // -------------------------------------------------------------------------
+    function getUserConfig() {
+      return {
+        rpcUrl: document.getElementById("cfg_rpcUrl").value.trim(),
+        walletMode: document.getElementById("cfg_walletMode").value,
+        privateKey: document.getElementById("cfg_privateKey").value.trim(),
+        jupUrl: document.getElementById("cfg_jupUrl").value.trim().replace(/\/$/, ""),
+        apiKey: document.getElementById("cfg_apiKey").value.trim(),
+        dryRun: document.getElementById("cfg_dryRun").checked,
 
-        setInterval(() => {
-          if (this.state.running) this.scanNow();
-        }, 20000);
-      },
+        minMcap: parseFloat(document.getElementById("cfg_minMcap").value) || 150000,
+        maxMcap: parseFloat(document.getElementById("cfg_maxMcap").value) || 500000,
+        minLiq: parseFloat(document.getElementById("cfg_minLiq").value) || 35000,
+        minVol1h: parseFloat(document.getElementById("cfg_minVol1h").value) || 25000,
+        minBSRatio: parseFloat(document.getElementById("cfg_minBSRatio").value) || 1.25,
+        minChg1h: parseFloat(document.getElementById("cfg_minChg1h").value) || 5,
+        maxChg1h: parseFloat(document.getElementById("cfg_maxChg1h").value) || 180,
 
-      restorePersistedState() {
-        try {
-          const saved = localStorage.getItem('solana_ai_scalper_state_v1');
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            this.state.equity = parsed.equity ?? 10.00;
-            this.state.peakEquity = parsed.peakEquity ?? 10.00;
-            this.state.availableBalance = parsed.availableBalance ?? 10.00;
-            this.state.investedCapital = parsed.investedCapital ?? 0.00;
-            this.state.dailyPnl = parsed.dailyPnl ?? 0.00;
-            this.state.totalPnl = parsed.totalPnl ?? 0.00;
-            this.state.totalFees = parsed.totalFees ?? 0.00;
-            this.state.activePosition = parsed.activePosition ?? null;
-            this.state.tradeHistory = parsed.tradeHistory ?? [];
-          }
-        } catch (err) {
-          console.warn('State restore skipped:', err);
+        maxRugScore: parseInt(document.getElementById("cfg_maxRugScore").value) || 400,
+        maxTop10Pct: parseFloat(document.getElementById("cfg_maxTop10Pct").value) || 30,
+        requireMintRevoked: document.getElementById("cfg_requireMintRevoked").checked,
+        requireFreezeRevoked: document.getElementById("cfg_requireFreezeRevoked").checked,
+
+        buySol: parseFloat(document.getElementById("cfg_buySol").value) || 0.25,
+        slippageBps: parseInt(document.getElementById("cfg_slippageBps").value) || 250,
+        tpPct: parseFloat(document.getElementById("cfg_tpPct").value) || 45,
+        slPct: parseFloat(document.getElementById("cfg_slPct").value) || -18,
+        trailArmPct: parseFloat(document.getElementById("cfg_trailArmPct").value) || 20,
+        trailOffsetPct: parseFloat(document.getElementById("cfg_trailOffsetPct").value) || 10,
+
+        jitoEngine: document.getElementById("cfg_jitoEngine").value,
+        jitoTipLamports: parseInt(document.getElementById("cfg_jitoTipLamports").value) || 150000,
+        jitoTipAccount: document.getElementById("cfg_jitoTipAccount").value
+      };
+    }
+
+    // -------------------------------------------------------------------------
+    // KẾT NỐI VÍ TRÌNH DUYỆT (PHANTOM / SOLFLARE / BACKPACK)
+    // -------------------------------------------------------------------------
+    async function connectBrowserWallet() {
+      try {
+        const provider = window.solana || window.solflare || window.backpack;
+        if (!provider) {
+          alert("Không tìm thấy tiện ích ví Solana (Phantom/Solflare/Backpack). Bạn vẫn có thể chạy ở chế độ Dry Run hoặc nhập Base58 Private Key.");
+          return;
         }
-      },
+        const resp = await provider.connect();
+        connectedWalletProvider = provider;
+        connectedPublicKey = resp.publicKey.toString();
+        document.getElementById("walletStatusBadge").textContent =
+          `Đã kết nối: ${connectedPublicKey.slice(0, 4)}...${connectedPublicKey.slice(-4)}`;
+        document.getElementById("walletStatusBadge").className =
+          "px-3 py-2 text-xs font-mono bg-emerald-950 text-emerald-400 rounded-lg border border-emerald-700";
+        logAuditEvent("WALLET_CONNECTED", connectedPublicKey, "SOL", { mode: "BROWSER_EXTENSION" });
+      } catch (err) {
+        logAuditEvent("WALLET_ERROR", "N/A", "SOL", { error: err.message });
+      }
+    }
 
-      persistState() {
-        try {
-          localStorage.setItem('solana_ai_scalper_state_v1', JSON.stringify({
-            equity: this.state.equity,
-            peakEquity: this.state.peakEquity,
-            availableBalance: this.state.availableBalance,
-            investedCapital: this.state.investedCapital,
-            dailyPnl: this.state.dailyPnl,
-            totalPnl: this.state.totalPnl,
-            totalFees: this.state.totalFees,
-            activePosition: this.state.activePosition,
-            tradeHistory: this.state.tradeHistory
-          }));
-        } catch (e) {}
-      },
+    // -------------------------------------------------------------------------
+    // HỆ THỐNG AUDIT LOGGER
+    // -------------------------------------------------------------------------
+    function logAuditEvent(eventType, tokenMint, symbol, details) {
+      const cfg = getUserConfig();
+      const record = {
+        timestamp: new Date().toISOString(),
+        event_type: eventType,
+        token_mint: tokenMint,
+        symbol: symbol,
+        dry_run: cfg.dryRun,
+        details: details
+      };
+      auditLogs.push(record);
 
-      synchronizeWalletAndPositions() {
-        // Mandatory requirement: Sync wallet & existing positions on startup before allowing any new trade
-        if (this.state.activePosition) {
-          this.log('RECOVERY', `Phát hiện vị thế tồn tại sau khi khởi động lại: ${this.state.activePosition.symbol} ($${this.state.activePosition.sizeUsd.toFixed(2)}). Đã đồng bộ SL/TP.`);
-        } else {
-          this.log('RECOVERY', 'Đồng bộ trạng thái ví hoàn tất: Không có vị thế treo. Sẵn sàng quét thị trường.');
-        }
-        this.state.walletSyncedOnBoot = true;
-        this.renderAll();
-      },
+      const consoleEl = document.getElementById("auditLogConsole");
+      const line = document.createElement("div");
+      const colorMap = {
+        TOKEN_SELECTED: "text-blue-400",
+        ANALYTICS_ASSESSMENT: details.passed ? "text-emerald-400" : "text-amber-400",
+        RUG_CHECK: details.passed ? "text-emerald-300" : "text-red-400",
+        JITO_BUNDLE_SUBMITTED: "text-purple-400",
+        ORDER_EXECUTED_BUY: "text-emerald-400 font-bold",
+        ORDER_EXECUTED_SELL: "text-cyan-400 font-bold",
+        EXIT_SIGNAL_TRIGGERED: "text-yellow-300 font-semibold"
+      };
+      const badgeColor = colorMap[eventType] || "text-gray-300";
 
-      // =====================================================
-      // 1. MARKET DISCOVERY ENGINE (REAL DEXSCREENER API + FALLBACK)
-      // =====================================================
-      async scanNow() {
-        const badge = document.getElementById('scannerSourceBadge');
-        badge.textContent = 'Scanning Solana DEX...';
-        try {
-          const res = await fetch('https://api.dexscreener.com/latest/dex/search?q=solana%20pump', {
-            headers: { 'Accept': 'application/json' }
+      const kvSummary = Object.entries(details)
+        .map(([k, v]) => `${k}=${typeof v === "object" ? JSON.stringify(v) : v}`)
+        .join(" | ");
+
+      line.innerHTML = `<span class="text-gray-500">${record.timestamp.split("T")[1].slice(0, 12)}</span> <span class="${badgeColor}">[${eventType}]</span> <span class="text-white font-semibold">${symbol}</span> <span class="text-gray-500">(${tokenMint.slice(0, 6)}...)</span>: <span class="text-gray-300">${kvSummary}</span>`;
+      consoleEl.prepend(line);
+    }
+
+    function exportAuditLogsJSONL() {
+      if (!auditLogs.length) return alert("Chưa có dữ liệu log để xuất.");
+      const content = auditLogs.map(r => JSON.stringify(r)).join("\n");
+      const blob = new Blob([content], { type: "application/jsonl" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `solana_memecoin_audit_${Date.now()}.jsonl`;
+      a.click();
+    }
+
+    function clearAuditLogs() {
+      auditLogs = [];
+      document.getElementById("auditLogConsole").innerHTML = "";
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP 1 & 2: QUÉT TOKEN ($150K - $500K) & ĐÁNH GIÁ ANALYTICS
+    // -------------------------------------------------------------------------
+    async function discoverAndEvaluateTokens() {
+      const cfg = getUserConfig();
+      const url = "https://api.dexscreener.com/latest/dex/search?q=solana";
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const pairs = data.pairs || [];
+        const tbody = document.getElementById("candidatesTableBody");
+        tbody.innerHTML = "";
+
+        const seen = new Set();
+        const qualifiedPairs = [];
+
+        for (const pair of pairs) {
+          if (pair.chainId !== "solana") continue;
+          const mint = pair.baseToken?.address;
+          const symbol = pair.baseToken?.symbol || "UNKNOWN";
+          if (!mint || seen.has(mint)) continue;
+
+          const mcap = parseFloat(pair.marketCap || pair.fdv || 0);
+          if (mcap < cfg.minMcap || mcap > cfg.maxMcap) continue;
+          seen.add(mint);
+
+          logAuditEvent("TOKEN_SELECTED", mint, symbol, {
+            market_cap_usd: Math.round(mcap),
+            dex: pair.dexId,
+            price_usd: pair.priceUsd
           });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          const solPairs = (data.pairs || [])
-            .filter(p => p.chainId === 'solana' && p.liquidity && p.liquidity.usd > 5000)
-            .slice(0, 7);
 
-          if (solPairs.length > 0) {
-            this.state.tokens = solPairs.map(p => this.normalizeDexScreenerPair(p));
-            badge.textContent = `LIVE FEED (${solPairs.length} Solana Pools)`;
-            badge.className = 'text-[10px] mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/40';
-            this.log('SCANNER', `Thu thập thành công ${solPairs.length} cặp giao dịch thực tế trên Solana DEX.`);
-          } else {
-            throw new Error('Empty Solana pairs list');
+          // Đánh giá Analytics
+          const liqUsd = parseFloat(pair.liquidity?.usd || 0);
+          const vol1h = parseFloat(pair.volume?.h1 || 0);
+          const chg1h = parseFloat(pair.priceChange?.h1 || 0);
+          const buys1h = parseInt(pair.txns?.h1?.buys || 0);
+          const sells1h = parseInt(pair.txns?.h1?.sells || 0);
+          const bsRatio = +(buys1h / Math.max(sells1h, 1)).toFixed(2);
+
+          const reasons = [];
+          if (liqUsd < cfg.minLiq) reasons.push(`Liq thấp ($${Math.round(liqUsd)})`);
+          if (vol1h < cfg.minVol1h) reasons.push(`Vol 1h thấp ($${Math.round(vol1h)})`);
+          if (bsRatio < cfg.minBSRatio) reasons.push(`B/S yếu (${bsRatio})`);
+          if (chg1h < cfg.minChg1h || chg1h > cfg.maxChg1h) reasons.push(`Chg1h ngoài biên (${chg1h}%)`);
+
+          const analyticsPassed = reasons.length === 0;
+          logAuditEvent("ANALYTICS_ASSESSMENT", mint, symbol, {
+            passed: analyticsPassed,
+            liquidity_usd: Math.round(liqUsd),
+            volume_1h_usd: Math.round(vol1h),
+            buy_sell_ratio: bsRatio,
+            price_change_1h_pct: chg1h,
+            reasons
+          });
+
+          // Kiểm tra RugCheck nếu đạt Analytics
+          let rugPassed = false;
+          let rugStatusText = "Bỏ qua";
+          if (analyticsPassed) {
+            const rugRes = await performRugCheck(mint, symbol, cfg);
+            rugPassed = rugRes.passed;
+            rugStatusText = rugPassed ? `ĐẠT (Score: ${rugRes.score})` : `LOẠI (${rugRes.reasons[0] || "Rủi ro"})`;
+            if (rugPassed) qualifiedPairs.push(pair);
           }
-        } catch (err) {
-          // Deterministic high-fidelity on-chain telemetry feed if browser blocks CORS or offline
-          badge.textContent = 'TELEMETRY STREAM (CORS Fallback)';
-          badge.className = 'text-[10px] mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/40';
-          if (this.state.tokens.length === 0) {
-            this.state.tokens = this.getInitialTelemetryTokens();
-          }
-        }
 
-        // Run all 7 agents on every discovered token
-        this.state.tokens.forEach(t => {
-          t.evaluation = this.evaluateTokenWithSevenAgents(t);
-        });
-
-        if (!this.state.selectedTokenAddress && this.state.tokens.length > 0) {
-          this.state.selectedTokenAddress = this.state.tokens[0].address;
-        }
-
-        document.getElementById('lastSyncTime').textContent = 'Updated: ' + new Date().toLocaleTimeString();
-        this.tryAutonomousExecution();
-        this.renderAll();
-      },
-
-      normalizeDexScreenerPair(pair) {
-        const buys5m = pair.txns?.m5?.buys ?? 18;
-        const sells5m = pair.txns?.m5?.sells ?? 9;
-        const vol5m = pair.volume?.m5 ?? ((pair.volume?.h1 || 12000) / 8);
-        const priceChange5m = pair.priceChange?.m5 ?? 2.4;
-        const liqUsd = pair.liquidity?.usd ?? 45000;
-        const mcap = pair.fdv ?? pair.marketCap ?? (liqUsd * 4.2);
-
-        // Derive realistic on-chain security & TA metrics from live pair telemetry
-        const isSuspiciousLiq = liqUsd < 25000;
-        return {
-          address: pair.baseToken?.address || 'So11111111111111111111111111111111111111112',
-          symbol: (pair.baseToken?.symbol || 'MEME').slice(0, 10),
-          name: pair.baseToken?.name || 'Solana Meme Token',
-          priceUsd: parseFloat(pair.priceUsd || '0.00142'),
-          marketCap: mcap,
-          liquidityUsd: liqUsd,
-          volume1m: vol5m / 5,
-          volume5m: vol5m,
-          volume15m: vol5m * 2.6,
-          volume1h: pair.volume?.h1 || vol5m * 8,
-          buySellRatio: Number((buys5m / Math.max(1, sells5m)).toFixed(2)),
-          uniqueBuys5m: buys5m,
-          uniqueSells5m: sells5m,
-          priceChange5m: priceChange5m,
-          // Security verification telemetry
-          mintAuthorityRevoked: true,
-          freezeAuthorityRevoked: true,
-          top10HolderPct: isSuspiciousLiq ? 48.5 : 21.4,
-          devWalletDumpDetected: false,
-          lpLockedPct: isSuspiciousLiq ? 60 : 99.2,
-          sellRouteVerified: true,
-          washTradingFlag: false,
-          bundleSnipingFlag: false,
-          // Smart money telemetry
-          smartMoneyNetFlowUsd: priceChange5m > 0 ? 4200 : -600,
-          smartMoneyWinRate: 68.5,
-          // Technical indicators (1m / 5m)
-          ema9AboveEma21: priceChange5m >= 0,
-          ema21AboveEma50: priceChange5m > -2,
-          rsi14: Math.min(82, Math.max(28, 54 + priceChange5m * 1.8)),
-          macdHistogramPositive: priceChange5m > 0,
-          aboveVwap: priceChange5m >= 0,
-          atrPct: Math.min(4.5, Math.max(1.2, Math.abs(priceChange5m) * 0.35 + 1.4)),
-          // Social Sentiment: Strictly marked UNKNOWN unless external verified API key is supplied
-          socialStatus: 'UNKNOWN'
-        };
-      },
-
-      getInitialTelemetryTokens() {
-        return [
-          {
-            address: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
-            symbol: 'BONKAI',
-            name: 'Bonk Neural Scalper',
-            priceUsd: 0.004820,
-            marketCap: 680000,
-            liquidityUsd: 142000,
-            volume1m: 6400,
-            volume5m: 31500,
-            volume15m: 84000,
-            volume1h: 290000,
-            buySellRatio: 2.35,
-            uniqueBuys5m: 94,
-            uniqueSells5m: 40,
-            priceChange5m: 3.8,
-            mintAuthorityRevoked: true,
-            freezeAuthorityRevoked: true,
-            top10HolderPct: 17.8,
-            devWalletDumpDetected: false,
-            lpLockedPct: 100.0,
-            sellRouteVerified: true,
-            washTradingFlag: false,
-            bundleSnipingFlag: false,
-            smartMoneyNetFlowUsd: 14800,
-            smartMoneyWinRate: 74.2,
-            ema9AboveEma21: true,
-            ema21AboveEma50: true,
-            rsi14: 61.5,
-            macdHistogramPositive: true,
-            aboveVwap: true,
-            atrPct: 1.65,
-            socialStatus: 'UNKNOWN'
-          },
-          {
-            address: '9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E',
-            symbol: 'RUGCAT',
-            name: 'Suspicious Cat Token',
-            priceUsd: 0.000910,
-            marketCap: 95000,
-            liquidityUsd: 18500,
-            volume1m: 1200,
-            volume5m: 5800,
-            volume15m: 14000,
-            volume1h: 41000,
-            buySellRatio: 0.72,
-            uniqueBuys5m: 18,
-            uniqueSells5m: 25,
-            priceChange5m: -6.4,
-            mintAuthorityRevoked: false, // FATAL SECURITY VIOLATION
-            freezeAuthorityRevoked: false,
-            top10HolderPct: 68.0,
-            devWalletDumpDetected: true,
-            lpLockedPct: 0.0,
-            sellRouteVerified: false,
-            washTradingFlag: true,
-            bundleSnipingFlag: true,
-            smartMoneyNetFlowUsd: -9400,
-            smartMoneyWinRate: 31.0,
-            ema9AboveEma21: false,
-            ema21AboveEma50: false,
-            rsi14: 34.0,
-            macdHistogramPositive: false,
-            aboveVwap: false,
-            atrPct: 5.8,
-            socialStatus: 'UNKNOWN'
-          },
-          {
-            address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
-            symbol: 'SOLPEPE',
-            name: 'Solana Pepe Momentum',
-            priceUsd: 0.012400,
-            marketCap: 420000,
-            liquidityUsd: 68000,
-            volume1m: 2800,
-            volume5m: 14200,
-            volume15m: 39000,
-            volume1h: 112000,
-            buySellRatio: 1.48,
-            uniqueBuys5m: 52,
-            uniqueSells5m: 35,
-            priceChange5m: 1.9,
-            mintAuthorityRevoked: true,
-            freezeAuthorityRevoked: true,
-            top10HolderPct: 24.5,
-            devWalletDumpDetected: false,
-            lpLockedPct: 98.5,
-            sellRouteVerified: true,
-            washTradingFlag: false,
-            bundleSnipingFlag: false,
-            smartMoneyNetFlowUsd: 3800,
-            smartMoneyWinRate: 64.0,
-            ema9AboveEma21: true,
-            ema21AboveEma50: true,
-            rsi14: 57.0,
-            macdHistogramPositive: true,
-            aboveVwap: true,
-            atrPct: 2.1,
-            socialStatus: 'UNKNOWN'
-          }
-        ];
-      },
-
-      // =====================================================
-      // 2. MULTI-AGENT AI SYSTEM (7 AGENTS + 100-POINT SCORING)
-      // =====================================================
-      evaluateTokenWithSevenAgents(token) {
-        // --- AGENT 1: SECURITY ANALYST (Max 25 pts) ---
-        let secScore = 25;
-        const secFindings = [];
-        let mandatorySecurityPass = true;
-
-        if (!token.mintAuthorityRevoked) {
-          secScore -= 15;
-          mandatorySecurityPass = false;
-          secFindings.push('CRITICAL: Mint Authority active (Infinite mint risk)');
-        }
-        if (!token.freezeAuthorityRevoked) {
-          secScore -= 15;
-          mandatorySecurityPass = false;
-          secFindings.push('CRITICAL: Freeze Authority active (Honeypot risk)');
-        }
-        if (!token.sellRouteVerified) {
-          secScore = 0;
-          mandatorySecurityPass = false;
-          secFindings.push('CRITICAL: Jupiter SELL route simulation failed');
-        }
-        if (token.top10HolderPct > 35) {
-          secScore -= 8;
-          secFindings.push(`High Holder Concentration (${token.top10HolderPct.toFixed(1)}%)`);
-          if (token.top10HolderPct > 50) mandatorySecurityPass = false;
-        }
-        if (token.devWalletDumpDetected || token.washTradingFlag || token.bundleSnipingFlag) {
-          secScore -= 10;
-          mandatorySecurityPass = false;
-          secFindings.push('Malicious Insider/Wash/Bundle behavior detected');
-        }
-        secScore = Math.max(0, secScore);
-
-        const agent1 = {
-          id: 'AGENT_1_SECURITY',
-          name: 'Agent 1 — Security Analyst',
-          status: mandatorySecurityPass ? 'APPROVED' : 'REJECTED',
-          securityScore: secScore,
-          maxScore: 25,
-          riskClassification: mandatorySecurityPass ? (secScore >= 22 ? 'LOW' : 'MODERATE') : 'CRITICAL_UNSAFE',
-          buyEligibility: mandatorySecurityPass,
-          findings: secFindings.length ? secFindings.join(' | ') : 'Mint/Freeze revoked, LP locked, Sell route verified.'
-        };
-
-        // --- AGENT 2: ON-CHAIN ANALYST (Max 10 pts) ---
-        let smartScore = 0;
-        if (token.smartMoneyNetFlowUsd > 10000 && token.smartMoneyWinRate >= 65) smartScore = 10;
-        else if (token.smartMoneyNetFlowUsd > 2500 && token.smartMoneyWinRate >= 58) smartScore = 8;
-        else if (token.smartMoneyNetFlowUsd > 0) smartScore = 5;
-        else smartScore = 1;
-
-        const agent2 = {
-          id: 'AGENT_2_ONCHAIN',
-          name: 'Agent 2 — On-Chain & Smart Money Analyst',
-          status: smartScore >= 6 ? 'APPROVED' : 'WAITING',
-          smartMoneyScore: smartScore,
-          maxScore: 10,
-          netFlowUsd: token.smartMoneyNetFlowUsd,
-          insiderRisk: token.devWalletDumpDetected ? 'HIGH' : 'LOW',
-          findings: `Smart Money Net Flow: $${token.smartMoneyNetFlowUsd.toLocaleString()} | Tracked Wallet WR: ${token.smartMoneyWinRate}%`
-        };
-
-        // --- AGENT 3: MARKET & LIQUIDITY ANALYST (Liquidity 20 + Volume 15 + Social 10 + Market 5 = 50 pts) ---
-        let liqScore = 0;
-        if (token.liquidityUsd >= 100000) liqScore = 20;
-        else if (token.liquidityUsd >= 50000) liqScore = 17;
-        else if (token.liquidityUsd >= FIXED_CONFIG.minLiquidityUsd) liqScore = 13;
-        else liqScore = 3;
-
-        let volScore = 0;
-        if (token.volume5m >= 20000 && token.buySellRatio >= 1.8) volScore = 15;
-        else if (token.volume5m >= 10000 && token.buySellRatio >= 1.3) volScore = 12;
-        else if (token.volume5m >= 4000 && token.buySellRatio >= 1.05) volScore = 8;
-        else volScore = 2;
-
-        // Rule: Missing social API data MUST be marked UNKNOWN and never converted into free safety points unless verified
-        const socialScore = token.socialStatus === 'VERIFIED_POSITIVE' ? 9 : 0;
-        const marketCondScore = (token.liquidityUsd >= FIXED_CONFIG.minLiquidityUsd && token.buySellRatio >= 1.2) ? 5 : 2;
-
-        const agent3 = {
-          id: 'AGENT_3_MARKET',
-          name: 'Agent 3 — Market & Flow Analyst',
-          status: (liqScore >= 13 && volScore >= 10) ? 'APPROVED' : 'WAITING',
-          liquidityScore: liqScore,
-          volumeFlowScore: volScore,
-          socialScore: socialScore,
-          marketCondScore: marketCondScore,
-          findings: `Liq: $${Math.round(token.liquidityUsd).toLocaleString()} (${liqScore}/20) | Vol5m B/S: ${token.buySellRatio}x (${volScore}/15) | Social: ${token.socialStatus} (${socialScore}/10)`
-        };
-
-        // --- AGENT 4: SCALPING & TECHNICAL ANALYST (Max 15 pts) ---
-        let taScore = 0;
-        const antiFomoPass = token.rsi14 <= 74 && token.priceChange5m <= 18.0;
-        if (token.ema9AboveEma21 && token.ema21AboveEma50 && token.macdHistogramPositive && token.aboveVwap && antiFomoPass) {
-          taScore = 15;
-        } else if (token.ema9AboveEma21 && token.aboveVwap && antiFomoPass) {
-          taScore = 11;
-        } else if (!antiFomoPass) {
-          taScore = 3;
-        } else {
-          taScore = 5;
-        }
-
-        // Dynamic ATR-based SL and TP (never static across all coins)
-        const slDistancePct = Math.max(0.012, Math.min(0.035, (token.atrPct / 100) * 1.15)); // e.g., ~1.5% - 2.5%
-        const tpDistancePct = Math.max(0.032, slDistancePct * 2.4);                          // 2.4R reward/risk
-        const entryPrice = token.priceUsd;
-        const stopLossPrice = entryPrice * (1 - slDistancePct);
-        const takeProfitPrice = entryPrice * (1 + tpDistancePct);
-
-        const agent4 = {
-          id: 'AGENT_4_SCALPING',
-          name: 'Agent 4 — Technical & Scalping Analyst',
-          status: (taScore >= 11 && antiFomoPass) ? 'APPROVED' : 'WAITING',
-          taScore: taScore,
-          maxScore: 15,
-          entryPrice,
-          stopLossPrice,
-          takeProfitPrice,
-          slDistancePct,
-          tpDistancePct,
-          expectedHoldingMinutes: 12,
-          findings: `EMA9>21>50: ${token.ema9AboveEma21} | RSI14: ${token.rsi14.toFixed(1)} | Dynamic SL: -${(slDistancePct*100).toFixed(2)}%, TP: +${(tpDistancePct*100).toFixed(2)}%`
-        };
-
-        // --- TOTAL 100-POINT INTELLIGENT SCORE ---
-        const totalScore = secScore + liqScore + volScore + taScore + smartScore + socialScore + marketCondScore;
-
-        // --- AGENT 5: AI DECISION MAKER ---
-        let rawDecision = 'REJECT';
-        if (!mandatorySecurityPass || totalScore < 50) {
-          rawDecision = 'REJECT';
-        } else if (totalScore >= 85) {
-          rawDecision = 'BUY';
-        } else if (totalScore >= 70) {
-          rawDecision = 'WAIT';
-        } else {
-          rawDecision = 'WAIT';
-        }
-
-        const agent5 = {
-          id: 'AGENT_5_DECISION',
-          name: 'Agent 5 — AI Decision Maker',
-          status: rawDecision === 'BUY' ? 'APPROVED' : (rawDecision === 'WAIT' ? 'WAITING' : 'REJECTED'),
-          totalScore,
-          proposal: rawDecision,
-          findings: `Total Score: ${totalScore}/100 (Threshold: 85+ BUY, 70-84 WAIT, <50 REJECT). Proposal: ${rawDecision}`
-        };
-
-        // --- AGENT 6: QUANTITATIVE RISK MANAGER ($10 CAPITAL ENGINE) ---
-        const riskCheck = this.calculateTenDollarRiskPosition(token, slDistancePct, tpDistancePct);
-        const agent6 = {
-          id: 'AGENT_6_RISK',
-          name: 'Agent 6 — Quantitative Risk Manager',
-          status: riskCheck.approved ? 'APPROVED' : 'REJECTED',
-          positionSizeUsd: riskCheck.positionSizeUsd,
-          estimatedRoundTripCostUsd: riskCheck.totalRoundTripCostUsd,
-          totalWorstCaseLossUsd: riskCheck.worstCaseLossUsd,
-          expectedNetProfitUsd: riskCheck.expectedNetProfitUsd,
-          findings: riskCheck.reason
-        };
-
-        // --- AGENT 7: INDEPENDENT VALIDATOR (FINAL VETO POWER) ---
-        const hasNoSevereConflict = mandatorySecurityPass &&
-                                    token.liquidityUsd >= FIXED_CONFIG.minLiquidityUsd &&
-                                    token.sellRouteVerified &&
-                                    agent4.status === 'APPROVED' &&
-                                    riskCheck.approved &&
-                                    (rawDecision === 'BUY');
-
-        let finalAction = 'REJECT';
-        let validatorStatus = 'REJECTED';
-        let validatorReason = '';
-
-        if (!mandatorySecurityPass) {
-          finalAction = 'REJECT';
-          validatorStatus = 'REJECTED';
-          validatorReason = 'VETO: Vi phạm điều kiện bảo mật bắt buộc (Agent 1).';
-        } else if (hasNoSevereConflict) {
-          finalAction = 'BUY';
-          validatorStatus = 'APPROVED';
-          validatorReason = `APPROVED: Score ${totalScore}/100, Security Verified, Net Exp Return +$${riskCheck.expectedNetProfitUsd.toFixed(4)} sau phí.`;
-        } else if (totalScore >= 70 && mandatorySecurityPass) {
-          finalAction = 'WAIT';
-          validatorStatus = 'WAITING';
-          validatorReason = `HOLD/WAIT: Điểm ${totalScore}/100 hoặc bị chặn bởi Risk Gate (${riskCheck.reason}).`;
-        } else {
-          finalAction = 'REJECT';
-          validatorStatus = 'REJECTED';
-          validatorReason = `REJECT: Điểm ${totalScore}/100 không đạt chuẩn hoặc rủi ro/chi phí không khả thi.`;
-        }
-
-        const agent7 = {
-          id: 'AGENT_7_VALIDATOR',
-          name: 'Agent 7 — Independent Validator (Final Veto)',
-          status: validatorStatus,
-          finalDecision: finalAction,
-          findings: validatorReason
-        };
-
-        return {
-          totalScore,
-          breakdown: {
-            security: secScore,
-            liquidity: liqScore,
-            volumeFlow: volScore,
-            technical: taScore,
-            smartMoney: smartScore,
-            social: socialScore,
-            marketCond: marketCondScore
-          },
-          agents: [agent1, agent2, agent3, agent4, agent5, agent6, agent7],
-          riskCheck,
-          finalDecision: finalAction
-        };
-      },
-
-      // =====================================================
-      // 3. DETERMINISTIC RISK ENGINE ($10 EQUITY MATHEMATICS)
-      // =====================================================
-      calculateTenDollarRiskPosition(token, slDistancePct, tpDistancePct) {
-        const equity = this.state.equity;
-        const targetRiskUsd = equity * FIXED_CONFIG.targetRiskPct; // $0.10 on $10
-        const maxRiskUsd = equity * FIXED_CONFIG.maxRiskPct;       // $0.20 on $10
-        const maxExposureUsd = equity * FIXED_CONFIG.maxExposurePct; // $5.00 on $10
-
-        // Check Daily Loss Limit (3% = $0.30) & Max Drawdown (10% = $1.00)
-        const currentDrawdownPct = (this.state.peakEquity - equity) / this.state.peakEquity;
-        if (this.state.dailyPnl <= -(FIXED_CONFIG.initialCapitalUsd * FIXED_CONFIG.maxDailyLossPct)) {
-          return {
-            approved: false,
-            positionSizeUsd: 0,
-            totalRoundTripCostUsd: 0,
-            worstCaseLossUsd: 0,
-            expectedNetProfitUsd: 0,
-            reason: 'DAILY LOSS LIMIT REACHED (-3.0% / -$0.30). Dừng mở lệnh mới.'
-          };
-        }
-        if (currentDrawdownPct >= FIXED_CONFIG.maxDrawdownPct) {
-          return {
-            approved: false,
-            positionSizeUsd: 0,
-            totalRoundTripCostUsd: 0,
-            worstCaseLossUsd: 0,
-            expectedNetProfitUsd: 0,
-            reason: 'MAX DRAWDOWN LIMIT REACHED (10.0%). Dừng giao dịch.'
-          };
-        }
-        if (this.state.activePosition !== null) {
-          return {
-            approved: false,
-            positionSizeUsd: 0,
-            totalRoundTripCostUsd: 0,
-            worstCaseLossUsd: 0,
-            expectedNetProfitUsd: 0,
-            reason: 'MAX CONCURRENT POSITIONS = 1 (Đang có 1 vị thế mở).'
-          };
-        }
-        if (token.liquidityUsd < FIXED_CONFIG.minLiquidityUsd) {
-          return {
-            approved: false,
-            positionSizeUsd: 0,
-            totalRoundTripCostUsd: 0,
-            worstCaseLossUsd: 0,
-            expectedNetProfitUsd: 0,
-            reason: `Liquidity ($${Math.round(token.liquidityUsd)}) thấp hơn ngưỡng an toàn $${FIXED_CONFIG.minLiquidityUsd}.`
-          };
-        }
-
-        // Fixed network + priority fees for Buy + Sell (2 transactions on Solana)
-        const fixedNetworkCostUsd = FIXED_CONFIG.solanaBaseFeeUsd * 2; // ~$0.0030 round-trip
-        // Variable DEX fee + slippage + price impact (~0.35% round-trip on high-liquidity pool)
-        const variableCostRate = 0.0035;
-
-        // Solve for Position Size so that: PositionSize * (slDistancePct + variableCostRate) + fixedNetworkCostUsd <= riskBudget
-        const riskBudgetUsd = this.state.strictTenDollarGate ? targetRiskUsd : maxRiskUsd;
-        const availableForVariableRisk = riskBudgetUsd - fixedNetworkCostUsd;
-
-        if (availableForVariableRisk <= 0) {
-          return {
-            approved: false,
-            positionSizeUsd: 0,
-            totalRoundTripCostUsd: fixedNetworkCostUsd,
-            worstCaseLossUsd: fixedNetworkCostUsd,
-            expectedNetProfitUsd: 0,
-            reason: 'Phí mạng cố định vượt quá ngân sách rủi ro 1% ($0.10). Từ chối tăng khối lượng.'
-          };
-        }
-
-        let rawPositionUsd = availableForVariableRisk / (slDistancePct + variableCostRate);
-        const positionSizeUsd = Math.min(rawPositionUsd, maxExposureUsd, this.state.availableBalance);
-
-        if (positionSizeUsd < FIXED_CONFIG.minTradeSizeUsd) {
-          return {
-            approved: false,
-            positionSizeUsd: 0,
-            totalRoundTripCostUsd: fixedNetworkCostUsd,
-            worstCaseLossUsd: 0,
-            expectedNetProfitUsd: 0,
-            reason: `Khối lượng tính toán ($${positionSizeUsd.toFixed(2)}) nhỏ hơn mức tối thiểu $${FIXED_CONFIG.minTradeSizeUsd.toFixed(2)} để giữ rủi ro 1% ($0.10). Từ chối giao dịch.`
-          };
-        }
-
-        const totalRoundTripCostUsd = fixedNetworkCostUsd + (positionSizeUsd * variableCostRate);
-        const worstCaseLossUsd = (positionSizeUsd * slDistancePct) + totalRoundTripCostUsd;
-        const grossProfitUsd = positionSizeUsd * tpDistancePct;
-        const expectedNetProfitUsd = grossProfitUsd - totalRoundTripCostUsd;
-
-        if (expectedNetProfitUsd <= 0.02) {
-          return {
-            approved: false,
-            positionSizeUsd,
-            totalRoundTripCostUsd,
-            worstCaseLossUsd,
-            expectedNetProfitUsd,
-            reason: `Net Expected Profit ($${expectedNetProfitUsd.toFixed(4)}) không đủ bù đắp chi phí ($${totalRoundTripCostUsd.toFixed(4)}).`
-          };
-        }
-
-        return {
-          approved: true,
-          positionSizeUsd: Number(positionSizeUsd.toFixed(4)),
-          totalRoundTripCostUsd: Number(totalRoundTripCostUsd.toFixed(4)),
-          worstCaseLossUsd: Number(worstCaseLossUsd.toFixed(4)),
-          expectedNetProfitUsd: Number(expectedNetProfitUsd.toFixed(4)),
-          reason: `Size $${positionSizeUsd.toFixed(2)} | Worst-Case Risk $${worstCaseLossUsd.toFixed(3)} (<= $${riskBudgetUsd.toFixed(2)}) | Round-trip Fee $${totalRoundTripCostUsd.toFixed(4)} | Net TP +$${expectedNetProfitUsd.toFixed(3)}`
-        };
-      },
-
-      // =====================================================
-      // 4. AUTOMATED EXECUTION ENGINE (12-STEP BUY / 10-STEP SELL)
-      // =====================================================
-      tryAutonomousExecution() {
-        if (!this.state.running || !this.state.walletSyncedOnBoot || this.state.activePosition) return;
-
-        // Find highest scoring token approved by Agent 7 Validator
-        const candidates = this.state.tokens
-          .filter(t => t.evaluation && t.evaluation.finalDecision === 'BUY')
-          .sort((a, b) => b.evaluation.totalScore - a.evaluation.totalScore);
-
-        if (candidates.length > 0) {
-          this.executeBuyWorkflow(candidates[0]);
-        }
-      },
-
-      executeBuyWorkflow(token) {
-        const ev = token.evaluation;
-        if (!ev || ev.finalDecision !== 'BUY' || !ev.riskCheck.approved) return;
-
-        const sizeUsd = ev.riskCheck.positionSizeUsd;
-        const entryFeeUsd = ev.riskCheck.totalRoundTripCostUsd / 2;
-        const agent4 = ev.agents[3];
-
-        // 12-Step Verified Buy Execution
-        this.log('EXECUTION', `[BUY STEP 1-9] Tín hiệu hợp lệ cho ${token.symbol} (${token.address.slice(0, 6)}...). Đã xác minh Jupiter Quote & Sell Route. Size: $${sizeUsd.toFixed(2)}, Fee dự kiến: $${ev.riskCheck.totalRoundTripCostUsd.toFixed(4)}.`);
-
-        const txSig = '5JupSim' + Math.random().toString(36).substring(2, 10).toUpperCase() + '9xSol';
-        this.log('EXECUTION', `[BUY STEP 10-12] Giao dịch ${txSig} đã xác nhận Finalized. Ghi nhận số dư thực tế trong ví.`);
-
-        this.state.availableBalance = Number((this.state.availableBalance - sizeUsd).toFixed(4));
-        this.state.investedCapital = Number(sizeUsd.toFixed(4));
-        this.state.totalFees = Number((this.state.totalFees + entryFeeUsd).toFixed(4));
-
-        this.state.activePosition = {
-          tokenAddress: token.address,
-          symbol: token.symbol,
-          entryPrice: token.priceUsd,
-          currentPrice: token.priceUsd,
-          highestPrice: token.priceUsd,
-          sizeUsd: sizeUsd,
-          tokenQty: (sizeUsd - entryFeeUsd) / token.priceUsd,
-          stopLossPrice: agent4.stopLossPrice,
-          initialStopLossPrice: agent4.stopLossPrice,
-          takeProfitPrice: agent4.takeProfitPrice,
-          trailingArmed: false,
-          breakEvenArmed: false,
-          partialTpTaken: false,
-          entryFeeUsd: entryFeeUsd,
-          openedAt: Date.now(),
-          maxHoldMs: 12 * 60 * 1000, // 12m time-based exit
-          exitStatus: 'MONITORING_ACTIVE'
-        };
-
-        this.state.selectedTokenAddress = token.address;
-        this.persistState();
-        this.renderAll();
-      },
-
-      tickPositionAndMarket() {
-        // Simulate subtle market micro-movements and monitor active position
-        this.state.tokens.forEach(t => {
-          const drift = t.mintAuthorityRevoked ? (Math.random() - 0.45) * 0.009 : -0.025;
-          t.priceUsd = Math.max(0.000001, t.priceUsd * (1 + drift));
-          t.evaluation = this.evaluateTokenWithSevenAgents(t);
-        });
-
-        const pos = this.state.activePosition;
-        if (!pos) {
-          this.tryAutonomousExecution();
-          this.renderAll();
-          return;
-        }
-
-        // Match token price
-        const liveToken = this.state.tokens.find(t => t.address === pos.tokenAddress);
-        if (liveToken) {
-          pos.currentPrice = liveToken.priceUsd;
-        } else {
-          pos.currentPrice = pos.currentPrice * (1 + (Math.random() - 0.46) * 0.008);
-        }
-
-        if (pos.currentPrice > pos.highestPrice) {
-          pos.highestPrice = pos.currentPrice;
-        }
-
-        const priceChangePct = (pos.currentPrice - pos.entryPrice) / pos.entryPrice;
-
-        // Automatic Position Management Rules:
-        // 1. Break-even activation at +1.5%
-        if (!pos.breakEvenArmed && priceChangePct >= 0.015) {
-          pos.breakEvenArmed = true;
-          pos.stopLossPrice = pos.entryPrice * 1.004; // Locks in round-trip fees
-          pos.exitStatus = 'BREAK_EVEN_LOCKED';
-          this.log('POSITION', `[Break-Even] ${pos.symbol} tăng +${(priceChangePct*100).toFixed(2)}%. Đã dời Stop Loss lên trên giá hòa vốn ($${pos.stopLossPrice.toFixed(6)}).`);
-        }
-
-        // 2. Trailing Stop activation at +2.2%
-        if (priceChangePct >= 0.022) {
-          pos.trailingArmed = true;
-          const candidateTrail = pos.highestPrice * 0.988; // 1.2% trail below peak
-          if (candidateTrail > pos.stopLossPrice) {
-            pos.stopLossPrice = candidateTrail;
-            pos.exitStatus = 'TRAILING_STOP_ACTIVE';
-          }
-        }
-
-        // 3. Check Exit Triggers (SL, TP, Liquidity Drain, Time-based Exit)
-        if (liveToken && (!liveToken.sellRouteVerified || liveToken.liquidityUsd < 12000)) {
-          this.executeSellWorkflow('EMERGENCY_LIQUIDITY_EXIT');
-          return;
-        }
-        if (pos.currentPrice <= pos.stopLossPrice) {
-          this.executeSellWorkflow(pos.trailingArmed ? 'TRAILING_STOP_HIT' : (pos.breakEvenArmed ? 'BREAK_EVEN_STOP' : 'STOP_LOSS_HIT'));
-          return;
-        }
-        if (pos.currentPrice >= pos.takeProfitPrice) {
-          this.executeSellWorkflow('TAKE_PROFIT_HIT');
-          return;
-        }
-        if (Date.now() - pos.openedAt >= pos.maxHoldMs) {
-          this.executeSellWorkflow('TIME_BASED_SCALP_EXIT');
-          return;
-        }
-
-        this.persistState();
-        this.renderAll();
-      },
-
-      executeSellWorkflow(triggerReason) {
-        const pos = this.state.activePosition;
-        if (!pos) return;
-
-        const grossValueUsd = pos.tokenQty * pos.currentPrice;
-        const exitFeeUsd = pos.entryFeeUsd; // Symmetric exit cost
-        const netReceivedUsd = Math.max(0, grossValueUsd - exitFeeUsd);
-        const totalTradeFees = pos.entryFeeUsd + exitFeeUsd;
-        const netPnlUsd = netReceivedUsd - pos.sizeUsd;
-
-        this.state.availableBalance = Number((this.state.availableBalance + netReceivedUsd).toFixed(4));
-        this.state.investedCapital = 0.00;
-        this.state.equity = Number(this.state.availableBalance.toFixed(4));
-        if (this.state.equity > this.state.peakEquity) {
-          this.state.peakEquity = this.state.equity;
-        }
-        this.state.dailyPnl = Number((this.state.dailyPnl + netPnlUsd).toFixed(4));
-        this.state.totalPnl = Number((this.state.totalPnl + netPnlUsd).toFixed(4));
-        this.state.totalFees = Number((this.state.totalFees + exitFeeUsd).toFixed(4));
-
-        this.state.tradeHistory.unshift({
-          time: new Date().toLocaleTimeString(),
-          symbol: pos.symbol,
-          sizeUsd: pos.sizeUsd,
-          entryPrice: pos.entryPrice,
-          exitPrice: pos.currentPrice,
-          feesUsd: totalTradeFees,
-          netPnlUsd: netPnlUsd,
-          trigger: triggerReason
-        });
-
-        this.log('EXECUTION', `[SELL STEP 1-10] Đóng vị thế ${pos.symbol} (${triggerReason}). Nhận ròng: $${netReceivedUsd.toFixed(4)} | Net PnL: ${netPnlUsd >= 0 ? '+' : ''}$${netPnlUsd.toFixed(4)} | Tổng phí: $${totalTradeFees.toFixed(4)}.`);
-        this.state.activePosition = null;
-        this.persistState();
-        this.renderAll();
-      },
-
-      // =====================================================
-      // 5. SCENARIO INJECTION & CONTROLS
-      // =====================================================
-      injectScenarioToken(type) {
-        if (type === 'CLEAN_GEM') {
-          const gem = {
-            address: 'Gem' + Math.random().toString(36).substring(2, 10) + 'SolanaPump',
-            symbol: 'AIGEM',
-            name: 'Verified AI Breakout Gem',
-            priceUsd: 0.002500,
-            marketCap: 540000,
-            liquidityUsd: 165000,
-            volume1m: 9200,
-            volume5m: 46000,
-            volume15m: 110000,
-            volume1h: 340000,
-            buySellRatio: 2.65,
-            uniqueBuys5m: 128,
-            uniqueSells5m: 48,
-            priceChange5m: 4.1,
-            mintAuthorityRevoked: true,
-            freezeAuthorityRevoked: true,
-            top10HolderPct: 16.2,
-            devWalletDumpDetected: false,
-            lpLockedPct: 100.0,
-            sellRouteVerified: true,
-            washTradingFlag: false,
-            bundleSnipingFlag: false,
-            smartMoneyNetFlowUsd: 19500,
-            smartMoneyWinRate: 76.0,
-            ema9AboveEma21: true,
-            ema21AboveEma50: true,
-            rsi14: 60.2,
-            macdHistogramPositive: true,
-            aboveVwap: true,
-            atrPct: 1.55,
-            socialStatus: 'UNKNOWN' // Still scores 88/100 without needing fake social points!
-          };
-          gem.evaluation = this.evaluateTokenWithSevenAgents(gem);
-          this.state.tokens.unshift(gem);
-          this.state.selectedTokenAddress = gem.address;
-          this.log('SCANNER', 'Đã phát hiện token tiềm năng AIGEM (Score: ' + gem.evaluation.totalScore + '/100). Chuyển cho 7 AI Agents thẩm định.');
-          this.tryAutonomousExecution();
-          this.renderAll();
-        } else {
-          const trap = {
-            address: 'Trap' + Math.random().toString(36).substring(2, 10) + 'Honeypot',
-            symbol: 'FAKEPUMP',
-            name: 'Bundled Wash-Trade Token',
-            priceUsd: 0.008100,
-            marketCap: 1200000,
-            liquidityUsd: 140000,
-            volume1m: 15000,
-            volume5m: 75000,
-            volume15m: 180000,
-            volume1h: 500000,
-            buySellRatio: 3.1,
-            uniqueBuys5m: 15,
-            uniqueSells5m: 5,
-            priceChange5m: 25.0,
-            mintAuthorityRevoked: false, // Security violation
-            freezeAuthorityRevoked: true,
-            top10HolderPct: 62.0,
-            devWalletDumpDetected: true,
-            lpLockedPct: 20.0,
-            sellRouteVerified: false,
-            washTradingFlag: true,
-            bundleSnipingFlag: true,
-            smartMoneyNetFlowUsd: -12000,
-            smartMoneyWinRate: 25.0,
-            ema9AboveEma21: true,
-            ema21AboveEma50: true,
-            rsi14: 84.0,
-            macdHistogramPositive: true,
-            aboveVwap: true,
-            atrPct: 4.8,
-            socialStatus: 'UNKNOWN'
-          };
-          trap.evaluation = this.evaluateTokenWithSevenAgents(trap);
-          this.state.tokens.unshift(trap);
-          this.state.selectedTokenAddress = trap.address;
-          this.log('SECURITY', `CẢNH BÁO: Token ${trap.symbol} có Volume lớn nhưng bị Agent 1 & Agent 7 PHỦ QUYẾT (Mint Authority chưa khóa + Wash Trading + Không thể SELL).`);
-          this.renderAll();
-        }
-      },
-
-      toggleBotRun() {
-        this.state.running = !this.state.running;
-        this.log('CONTROL', this.state.running ? 'Đã tiếp tục (RESUME) hệ thống giao dịch tự động.' : 'Đã tạm dừng (PAUSE) mở vị thế mới.');
-        this.renderAll();
-      },
-
-      toggleStrictTenDollarGate() {
-        this.state.strictTenDollarGate = !this.state.strictTenDollarGate;
-        this.state.tokens.forEach(t => {
-          t.evaluation = this.evaluateTokenWithSevenAgents(t);
-        });
-        this.log('RISK', `Chế độ kiểm soát rủi ro trên vốn $10: ${this.state.strictTenDollarGate ? 'Target 1% ($0.10)' : 'Max Allowed 2% ($0.20)'}.`);
-        this.renderAll();
-      },
-
-      emergencyStop() {
-        this.state.running = false;
-        if (this.state.activePosition) {
-          this.executeSellWorkflow('EMERGENCY_KILL_SWITCH');
-        }
-        this.log('EMERGENCY', 'ĐÃ KÍCH HOẠT EMERGENCY STOP: Đóng toàn bộ vị thế đang mở và khóa Execution Engine.');
-        this.renderAll();
-      },
-
-      resetPaperAccount() {
-        this.state.equity = 10.00;
-        this.state.peakEquity = 10.00;
-        this.state.availableBalance = 10.00;
-        this.state.investedCapital = 0.00;
-        this.state.dailyPnl = 0.00;
-        this.state.totalPnl = 0.00;
-        this.state.totalFees = 0.00;
-        this.state.activePosition = null;
-        this.state.tradeHistory = [];
-        this.persistState();
-        this.log('SYSTEM', 'Đã khôi phục tài khoản Paper Trading về $10.0000 USD ban đầu.');
-        this.renderAll();
-      },
-
-      openLiveUnlockModal() {
-        document.getElementById('liveModal').classList.remove('hidden');
-        document.getElementById('liveModal').classList.add('flex');
-      },
-
-      closeLiveUnlockModal() {
-        document.getElementById('liveModal').classList.add('hidden');
-        document.getElementById('liveModal').classList.remove('flex');
-      },
-
-      confirmLiveModeUnlock() {
-        const c1 = document.getElementById('chkLive1').checked;
-        const c2 = document.getElementById('chkLive2').checked;
-        const c3 = document.getElementById('chkLive3').checked;
-        if (!c1 || !c2 || !c3) {
-          alert('Bạn phải xác nhận đầy đủ cả 3 điều kiện an toàn trước khi mở khóa chế độ Live Trading có kiểm soát.');
-          return;
-        }
-        this.state.mode = this.state.mode === 'PAPER' ? 'LIVE_CONTROLLED' : 'PAPER';
-        this.closeLiveUnlockModal();
-        this.log('CONTROL', `Đã chuyển chế độ vận hành sang: ${this.state.mode}.`);
-        this.renderAll();
-      },
-
-      // =====================================================
-      // 6. AUTOMATED TESTING & UNBIASED BACKTESTING SUITE
-      // =====================================================
-      runAllTests() {
-        const scenarios = [
-          {
-            name: '1. Rug Pull & Active Mint Authority Detection',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[1], mintAuthorityRevoked: false };
-              const ev = this.evaluateTokenWithSevenAgents(t);
-              return {
-                pass: ev.finalDecision === 'REJECT' && !ev.agents[0].buyEligibility,
-                detail: `Agent 1 buyEligibility=${ev.agents[0].buyEligibility}, Final=${ev.finalDecision}`
-              };
-            }
-          },
-          {
-            name: '2. Honeypot / Cannot-Be-Sold Token Rejection',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[0], sellRouteVerified: false };
-              const ev = this.evaluateTokenWithSevenAgents(t);
-              return {
-                pass: ev.finalDecision === 'REJECT' && ev.agents[0].securityScore === 0,
-                detail: `Sell Route False -> Security Score=${ev.agents[0].securityScore}, Final=${ev.finalDecision}`
-              };
-            }
-          },
-          {
-            name: '3. Fake Volume & Wash Trading Filter',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[0], washTradingFlag: true };
-              const ev = this.evaluateTokenWithSevenAgents(t);
-              return {
-                pass: ev.finalDecision === 'REJECT',
-                detail: `Wash Trading Flagged -> Validator=${ev.agents[6].status}`
-              };
-            }
-          },
-          {
-            name: '4. Liquidity Removal / Sub-$25k Pool Block',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[0], liquidityUsd: 9500 };
-              const ev = this.evaluateTokenWithSevenAgents(t);
-              return {
-                pass: ev.finalDecision !== 'BUY' && !ev.riskCheck.approved,
-                detail: `Liq=$9,500 -> Risk Approved=${ev.riskCheck.approved} (${ev.riskCheck.reason})`
-              };
-            }
-          },
-          {
-            name: '5. $10 Equity 1% Risk ($0.10) Refusal When SL Too Wide (Never Increase Size)',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[0], atrPct: 14.0 };
-              const check = this.calculateTenDollarRiskPosition(t, 0.12, 0.25);
-              return {
-                pass: !check.approved && check.positionSizeUsd === 0,
-                detail: `Wide 12% SL on $10 capital -> Approved=${check.approved} (${check.reason})`
-              };
-            }
-          },
-          {
-            name: '6. Missing Social Data Marked UNKNOWN (0 Free Points)',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[0], socialStatus: 'UNKNOWN' };
-              const ev = this.evaluateTokenWithSevenAgents(t);
-              return {
-                pass: ev.breakdown.social === 0,
-                detail: `Social Status=UNKNOWN -> Awarded Points=${ev.breakdown.social}/10`
-              };
-            }
-          },
-          {
-            name: '7. High Score Cannot Override Security Failure',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[0], freezeAuthorityRevoked: false, socialStatus: 'VERIFIED_POSITIVE' };
-              const ev = this.evaluateTokenWithSevenAgents(t);
-              return {
-                pass: ev.finalDecision === 'REJECT',
-                detail: `Total Score=${ev.totalScore} but FreezeAuth active -> Final=${ev.finalDecision}`
-              };
-            }
-          },
-          {
-            name: '8. Daily Loss Limit (-3% / -$0.30) Hard Circuit Breaker',
-            run: () => {
-              const savedDaily = this.state.dailyPnl;
-              this.state.dailyPnl = -0.31;
-              const check = this.calculateTenDollarRiskPosition(this.getInitialTelemetryTokens()[0], 0.015, 0.04);
-              this.state.dailyPnl = savedDaily;
-              return {
-                pass: !check.approved && check.reason.includes('DAILY LOSS LIMIT'),
-                detail: check.reason
-              };
-            }
-          },
-          {
-            name: '9. Maximum Drawdown (-10% / -$1.00) Hard Circuit Breaker',
-            run: () => {
-              const savedEq = this.state.equity;
-              this.state.equity = 8.95;
-              const check = this.calculateTenDollarRiskPosition(this.getInitialTelemetryTokens()[0], 0.015, 0.04);
-              this.state.equity = savedEq;
-              return {
-                pass: !check.approved && check.reason.includes('MAX DRAWDOWN'),
-                detail: check.reason
-              };
-            }
-          },
-          {
-            name: '10. Anti-FOMO Overextended RSI (>74) Filter',
-            run: () => {
-              const t = { ...this.getInitialTelemetryTokens()[0], rsi14: 81.0 };
-              const ev = this.evaluateTokenWithSevenAgents(t);
-              return {
-                pass: ev.finalDecision !== 'BUY' && ev.agents[3].status === 'WAITING',
-                detail: `RSI=81.0 -> Agent 4 Status=${ev.agents[3].status}, Final=${ev.finalDecision}`
-              };
-            }
-          },
-          {
-            name: '11. Restart Position State Synchronization Check',
-            run: () => {
-              return {
-                pass: this.state.walletSyncedOnBoot === true,
-                detail: `walletSyncedOnBoot=${this.state.walletSyncedOnBoot} verified before order routing`
-              };
-            }
-          }
-        ];
-
-        const container = document.getElementById('testResultsGrid');
-        container.innerHTML = scenarios.map(s => {
-          const res = s.run();
-          return `
-            <div class="p-3 rounded border ${res.pass ? 'bg-emerald-950/20 border-emerald-500/40' : 'bg-rose-950/30 border-rose-500/40'}">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-xs text-white mono">${s.name}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold mono ${res.pass ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}">
-                  ${res.pass ? 'PASS' : 'FAIL'}
-                </span>
-              </div>
-              <div class="text-[11px] text-slate-400 mono mt-1">${res.detail}</div>
-            </div>
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="py-2 font-semibold text-white">${symbol} <span class="text-gray-500 font-mono">${mint.slice(0, 4)}..</span></td>
+            <td class="py-2 text-emerald-400">$${Math.round(mcap).toLocaleString()}</td>
+            <td class="py-2">$${Math.round(liqUsd).toLocaleString()}</td>
+            <td class="py-2">$${Math.round(vol1h).toLocaleString()} / <span class="text-cyan-400">${bsRatio}x</span></td>
+            <td class="py-2">${analyticsPassed ? '<span class="text-emerald-400 font-bold">ĐẠT</span>' : `<span class="text-amber-400">${reasons[0]}</span>`}</td>
+            <td class="py-2">${rugPassed ? `<span class="text-emerald-400 font-bold">${rugStatusText}</span>` : `<span class="text-red-400">${rugStatusText}</span>`}</td>
           `;
-        }).join('');
-
-        // Run Unbiased Walk-Forward Backtest on 40 Historical Meme Launches (Including 26 Rugs/Fails)
-        let simEquity = 10.00;
-        let tradesExecuted = 0;
-        let wins = 0;
-        let rugsRejected = 0;
-        let totalFeesPaid = 0;
-
-        for (let i = 0; i < 40; i++) {
-          const isRugOrTrap = i % 3 !== 0; // 66% of newly launched meme coins are rugs/traps
-          if (isRugOrTrap) {
-            rugsRejected++;
-            continue;
-          }
-          tradesExecuted++;
-          const posSize = 4.20;
-          const roundTripFee = 0.0175;
-          totalFeesPaid += roundTripFee;
-          const isWin = (i % 2 === 0);
-          if (isWin) {
-            wins++;
-            simEquity += (posSize * 0.038) - roundTripFee;
-          } else {
-            simEquity -= (posSize * 0.016) + roundTripFee;
-          }
+          tbody.appendChild(tr);
         }
 
-        document.getElementById('backtestSummaryBox').innerHTML = `
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div><span class="text-slate-400 block">Unbiased Dataset</span><strong>40 Pools (27 Rugs Included)</strong></div>
-            <div><span class="text-slate-400 block">Rugs Filtered by Agent 1</span><strong class="text-emerald-400">${rugsRejected} / 27 (100%)</strong></div>
-            <div><span class="text-slate-400 block">Valid Trades Taken</span><strong>${tradesExecuted}</strong></div>
-            <div><span class="text-slate-400 block">Total Solana DEX Fees</span><strong class="text-rose-400">$${totalFeesPaid.toFixed(4)}</strong></div>
-            <div><span class="text-slate-400 block">Final Equity (From $10.00)</span><strong class="text-sol-green">$${simEquity.toFixed(4)}</strong></div>
-          </div>
-          <p class="mt-2 text-[11px] text-slate-400">
-            *Lưu ý: Kết quả kiểm thử trên tập dữ liệu mẫu không cam kết lợi nhuận trong tương lai. Mọi chi phí mạng, priority fee và slippage đều được khấu trừ trực tiếp.
-          </p>
-        `;
-      },
+        if (seen.size === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">Không có token nào trong vùng vốn hóa $${cfg.minMcap.toLocaleString()} - $${cfg.maxMcap.toLocaleString()} ở lần quét này.</td></tr>`;
+        }
 
-      // =====================================================
-      // 7. UI RENDERING
-      // =====================================================
-      selectToken(address) {
-        this.state.selectedTokenAddress = address;
-        this.renderAll();
-      },
+        return qualifiedPairs;
+      } catch (err) {
+        logAuditEvent("DISCOVERY_ERROR", "N/A", "SOL", { error: err.message });
+        return [];
+      }
+    }
 
-      switchTab(tabName) {
-        ['dashboard', 'agents', 'tests', 'architecture'].forEach(t => {
-          document.getElementById('tab-' + t).classList.toggle('hidden', t !== tabName);
-          const btn = document.getElementById('tabBtn-' + t);
-          if (t === tabName) {
-            btn.className = 'tab-btn px-3 py-1.5 rounded bg-sol-purple/20 text-sol-green border border-sol-purple/40';
-          } else {
-            btn.className = 'tab-btn px-3 py-1.5 rounded text-slate-400 hover:text-white';
+    // -------------------------------------------------------------------------
+    // STEP 3: KIỂM TRA RUGCHECK API & ON-CHAIN MINT/FREEZE AUTHORITY
+    // -------------------------------------------------------------------------
+    async function performRugCheck(mint, symbol, cfg) {
+      const reasons = [];
+      let score = 9999;
+      let mintRevoked = true;
+      let freezeRevoked = true;
+
+      try {
+        const resp = await fetch(`https://api.rugcheck.xyz/v1/tokens/${mint}/report/summary`);
+        if (resp.ok) {
+          const report = await resp.json();
+          score = parseInt(report.score ?? 9999);
+          const risks = report.risks || [];
+
+          for (const r of risks) {
+            if (r.level === "danger" || r.level === "critical") {
+              reasons.push(r.name);
+            }
+            if (cfg.requireMintRevoked && /mint authority/i.test(r.name)) {
+              mintRevoked = false;
+              reasons.push("Mint Authority chưa khóa");
+            }
+            if (cfg.requireFreezeRevoked && /freeze authority/i.test(r.name)) {
+              freezeRevoked = false;
+              reasons.push("Freeze Authority chưa khóa");
+            }
           }
-        });
-      },
-
-      log(module, message) {
-        const box = document.getElementById('auditLogBox');
-        if (!box) return;
-        const time = new Date().toLocaleTimeString();
-        const colorMap = {
-          SYSTEM: 'text-sky-400',
-          SCANNER: 'text-purple-400',
-          SECURITY: 'text-rose-400',
-          EXECUTION: 'text-emerald-400',
-          POSITION: 'text-amber-300',
-          RECOVERY: 'text-teal-300',
-          EMERGENCY: 'text-red-500 font-bold'
-        };
-        const c = colorMap[module] || 'text-slate-300';
-        const div = document.createElement('div');
-        div.innerHTML = `<span class="text-slate-500">[${time}]</span> <span class="${c}">[${module}]</span> <span class="text-slate-200">${message}</span>`;
-        box.prepend(div);
-      },
-
-      clearLogs() {
-        document.getElementById('auditLogBox').innerHTML = '';
-      },
-
-      downloadEnvTemplate() {
-        const content = `# SOLANA AI MEME COIN AUTONOMOUS SCALPING BOT (.env.example)
-# NEVER COMMIT REAL PRIVATE KEYS TO GIT OR SEND TO LLM APIS
-SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
-SOLANA_WSS_URL=wss://api.mainnet-beta.solana.com
-HELIUS_API_KEY=your_helius_api_key_here
-JUPITER_QUOTE_API=https://quote-api.jup.ag/v6
-
-# WALLET SECRET (Loaded only by deterministic signing module, never logged)
-SOLANA_PRIVATE_KEY_BASE58=
-
-# DATABASE & REDIS
-POSTGRES_DSN=postgresql+asyncpg://bot_user:bot_pass@postgres:5432/solana_scalper
-REDIS_URL=redis://redis:6379/0
-
-# FIXED RISK PARAMETERS ($10 USD INITIAL CAPITAL)
-INITIAL_CAPITAL_USD=10.00
-TARGET_RISK_PER_TRADE_PCT=0.01
-MAX_RISK_PER_TRADE_PCT=0.02
-MAX_DAILY_LOSS_PCT=0.03
-MAX_DRAWDOWN_PCT=0.10
-MAX_CONCURRENT_POSITIONS=1
-TRADING_MODE=PAPER
-`;
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = '.env.example';
-        a.click();
-      },
-
-      renderAll() {
-        // Top Badges
-        const modeBadge = document.getElementById('modeBadge');
-        modeBadge.textContent = this.state.mode === 'PAPER' ? 'PAPER TRADING' : 'LIVE TRADING (CONTROLLED)';
-        modeBadge.className = this.state.mode === 'PAPER'
-          ? 'text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 mono'
-          : 'text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 mono';
-
-        const stateBadge = document.getElementById('botStateBadge');
-        stateBadge.innerHTML = this.state.running
-          ? '<span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span> RUNNING'
-          : '<span class="h-2 w-2 rounded-full bg-rose-400"></span> PAUSED';
-
-        document.getElementById('btnStartStop').textContent = this.state.running ? 'Pause Trading' : 'Resume Trading';
-        document.getElementById('btnFeeReality').textContent = `Strict $10 Fee Gate: ${this.state.strictTenDollarGate ? 'ON (1%)' : 'RELAXED (2%)'}`;
-        document.getElementById('gateModeStatusText').textContent = this.state.strictTenDollarGate
-          ? 'Strict 1% ($0.10) Enforcement Active'
-          : 'Max 2% ($0.20) Risk Cap Active';
-
-        // KPI Overview
-        const pos = this.state.activePosition;
-        const unrealizedPnl = pos ? ((pos.currentPrice - pos.entryPrice) * pos.tokenQty) - (pos.entryFeeUsd * 2) : 0;
-        const liveEquity = this.state.availableBalance + (pos ? pos.sizeUsd + unrealizedPnl : 0);
-
-        document.getElementById('kpiEquity').textContent = liveEquity.toFixed(4);
-        document.getElementById('kpiAvailable').textContent = this.state.availableBalance.toFixed(4);
-        document.getElementById('kpiInvested').textContent = this.state.investedCapital.toFixed(4);
-
-        const dailyPct = (this.state.dailyPnl / FIXED_CONFIG.initialCapitalUsd) * 100;
-        const dailyEl = document.getElementById('kpiDailyPnl');
-        dailyEl.textContent = `${this.state.dailyPnl >= 0 ? '+' : ''}$${this.state.dailyPnl.toFixed(4)} (${dailyPct.toFixed(2)}%)`;
-        dailyEl.className = `text-sm font-bold mono mt-1 ${this.state.dailyPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
-
-        document.getElementById('kpiTotalPnl').textContent = `Total: ${this.state.totalPnl >= 0 ? '+' : ''}$${this.state.totalPnl.toFixed(4)}`;
-
-        const ddPct = Math.max(0, ((this.state.peakEquity - liveEquity) / this.state.peakEquity) * 100);
-        const ddEl = document.getElementById('kpiDrawdown');
-        ddEl.textContent = `${ddPct.toFixed(2)}%`;
-        ddEl.className = `text-lg font-bold mono mt-0.5 ${ddPct >= 7 ? 'text-rose-400' : 'text-emerald-400'}`;
-
-        const totalTrades = this.state.tradeHistory.length;
-        const wins = this.state.tradeHistory.filter(t => t.netPnlUsd > 0).length;
-        const grossWins = this.state.tradeHistory.filter(t => t.netPnlUsd > 0).reduce((s, t) => s + t.netPnlUsd, 0);
-        const grossLosses = Math.abs(this.state.tradeHistory.filter(t => t.netPnlUsd < 0).reduce((s, t) => s + t.netPnlUsd, 0));
-        const pf = grossLosses > 0 ? (grossWins / grossLosses).toFixed(2) : (grossWins > 0 ? '9.99' : '0.00');
-
-        document.getElementById('kpiWinRate').textContent = totalTrades > 0 ? `${((wins / totalTrades) * 100).toFixed(1)}%` : '0.0%';
-        document.getElementById('kpiProfitFactor').textContent = pf;
-        document.getElementById('kpiTotalTrades').textContent = totalTrades;
-        document.getElementById('kpiActivePos').textContent = pos ? '1' : '0';
-        document.getElementById('kpiTotalFees').textContent = this.state.totalFees.toFixed(4);
-
-        // Scanner Table
-        const tbody = document.getElementById('scannerTableBody');
-        tbody.innerHTML = this.state.tokens.map(t => {
-          const ev = t.evaluation || this.evaluateTokenWithSevenAgents(t);
-          const isSelected = t.address === this.state.selectedTokenAddress;
-          const badgeClass = ev.finalDecision === 'BUY'
-            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-            : (ev.finalDecision === 'WAIT' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-rose-500/20 text-rose-300 border-rose-500/40');
-
-          return `
-            <tr onclick="App.selectToken('${t.address}')" class="cursor-pointer transition ${isSelected ? 'bg-sol-purple/15' : 'hover:bg-slate-900/60'}">
-              <td class="py-2.5 px-3">
-                <div class="font-bold text-white">${t.symbol}</div>
-                <div class="text-[10px] text-slate-400">${t.address.slice(0, 6)}...${t.address.slice(-4)}</div>
-              </td>
-              <td class="py-2.5 px-2 text-slate-200">$${t.priceUsd.toFixed(6)}</td>
-              <td class="py-2.5 px-2">
-                <div class="text-slate-200">$${(t.marketCap / 1000).toFixed(1)}k</div>
-                <div class="text-[10px] ${t.liquidityUsd >= 25000 ? 'text-emerald-400' : 'text-rose-400'}">Liq: $${(t.liquidityUsd / 1000).toFixed(1)}k</div>
-              </td>
-              <td class="py-2.5 px-2">
-                <div>$${(t.volume5m / 1000).toFixed(1)}k</div>
-                <div class="text-[10px] text-slate-400">B/S: ${t.buySellRatio}x</div>
-              </td>
-              <td class="py-2.5 px-2">
-                <span class="${ev.agents[0].buyEligibility ? 'text-emerald-400' : 'text-rose-400 font-bold'}">
-                  ${ev.breakdown.security}/25
-                </span>
-              </td>
-              <td class="py-2.5 px-2">
-                <span class="${t.smartMoneyNetFlowUsd >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                  ${ev.breakdown.smartMoney}/10
-                </span>
-              </td>
-              <td class="py-2.5 px-2 font-bold text-white">${ev.totalScore}/100</td>
-              <td class="py-2.5 px-3">
-                <span class="px-2 py-0.5 rounded border text-[10px] font-bold ${badgeClass}">
-                  ${ev.finalDecision}
-                </span>
-              </td>
-              <td class="py-2.5 px-2 text-right">
-                <button onclick="event.stopPropagation(); App.selectToken('${t.address}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-200">
-                  7-Agent View
-                </button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-
-        // Active Position Render
-        const posContainer = document.getElementById('activeTradeContainer');
-        if (!pos) {
-          posContainer.innerHTML = `
-            <div class="text-center py-6 text-xs text-slate-400 mono">
-              Không có vị thế mở. Bot chỉ mở tối đa 1 vị thế khi cả 7 AI Agents và Independent Validator đồng thuận APPROVE.
-            </div>
-          `;
+          if (score > cfg.maxRugScore) {
+            reasons.push(`RugCheck Score cao (${score} > ${cfg.maxRugScore})`);
+          }
         } else {
-          const uPnl = ((pos.currentPrice - pos.entryPrice) * pos.tokenQty) - (pos.entryFeeUsd * 2);
-          const uPnlPct = (uPnl / pos.sizeUsd) * 100;
-          posContainer.innerHTML = `
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 text-xs mono items-center">
-              <div>
-                <span class="text-slate-400 block text-[10px]">Token</span>
-                <strong class="text-white text-sm">${pos.symbol}</strong>
-              </div>
-              <div>
-                <span class="text-slate-400 block text-[10px]">Entry Price</span>
-                <span class="text-slate-200">$${pos.entryPrice.toFixed(6)}</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block text-[10px]">Current Price</span>
-                <span class="text-white font-bold">$${pos.currentPrice.toFixed(6)}</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block text-[10px]">Position Size</span>
-                <span class="text-amber-300">$${pos.sizeUsd.toFixed(4)}</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block text-[10px]">Dynamic SL</span>
-                <span class="text-rose-400">$${pos.stopLossPrice.toFixed(6)}</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block text-[10px]">Dynamic TP</span>
-                <span class="text-emerald-400">$${pos.takeProfitPrice.toFixed(6)}</span>
-              </div>
-              <div>
-                <span class="text-slate-400 block text-[10px]">Net Unrealized PnL</span>
-                <span class="font-bold ${uPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                  ${uPnl >= 0 ? '+' : ''}$${uPnl.toFixed(4)} (${uPnlPct.toFixed(2)}%)
-                </span>
-              </div>
-              <div class="text-right">
-                <button onclick="App.executeSellWorkflow('MANUAL_CLOSE')" class="px-2.5 py-1.5 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px]">
-                  Close Now
-                </button>
-              </div>
-            </div>
-            <div class="mt-3 pt-2 border-t border-sol-border flex flex-wrap items-center justify-between text-[11px] text-slate-400 mono">
-              <span>Status: <strong class="text-sol-green">${pos.exitStatus}</strong></span>
-              <span>Est. Round-Trip Fees: $${(pos.entryFeeUsd * 2).toFixed(4)}</span>
-              <span>Break-Even Armed: ${pos.breakEvenArmed ? 'YES' : 'NO'} | Trailing Stop Armed: ${pos.trailingArmed ? 'YES' : 'NO'}</span>
-            </div>
-          `;
+          reasons.push(`RugCheck HTTP ${resp.status}`);
+        }
+      } catch (e) {
+        reasons.push(`Lỗi kết nối RugCheck: ${e.message}`);
+      }
+
+      const passed = reasons.length === 0;
+      logAuditEvent("RUG_CHECK", mint, symbol, {
+        passed,
+        rugcheck_score: score,
+        mint_authority_revoked: mintRevoked,
+        freeze_authority_revoked: freezeRevoked,
+        reasons
+      });
+
+      return { passed, score, reasons };
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP 4 & 5: KHỚP LỆNH JUPITER + TÍCH HỢP JITO BUNDLE MEV PROTECTION
+    // -------------------------------------------------------------------------
+    async function executeJupiterJitoSwap(inputMint, outputMint, amountLamports, symbol, side) {
+      const cfg = getUserConfig();
+      const tipAccount = cfg.jitoTipAccount === "random"
+        ? JITO_TIP_ACCOUNTS[Math.floor(Math.random() * JITO_TIP_ACCOUNTS.length)]
+        : cfg.jitoTipAccount;
+
+      try {
+        // 1. Lấy báo giá tối ưu từ Jupiter
+        const quoteUrl = `${cfg.jupUrl}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountLamports}&slippageBps=${cfg.slippageBps}`;
+        const quoteResp = await fetch(quoteUrl);
+        if (!quoteResp.ok) throw new Error(`Jupiter Quote HTTP ${quoteResp.status}`);
+        const quoteData = await quoteResp.json();
+
+        const outAmount = parseInt(quoteData.outAmount || 0);
+        const priceImpact = parseFloat(quoteData.priceImpactPct || 0);
+
+        // 2. Nếu đang bật Dry Run -> Mô phỏng Jito Bundle & khớp lệnh ngay
+        if (cfg.dryRun) {
+          const simBundleId = `JITO_BUNDLE_SIM_${Date.now()}`;
+          logAuditEvent("JITO_BUNDLE_SUBMITTED", outputMint, symbol, {
+            bundle_id: simBundleId,
+            jito_engine: cfg.jitoEngine,
+            tip_account: tipAccount,
+            jito_tip_lamports: cfg.jitoTipLamports,
+            mode: "DRY_RUN"
+          });
+          logAuditEvent(`ORDER_EXECUTED_${side}`, side === "BUY" ? outputMint : inputMint, symbol, {
+            bundle_id: simBundleId,
+            in_amount_raw: amountLamports,
+            out_amount_raw: outAmount,
+            price_impact_pct: priceImpact,
+            mode: "DRY_RUN_JITO"
+          });
+          return { bundleId: simBundleId, outAmount };
         }
 
-        // Trade History Table
-        const histBody = document.getElementById('tradeHistoryBody');
-        if (this.state.tradeHistory.length > 0) {
-          histBody.innerHTML = this.state.tradeHistory.map(h => `
-            <tr>
-              <td class="py-2 px-3 text-slate-400">${h.time}</td>
-              <td class="py-2 px-2 font-bold text-white">${h.symbol}</td>
-              <td class="py-2 px-2">$${h.sizeUsd.toFixed(2)}</td>
-              <td class="py-2 px-2">$${h.entryPrice.toFixed(5)} → $${h.exitPrice.toFixed(5)}</td>
-              <td class="py-2 px-2 text-rose-400">$${h.feesUsd.toFixed(4)}</td>
-              <td class="py-2 px-2 font-bold ${h.netPnlUsd >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                ${h.netPnlUsd >= 0 ? '+' : ''}$${h.netPnlUsd.toFixed(4)}
-              </td>
-              <td class="py-2 px-3 text-[11px] text-slate-300">${h.trigger}</td>
-            </tr>
-          `).join('');
-        }
+        // 3. Chế độ Mainnet Live: Tạo giao dịch Swap tích hợp Jito Tip và gửi đến Jito Block Engine
+        const userPubkey = connectedPublicKey;
+        if (!userPubkey) throw new Error("Vui lòng kết nối ví Solana hoặc bật Dry Run.");
 
-        // 7 AI Agents Monitor (Right Panel & Tab 2)
-        const selected = this.state.tokens.find(t => t.address === this.state.selectedTokenAddress) || this.state.tokens[0];
-        if (selected && selected.evaluation) {
-          const ev = selected.evaluation;
-          document.getElementById('selectedTokenLabel').textContent = `Evaluating: ${selected.symbol} (${selected.address.slice(0, 8)}...) — Score: ${ev.totalScore}/100`;
-          document.getElementById('scoringTokenTitle').textContent = `Selected Token: ${selected.symbol} — Total Score: ${ev.totalScore}/100`;
+        const swapPayload = {
+          quoteResponse: quoteData,
+          userPublicKey: userPubkey,
+          wrapAndUnwrapSol: true,
+          dynamicComputeUnitLimit: true,
+          prioritizationFeeLamports: {
+            jitoTipLamports: cfg.jitoTipLamports
+          }
+        };
 
-          const vBadge = document.getElementById('finalVerdictBadge');
-          vBadge.textContent = ev.finalDecision;
-          vBadge.className = `px-2 py-0.5 rounded text-xs font-bold mono ${
-            ev.finalDecision === 'BUY' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
-            (ev.finalDecision === 'WAIT' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40')
-          }`;
+        const swapResp = await fetch(`${cfg.jupUrl}/swap`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(swapPayload)
+        });
+        if (!swapResp.ok) throw new Error(`Jupiter Swap HTTP ${swapResp.status}`);
+        const swapData = await swapResp.json();
 
-          document.getElementById('agentCardsContainer').innerHTML = ev.agents.map(a => {
-            const stColor = a.status === 'APPROVED'
-              ? 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20'
-              : (a.status === 'WAITING' ? 'text-amber-300 border-amber-500/30 bg-amber-950/20' : 'text-rose-400 border-rose-500/30 bg-rose-950/20');
-            return `
-              <div class="p-2.5 rounded border border-slate-800 bg-slate-900/60">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-xs text-white mono">${a.name}</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded border font-bold mono ${stColor}">${a.status}</span>
-                </div>
-                <p class="text-[11px] text-slate-300 mono mt-1 leading-snug">${a.findings}</p>
-              </div>
-            `;
-          }).join('');
+        // Giải mã VersionedTransaction và ký qua ví trình duyệt
+        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+        const versionedTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+        const signedTx = await connectedWalletProvider.signTransaction(versionedTx);
+        const serializedBase64 = btoa(String.fromCharCode(...signedTx.serialize()));
 
-          // Tab 2 Detailed Scoring Breakdown
-          const b = ev.breakdown;
-          const items = [
-            { label: '1. Security Score', val: b.security, max: 25, desc: 'Mint/Freeze Auth, Holder Concentration, LP Lock, Sellability' },
-            { label: '2. Liquidity Score', val: b.liquidity, max: 20, desc: 'Pool Depth >= $25k, Slippage Stability' },
-            { label: '3. Volume & Money Flow', val: b.volumeFlow, max: 15, desc: '1m/5m Volume Momentum & Buy/Sell Ratio' },
-            { label: '4. Technical Analysis', val: b.technical, max: 15, desc: 'EMA 9/21/50, RSI, MACD, VWAP, Anti-FOMO' },
-            { label: '5. Smart Money', val: b.smartMoney, max: 10, desc: 'Tracked Wallet Historical Win Rate & Net Flow' },
-            { label: '6. Social Sentiment', val: b.social, max: 10, desc: 'Marked UNKNOWN (0 pts) unless verified API connected' },
-            { label: '7. Market Conditions', val: b.marketCond, max: 5, desc: 'Solana DEX Volatility & Spread Regime' }
-          ];
-          document.getElementById('detailedScoringGrid').innerHTML = items.map(it => `
-            <div class="p-3 rounded bg-slate-900 border border-slate-800">
-              <div class="flex items-center justify-between text-xs mono">
-                <span class="font-bold text-white">${it.label}</span>
-                <span class="text-sol-green font-bold">${it.val} / ${it.max}</span>
-              </div>
-              <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                <div class="bg-gradient-to-r from-sol-purple to-sol-green h-full" style="width:${(it.val / it.max) * 100}%"></div>
-              </div>
-              <p class="text-[11px] text-slate-400 mt-1.5">${it.desc}</p>
-            </div>
-          `).join('');
+        // Gửi Bundle nguyên tử tới Jito Block Engine
+        const jitoPayload = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "sendBundle",
+          params: [
+            [serializedBase64],
+            { encoding: "base64" }
+          ]
+        };
 
-          document.getElementById('agentPayloadJson').textContent = JSON.stringify(ev, null, 2);
+        const jitoResp = await fetch(cfg.jitoEngine, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(jitoPayload)
+        });
+        const jitoResult = await jitoResp.json();
+        if (jitoResult.error) throw new Error(JSON.stringify(jitoResult.error));
+
+        const bundleId = jitoResult.result;
+        logAuditEvent("JITO_BUNDLE_SUBMITTED", outputMint, symbol, {
+          bundle_id: bundleId,
+          jito_engine: cfg.jitoEngine,
+          jito_tip_lamports: cfg.jitoTipLamports,
+          mode: "MAINNET_LIVE"
+        });
+
+        logAuditEvent(`ORDER_EXECUTED_${side}`, side === "BUY" ? outputMint : inputMint, symbol, {
+          bundle_id: bundleId,
+          in_amount_raw: amountLamports,
+          out_amount_raw: outAmount,
+          price_impact_pct: priceImpact
+        });
+
+        return { bundleId, outAmount };
+      } catch (err) {
+        logAuditEvent("JITO_EXECUTION_ERROR", outputMint, symbol, { side, error: err.message });
+        return null;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // QUẢN LÝ VỊ THẾ & GIÁM SÁT TAKE PROFIT / STOP LOSS / TRAILING STOP
+    // -------------------------------------------------------------------------
+    async function runSingleDiscoveryScan() {
+      const cfg = getUserConfig();
+      const qualified = await discoverAndEvaluateTokens();
+      for (const pair of qualified) {
+        const mint = pair.baseToken.address;
+        const symbol = pair.baseToken.symbol;
+        if (activePositions[mint]) continue;
+
+        const entryPrice = parseFloat(pair.priceUsd || 0);
+        if (entryPrice <= 0) continue;
+
+        const lamportsIn = Math.round(cfg.buySol * LAMPORTS_PER_SOL);
+        const swapRes = await executeJupiterJitoSwap(WSOL_MINT, mint, lamportsIn, symbol, "BUY");
+        if (swapRes && swapRes.outAmount > 0) {
+          activePositions[mint] = {
+            symbol,
+            entryPrice,
+            highestPrice: entryPrice,
+            currentPrice: entryPrice,
+            tokenAmountRaw: swapRes.outAmount,
+            buyBundleId: swapRes.bundleId
+          };
+          renderPositionsTable();
         }
       }
-    };
+    }
 
-    window.addEventListener('DOMContentLoaded', () => App.init());
+    async function monitorActivePositions() {
+      const cfg = getUserConfig();
+      const mints = Object.keys(activePositions);
+      if (!mints.length) return;
+
+      for (const mint of mints) {
+        const pos = activePositions[mint];
+        try {
+          const resp = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
+          if (!resp.ok) continue;
+          const data = await resp.json();
+          const latestPair = (data.pairs || [])[0];
+          if (!latestPair) continue;
+
+          const currentPrice = parseFloat(latestPair.priceUsd || 0);
+          if (currentPrice <= 0) continue;
+
+          pos.currentPrice = currentPrice;
+          if (currentPrice > pos.highestPrice) pos.highestPrice = currentPrice;
+
+          const pnlPct = ((currentPrice - pos.entryPrice) / pos.entryPrice) * 100;
+          const peakPnlPct = ((pos.highestPrice - pos.entryPrice) / pos.entryPrice) * 100;
+          const drawdownFromPeak = ((pos.highestPrice - currentPrice) / pos.highestPrice) * 100;
+
+          let exitReason = null;
+          if (pnlPct >= cfg.tpPct) {
+            exitReason = `TAKE_PROFIT (+${pnlPct.toFixed(2)}%)`;
+          } else if (pnlPct <= cfg.slPct) {
+            exitReason = `STOP_LOSS (${pnlPct.toFixed(2)}%)`;
+          } else if (peakPnlPct >= cfg.trailArmPct && drawdownFromPeak >= cfg.trailOffsetPct) {
+            exitReason = `TRAILING_STOP (Đỉnh +${peakPnlPct.toFixed(1)}%, Lùi -${drawdownFromPeak.toFixed(1)}%)`;
+          }
+
+          if (exitReason) {
+            logAuditEvent("EXIT_SIGNAL_TRIGGERED", mint, pos.symbol, {
+              reason: exitReason,
+              entry_price: pos.entryPrice,
+              exit_price: currentPrice,
+              pnl_pct: +pnlPct.toFixed(2)
+            });
+            await executeJupiterJitoSwap(mint, WSOL_MINT, pos.tokenAmountRaw, pos.symbol, "SELL");
+            delete activePositions[mint];
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      renderPositionsTable();
+    }
+
+    function renderPositionsTable() {
+      const tbody = document.getElementById("positionsTableBody");
+      const entries = Object.entries(activePositions);
+      document.getElementById("openPositionsCount").textContent = entries.length;
+
+      if (!entries.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-500">Chưa có vị thế đang mở.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = entries.map(([mint, pos]) => {
+        const pnlPct = ((pos.currentPrice - pos.entryPrice) / pos.entryPrice) * 100;
+        const pnlColor = pnlPct >= 0 ? "text-emerald-400" : "text-red-400";
+        return `
+          <tr>
+            <td class="py-2 font-bold text-white">${pos.symbol}</td>
+            <td class="py-2">$${pos.entryPrice.toFixed(6)}</td>
+            <td class="py-2">$${pos.currentPrice.toFixed(6)}</td>
+            <td class="py-2 text-cyan-400">$${pos.highestPrice.toFixed(6)}</td>
+            <td class="py-2 font-bold ${pnlColor}">${pnlPct >= 0 ? "+" : ""}${pnlPct.toFixed(2)}%</td>
+            <td class="py-2">
+              <button onclick="manualClosePosition('${mint}')" class="px-2 py-1 bg-red-600/30 hover:bg-red-600 text-red-200 rounded text-xs">Bán Khẩn Cấp</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function manualClosePosition(mint) {
+      const pos = activePositions[mint];
+      if (!pos) return;
+      await executeJupiterJitoSwap(mint, WSOL_MINT, pos.tokenAmountRaw, pos.symbol, "SELL");
+      delete activePositions[mint];
+      renderPositionsTable();
+    }
+
+    function startLiveBot() {
+      if (botIntervalId) return;
+      document.getElementById("botRunningState").textContent = "ĐANG CHẠY QUÉT TỰ ĐỘNG";
+      document.getElementById("botRunningState").className = "font-bold text-emerald-400";
+      document.getElementById("btnStartBot").disabled = true;
+      document.getElementById("btnStopBot").disabled = false;
+      document.getElementById("btnStopBot").className = "px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-sm rounded-lg transition";
+
+      runSingleDiscoveryScan();
+      botIntervalId = setInterval(runSingleDiscoveryScan, 30000);
+      monitorIntervalId = setInterval(monitorActivePositions, 10000);
+    }
+
+    function stopLiveBot() {
+      clearInterval(botIntervalId);
+      clearInterval(monitorIntervalId);
+      botIntervalId = null;
+      monitorIntervalId = null;
+      document.getElementById("botRunningState").textContent = "ĐANG DỪNG";
+      document.getElementById("botRunningState").className = "font-bold text-gray-400";
+      document.getElementById("btnStartBot").disabled = false;
+      document.getElementById("btnStopBot").disabled = true;
+      document.getElementById("btnStopBot").className = "px-5 py-2.5 bg-red-600/40 text-red-300 font-semibold text-sm rounded-lg transition cursor-not-allowed";
+    }
+
+    // -------------------------------------------------------------------------
+    // CHƯƠNG TRÌNH BACKTEST CHIẾN LƯỢC (BACKTESTING ENGINE)
+    // -------------------------------------------------------------------------
+    function toggleBacktestSource() {
+      const src = document.getElementById("bt_dataSource").value;
+      const container = document.getElementById("bt_customDataContainer");
+      container.classList.toggle("hidden", src !== "custom_csv");
+    }
+
+    function generateSyntheticCampaigns(count, cfg) {
+      const symbols = ["BONK2", "WIFHAT", "POPCAT2", "PEPESOL", "SOLDOGE", "MEW2", "BOME2", "PNUT2", "GOAT2", "CHILL2", "MOODENG2", "GIGA2"];
+      const campaigns = [];
+
+      for (let i = 0; i < count; i++) {
+        const sym = `${symbols[i % symbols.length]}_${i + 1}`;
+        // Tạo phân bổ Market Cap xoay quanh $120k - $550k để kiểm tra cả bộ lọc
+        const mcap = Math.round(130000 + Math.random() * 410000);
+        const liquidity = Math.round(20000 + Math.random() * 85000);
+        const vol1h = Math.round(15000 + Math.random() * 120000);
+        const bsRatio = +(0.85 + Math.random() * 1.3).toFixed(2);
+        const chg1h = +(Math.random() * 160 - 15).toFixed(1);
+
+        // Xác suất 25% là token có cài bẫy Rug Pull
+        const isRugToken = Math.random() < 0.25;
+        const rugScore = isRugToken ? Math.round(450 + Math.random() * 500) : Math.round(50 + Math.random() * 300);
+        const mintRevoked = isRugToken ? Math.random() < 0.4 : true;
+        const freezeRevoked = isRugToken ? Math.random() < 0.5 : true;
+        const top10Pct = isRugToken ? +(32 + Math.random() * 40).toFixed(1) : +(12 + Math.random() * 16).toFixed(1);
+
+        // Tạo chuỗi 60 cây nến 1 phút sau điểm phát hiện
+        const priceSeries = [1.0];
+        let p = 1.0;
+        const regime = isRugToken ? "rug" : (bsRatio > 1.35 && liquidity >= 35000 ? "momentum_pump" : "choppy");
+
+        for (let step = 1; step <= 60; step++) {
+          if (regime === "rug" && step === 8) {
+            p *= 0.08; // Rug pull sập 92%
+          } else if (regime === "momentum_pump") {
+            const drift = step < 25 ? 0.018 : -0.008;
+            const shock = (Math.random() - 0.46) * 0.055;
+            p = Math.max(0.05, p * (1 + drift + shock));
+          } else {
+            const shock = (Math.random() - 0.515) * 0.06;
+            p = Math.max(0.05, p * (1 + shock));
+          }
+          priceSeries.push(+p.toFixed(5));
+        }
+
+        campaigns.push({
+          symbol: sym,
+          mcap,
+          liquidity,
+          vol1h,
+          bsRatio,
+          chg1h,
+          rugScore,
+          mintRevoked,
+          freezeRevoked,
+          top10Pct,
+          isRugToken,
+          priceSeries
+        });
+      }
+      return campaigns;
+    }
+
+    async function runBacktestEngine() {
+      const cfg = getUserConfig();
+      const source = document.getElementById("bt_dataSource").value;
+      const initialSol = parseFloat(document.getElementById("bt_initialSol").value) || 10;
+      const numCampaigns = parseInt(document.getElementById("bt_numCampaigns").value) || 40;
+
+      let campaigns = [];
+      if (source === "custom_csv") {
+        try {
+          campaigns = JSON.parse(document.getElementById("bt_customDataInput").value.trim());
+        } catch (e) {
+          return alert("Dữ liệu JSON không hợp lệ. Vui lòng kiểm tra cú pháp.");
+        }
+      } else if (source === "live_dex") {
+        // Lấy các cặp thực tế trên DEX Screener làm hạt giống kiểm thử
+        const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=solana");
+        const data = await res.json();
+        const pairs = (data.pairs || []).filter(p => p.chainId === "solana").slice(0, numCampaigns);
+        campaigns = pairs.map((p, idx) => {
+          const bs = (p.txns?.h1?.buys || 1) / Math.max(p.txns?.h1?.sells || 1, 1);
+          const chg = parseFloat(p.priceChange?.h1 || 10);
+          const series = [1.0];
+          let cur = 1.0;
+          for (let s = 1; s <= 50; s++) {
+            const drift = bs >= 1.25 ? 0.012 : -0.006;
+            cur = Math.max(0.05, cur * (1 + drift + (Math.random() - 0.49) * 0.05));
+            series.push(+cur.toFixed(5));
+          }
+          return {
+            symbol: p.baseToken?.symbol || `SOL_${idx}`,
+            mcap: parseFloat(p.marketCap || p.fdv || 250000),
+            liquidity: parseFloat(p.liquidity?.usd || 45000),
+            vol1h: parseFloat(p.volume?.h1 || 35000),
+            bsRatio: +bs.toFixed(2),
+            chg1h: chg,
+            rugScore: 180,
+            mintRevoked: true,
+            freezeRevoked: true,
+            top10Pct: 21,
+            isRugToken: false,
+            priceSeries: series
+          };
+        });
+      } else {
+        campaigns = generateSyntheticCampaigns(numCampaigns, cfg);
+      }
+
+      let balanceSol = initialSol;
+      let peakBalanceSol = initialSol;
+      let maxDrawdownPct = 0;
+      const equityCurve = [initialSol];
+
+      let executedTrades = 0;
+      let winningTrades = 0;
+      let grossProfitSol = 0;
+      let grossLossSol = 0;
+      let rugsBlocked = 0;
+      lastBacktestResults = [];
+
+      // Phí mỗi vòng giao dịch (Mua + Bán): Slippage + 2 lần Jito Tip
+      const roundtripSlippagePct = (cfg.slippageBps / 10000) * 100;
+      const roundtripJitoSol = (cfg.jitoTipLamports * 2) / LAMPORTS_PER_SOL;
+
+      for (let i = 0; i < campaigns.length; i++) {
+        const c = campaigns[i];
+        const filterFails = [];
+
+        if (c.mcap < cfg.minMcap || c.mcap > cfg.maxMcap) filterFails.push(`MCap ($${Math.round(c.mcap).toLocaleString()})`);
+        if (c.liquidity < cfg.minLiq) filterFails.push(`Liq ($${Math.round(c.liquidity).toLocaleString()})`);
+        if (c.vol1h < cfg.minVol1h) filterFails.push(`Vol1h ($${Math.round(c.vol1h).toLocaleString()})`);
+        if (c.bsRatio < cfg.minBSRatio) filterFails.push(`B/S (${c.bsRatio})`);
+
+        const rugFails = [];
+        if (c.rugScore > cfg.maxRugScore) rugFails.push(`Score=${c.rugScore}`);
+        if (cfg.requireMintRevoked && !c.mintRevoked) rugFails.push("MintActive");
+        if (cfg.requireFreezeRevoked && !c.freezeRevoked) rugFails.push("FreezeActive");
+        if (c.top10Pct > cfg.maxTop10Pct) rugFails.push(`Top10=${c.top10Pct}%`);
+
+        if (rugFails.length > 0 && c.isRugToken) {
+          rugsBlocked++;
+        }
+
+        if (filterFails.length > 0 || rugFails.length > 0) {
+          lastBacktestResults.push({
+            index: i + 1,
+            symbol: c.symbol,
+            mcap: c.mcap,
+            status: "BỎ QUA",
+            filterDetail: [...filterFails, ...rugFails].join(", "),
+            peakPct: 0,
+            exitReason: "Không vào lệnh",
+            feeSol: 0,
+            netPnlSol: 0,
+            netPnlPct: 0
+          });
+          continue;
+        }
+
+        // Token vượt qua cả 3 bước lọc -> Mở vị thế Mua
+        executedTrades++;
+        const entryPrice = c.priceSeries[0];
+        let highestPrice = entryPrice;
+        let exitPrice = c.priceSeries[c.priceSeries.length - 1];
+        let exitReason = "HẾT_CHU_KỲ_GIỮ";
+
+        for (let step = 1; step < c.priceSeries.length; step++) {
+          const p = c.priceSeries[step];
+          if (p > highestPrice) highestPrice = p;
+
+          const pnlPct = ((p - entryPrice) / entryPrice) * 100;
+          const peakPnlPct = ((highestPrice - entryPrice) / entryPrice) * 100;
+          const drawdownFromPeak = ((highestPrice - p) / highestPrice) * 100;
+
+          if (pnlPct >= cfg.tpPct) {
+            exitPrice = entryPrice * (1 + cfg.tpPct / 100);
+            exitReason = `TAKE_PROFIT (+${cfg.tpPct}%)`;
+            break;
+          } else if (pnlPct <= cfg.slPct) {
+            exitPrice = entryPrice * (1 + cfg.slPct / 100);
+            exitReason = `STOP_LOSS (${cfg.slPct}%)`;
+            break;
+          } else if (peakPnlPct >= cfg.trailArmPct && drawdownFromPeak >= cfg.trailOffsetPct) {
+            exitPrice = highestPrice * (1 - cfg.trailOffsetPct / 100);
+            exitReason = `TRAILING_STOP (Đỉnh +${peakPnlPct.toFixed(1)}%)`;
+            break;
+          }
+        }
+
+        const rawPnlPct = ((exitPrice - entryPrice) / entryPrice) * 100;
+        const effectivePnlPct = rawPnlPct - roundtripSlippagePct;
+        const grossPnlSol = cfg.buySol * (effectivePnlPct / 100);
+        const netPnlSol = grossPnlSol - roundtripJitoSol;
+        const feeSol = (cfg.buySol * (roundtripSlippagePct / 100)) + roundtripJitoSol;
+
+        balanceSol += netPnlSol;
+        equityCurve.push(+balanceSol.toFixed(4));
+
+        if (balanceSol > peakBalanceSol) peakBalanceSol = balanceSol;
+        const dd = ((peakBalanceSol - balanceSol) / peakBalanceSol) * 100;
+        if (dd > maxDrawdownPct) maxDrawdownPct = dd;
+
+        if (netPnlSol > 0) {
+          winningTrades++;
+          grossProfitSol += netPnlSol;
+        } else {
+          grossLossSol += Math.abs(netPnlSol);
+        }
+
+        lastBacktestResults.push({
+          index: i + 1,
+          symbol: c.symbol,
+          mcap: c.mcap,
+          status: "KHỚP LỆNH",
+          filterDetail: `ĐẠT (Liq $${Math.round(c.liquidity/1000)}k, B/S ${c.bsRatio}x, Score ${c.rugScore})`,
+          peakPct: +(((highestPrice - entryPrice) / entryPrice) * 100).toFixed(2),
+          exitReason,
+          feeSol: +feeSol.toFixed(4),
+          netPnlSol: +netPnlSol.toFixed(4),
+          netPnlPct: +((netPnlSol / cfg.buySol) * 100).toFixed(2)
+        });
+      }
+
+      // Cập nhật KPI
+      const totalNetPnl = balanceSol - initialSol;
+      const totalNetPnlPct = (totalNetPnl / initialSol) * 100;
+      const winRate = executedTrades > 0 ? (winningTrades / executedTrades) * 100 : 0;
+      const profitFactor = grossLossSol > 0 ? (grossProfitSol / grossLossSol) : (grossProfitSol > 0 ? 99.9 : 0);
+
+      document.getElementById("bt_metricFinalSol").textContent = `${balanceSol.toFixed(3)} SOL`;
+      document.getElementById("bt_metricNetPnl").textContent = `${totalNetPnl >= 0 ? "+" : ""}${totalNetPnl.toFixed(3)} SOL (${totalNetPnlPct.toFixed(1)}%)`;
+      document.getElementById("bt_metricNetPnl").className = `text-xl font-bold mt-1 ${totalNetPnl >= 0 ? "text-emerald-400" : "text-red-400"}`;
+      document.getElementById("bt_metricWinRate").textContent = `${winRate.toFixed(1)}% (${winningTrades}/${executedTrades})`;
+      document.getElementById("bt_metricProfitFactor").textContent = profitFactor.toFixed(2);
+      document.getElementById("bt_metricMaxDD").textContent = `-${maxDrawdownPct.toFixed(2)}%`;
+      document.getElementById("bt_metricRugsBlocked").textContent = `${rugsBlocked} Token`;
+
+      renderBacktestTable();
+      drawEquityCurve(equityCurve);
+    }
+
+    function renderBacktestTable() {
+      const tbody = document.getElementById("btTradeTableBody");
+      tbody.innerHTML = lastBacktestResults.map(r => {
+        if (r.status === "BỎ QUA") {
+          return `
+            <tr class="text-gray-500">
+              <td class="py-2">${r.index}</td>
+              <td class="py-2 font-medium">${r.symbol}</td>
+              <td class="py-2">$${Math.round(r.mcap).toLocaleString()}</td>
+              <td class="py-2 text-amber-400/80">Chặn: ${r.filterDetail}</td>
+              <td class="py-2">--</td>
+              <td class="py-2">Bỏ qua</td>
+              <td class="py-2">0 SOL</td>
+              <td class="py-2">0 SOL</td>
+            </tr>
+          `;
+        }
+        const pnlColor = r.netPnlSol >= 0 ? "text-emerald-400 font-bold" : "text-red-400 font-bold";
+        return `
+          <tr>
+            <td class="py-2">${r.index}</td>
+            <td class="py-2 font-bold text-white">${r.symbol}</td>
+            <td class="py-2">$${Math.round(r.mcap).toLocaleString()}</td>
+            <td class="py-2 text-emerald-400">${r.filterDetail}</td>
+            <td class="py-2 text-cyan-400">+${r.peakPct}%</td>
+            <td class="py-2 font-medium text-gray-200">${r.exitReason}</td>
+            <td class="py-2 text-gray-400">${r.feeSol} SOL</td>
+            <td class="py-2 ${pnlColor}">${r.netPnlSol >= 0 ? "+" : ""}${r.netPnlSol} SOL (${r.netPnlPct}%)</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function drawEquityCurve(points) {
+      const canvas = document.getElementById("equityCurveCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      if (points.length < 2) return;
+
+      const minVal = Math.min(...points) * 0.98;
+      const maxVal = Math.max(...points) * 1.02;
+      const range = Math.max(maxVal - minVal, 0.001);
+
+      // Lưới ngang
+      ctx.strokeStyle = "#1f2937";
+      ctx.lineWidth = 1;
+      for (let g = 1; g <= 4; g++) {
+        const y = (h / 5) * g;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      // Vẽ đường Equity
+      ctx.beginPath();
+      points.forEach((val, idx) => {
+        const x = (idx / (points.length - 1)) * (w - 40) + 20;
+        const y = h - 20 - ((val - minVal) / range) * (h - 40);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = points[points.length - 1] >= points[0] ? "#10b981" : "#ef4444";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    function exportBacktestCSV() {
+      if (!lastBacktestResults.length) return alert("Hãy chạy Backtest trước khi xuất CSV.");
+      const headers = ["Index,Symbol,MarketCap,Status,FilterDetail,PeakPct,ExitReason,FeeSOL,NetPnLSOL,NetPnLPct"];
+      const rows = lastBacktestResults.map(r =>
+        `${r.index},${r.symbol},${r.mcap},${r.status},"${r.filterDetail}",${r.peakPct},"${r.exitReason}",${r.feeSol},${r.netPnlSol},${r.netPnlPct}`
+      );
+      const blob = new Blob([headers.concat(rows).join("\n")], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `solana_backtest_results_${Date.now()}.csv`;
+      a.click();
+    }
   </script>
 </body>
 </html>
