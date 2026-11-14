@@ -58,15 +58,6 @@
         <input id="cfg_soundEnabled" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" /> 🔊 Âm thanh
       </label>
       <button onclick="connectWallet()" class="px-4 py-2 glass-card hover:border-purple-500 text-purple-300 font-semibold text-xs md:text-sm transition flex items-center gap-2">
-        🔗 Kết nối Ví (Bitget/Phantom)
-      </button>
-      <span id="walletStatus" class="px-3.5 py-2 text-xs font-mono bg-gray-900 border border-gray-800 rounded-lg text-gray-400">Chưa kết nối ví</span>
-    </div>
-    <div class="flex flex-wrap items-center gap-3">
-      <label class="flex items-center gap-2 px-3 py-2 glass-card text-xs font-medium text-emerald-400 cursor-pointer">
-        <input id="cfg_soundEnabled" type="checkbox" checked class="w-4 h-4 accent-emerald-500" onchange="saveConfig()" /> 🔊 Âm thanh
-      </label>
-      <button onclick="connectWallet()" class="px-4 py-2 glass-card hover:border-purple-500 text-purple-300 font-semibold text-xs md:text-sm transition flex items-center gap-2">
         🔗 Kết nối Ví
       </button>
       <!-- NÚT CHECK SỐ DƯ MỚI THÊM -->
@@ -286,8 +277,9 @@
       else if (type === "block") { osc.type = "triangle"; osc.frequency.setValueAtTime(150, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.1); osc.start(now); osc.stop(now+0.1); }
     }
 
-    // --- 3. WALLET CONNECTION ---
+    // --- 3. WALLET CONNECTION --
     let walletProvider = null, connectedPublicKey = null;
+    
     async function connectWallet() {
       try {
         const provider = window.bitkeep?.solana || window.phantom?.solana || window.solana || window.solflare;
@@ -299,6 +291,49 @@
         document.getElementById("walletStatus").textContent = `Ví: ${connectedPublicKey.slice(0,4)}...${connectedPublicKey.slice(-4)}`;
         document.getElementById("walletStatus").className = "px-3.5 py-2 text-xs font-mono bg-emerald-950/80 border border-emerald-500/50 rounded-lg text-emerald-400";
       } catch(e) { console.error(e); }
+    }
+
+    // HÀM KIỂM TRA SỐ DƯ (Vừa thêm vào)
+    async function checkBalance() {
+      const cfg = getUserConfig();
+      let pubKeyStr = connectedPublicKey;
+
+      // Nếu chưa kết nối ví, lấy publicKey từ Private Key (nếu có nhập)
+      if (!pubKeyStr && cfg.privateKey) {
+        try {
+          const secret = decodeBase58(cfg.privateKey);
+          const kp = solanaWeb3.Keypair.fromSecretKey(secret);
+          pubKeyStr = kp.publicKey.toString();
+        } catch(e) {
+          return alert("Private Key Base58 không hợp lệ!");
+        }
+      }
+
+      if (!pubKeyStr) {
+        return alert("Vui lòng Kết nối ví hoặc nhập Private Key ở Tab 1 trước khi check số dư.");
+      }
+
+      try {
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ Đang check...";
+        
+        // Kết nối RPC để lấy số dư
+        const connection = new solanaWeb3.Connection(cfg.rpcUrl || "https://api.mainnet-beta.solana.com");
+        const pubKey = new solanaWeb3.PublicKey(pubKeyStr);
+        const balance = await connection.getBalance(pubKey);
+        const solBalance = (balance / 1_000_000_000).toFixed(4); // Chia cho LAMPORTS_PER_SOL
+        
+        // Hiển thị ra giao diện
+        const badge = document.getElementById("walletStatus");
+        badge.textContent = `Ví: ${pubKeyStr.slice(0,4)}...${pubKeyStr.slice(-4)} | 💰 ${solBalance} SOL`;
+        badge.className = "px-3.5 py-2 text-xs font-bold font-mono bg-emerald-950/80 border border-emerald-400 rounded-lg text-emerald-400 flash-update";
+        
+        btn.innerHTML = originalText;
+      } catch (error) {
+        console.error(error);
+        alert("Lỗi khi lấy số dư! Hãy kiểm tra lại kết nối mạng hoặc RPC URL.");
+      }
     }
 
     // --- 4. MULTI-DEX LIVE SCAN ---
